@@ -82,4 +82,6 @@ planteamos una app móvil en forma de juego, compuesta por carreras de observaci
 
 <h3>🎨 Pantallas principales de la aplicación (mockups)</h3>
 
-planteamos una app móvil en forma de juego, compuesta por carreras de observación creadas por usuarios y creadores, que consisten en retos, desafíos y pistas que deben seguir los usuarios para llegar a un tesoro digital y obtener recompensas dentro de la aplicación (puntos, coleccionables, medallas, logros, etc.).
+<p align="center">
+    <img width="700" src="https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExY3E1aXQ5cmJhbWlpcXo0bXQ5MXRnOTllbmc4aDM5cTI4NmU4c3k4OCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/26gsspfbt1HfVQ9va/giphy.webp">
+</p>
