@@ -19,7 +19,7 @@
 - [📖 Descripción](#-descripción)
 - [⚙️ Servicios y hardware utilizados](#%EF%B8%8F-servicios-y-hardware-utilizados)
 - [💬 ​DCU (Diagrama de Casos de Uso)](#-dcu-diagrama-de-casos-de-uso)
-- [📦 DC (Diagrama de Clases)](#-dc-diagrama-de-clasess)
+- [📦 DC (Diagrama de Clases)](#-dc-diagrama-de-clases)
 - [🎨 Pantallas principales de la aplicación (mockups)](#-pantallas-principales-de-la-aplicación-mockups)
 
 
