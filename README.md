@@ -19,7 +19,7 @@
 - [📖 Descripción](#-descripción)
 - [⚙️ Servicios y hardware utilizados](#%EF%B8%8F-servicios-y-hardware-utilizados)
 - [💬 ​DCU (Diagrama de Casos de Uso)](#-dcu-diagrama-de-casos-de-uso)
-- [📦 DC (Diagrama de Clases)](#dc-diagrama-de-clases)
+- [📦 DC (Diagrama de Clases)](#-dc-diagrama-de-clasess)
 - [🎨 Pantallas principales de la aplicación (mockups)](#-pantallas-principales-de-la-aplicación-mockups)
 
 
@@ -73,7 +73,7 @@ planteamos una app móvil en forma de juego, compuesta por carreras de observaci
     <img width="1000" src="https://github.com/Intro-CompuMovil/SeekAndSolve/blob/main/Diagramas/Diagrama%20de%20Casos%20de%20Uso.jpg">
 </p>
 
-<h3>DC (Diagrama de Clases)</h3>
+<h3>📦 DC (Diagrama de Clases)</h3>
 
 <p align="center">
     <img width="1000" src="https://github.com/Intro-CompuMovil/SeekAndSolve/blob/main/Diagramas/Diagrama%20de%20Clases%20-%20SeekAndSolve.png">
