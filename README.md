@@ -16,9 +16,9 @@
 
 <h3> Indice: </h3>
 
-- [📖 Descripción](#-descripción)
+- [📖 Descripción](#descripción)
 - [⚙️ Servicios y hardware utilizados](#️-servicios-y-hardware-utilizados)
-- [💬 ​DCU (Diagrama de Casos de Uso)](#-dcu-diagrama-de-casos-de-uso)
+- [💬 ​DCU (Diagrama de Casos de Uso)](#--dcu-diagrama-de-casos-de-uso-)
 - [📦 DC (Diagrama de Clases)](#-dc-diagrama-de-clases)
 - [🎨 Pantallas principales de la aplicación (mockups)](#-pantallas-principales-de-la-aplicación-mockups)
 
@@ -26,7 +26,7 @@
 <!--horizontal divider(gradiant)-->
 <img src="https://user-images.githubusercontent.com/73097560/115834477-dbab4500-a447-11eb-908a-139a6edaec5c.gif">
 
-<h3> 📖 Descripción </h3>
+<h3>Descripción</h3>
 
 planteamos una app móvil en forma de juego, compuesta por carreras de observación creadas por usuarios y creadores, que consisten en retos, desafíos y pistas que deben seguir los usuarios para llegar a un tesoro digital y obtener recompensas dentro de la aplicación (puntos, coleccionables, medallas, logros, etc.).
 
