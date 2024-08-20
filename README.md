@@ -17,9 +17,9 @@
 <h3> Indice: </h3>
 
 - [📖 Descripción](#-descripción)
-- [⚙️ Servicios y hardware utilizados](#️-servicios-y-hardware-utilizados)
-- [💬 ​DCU (Diagrama de Casos de Uso)](#--dcu-diagrama-de-casos-de-uso-)
-- [📦 DC (Diagrama de Clases)](#-dc-diagrama-de-clases)
+- [⚙️ Servicios y hardware utilizados](#%EF%B8%8F-servicios-y-hardware-utilizados)
+- [💬 ​DCU (Diagrama de Casos de Uso)](#-dcu-diagrama-de-casos-de-uso)
+- [📦 DC (Diagrama de Clases)](#dc-diagrama-de-clases)
 - [🎨 Pantallas principales de la aplicación (mockups)](#-pantallas-principales-de-la-aplicación-mockups)
 
 
@@ -30,7 +30,7 @@
 
 planteamos una app móvil en forma de juego, compuesta por carreras de observación creadas por usuarios y creadores, que consisten en retos, desafíos y pistas que deben seguir los usuarios para llegar a un tesoro digital y obtener recompensas dentro de la aplicación (puntos, coleccionables, medallas, logros, etc.).
 
-<h3> ⚙️ Servicios y hardware utilizados </h3>
+<h3>⚙️ Servicios y hardware utilizados</h3>
 
 - **📷 Uso de la Cámara**
   - Al llegar a cada una de las estaciones o checkpoints dentro de la carrera de observación, los jugadores deberán tomarse una foto en el lugar.
@@ -67,19 +67,19 @@ planteamos una app móvil en forma de juego, compuesta por carreras de observaci
 
 
 
-<h3> 💬 ​DCU (Diagrama de Casos de Uso) </h3>
+<h3>💬 ​DCU (Diagrama de Casos de Uso)</h3>
 
 <p align="center">
     <img width="1000" src="https://github.com/Intro-CompuMovil/SeekAndSolve/blob/main/Diagramas/Diagrama%20de%20Casos%20de%20Uso.png">
 </p>
 
-<h3> DC (Diagrama de Clases)  </h3>
+<h3>DC (Diagrama de Clases)</h3>
 
 <p align="center">
     <img width="1000" src="https://github.com/Intro-CompuMovil/SeekAndSolve/blob/main/Diagramas/Diagrama%20de%20Clases%20-%20SeekAndSolve.png">
 </p>
 
 
-<h3> 🎨 Pantallas principales de la aplicación (mockups) </h3>
+<h3>🎨 Pantallas principales de la aplicación (mockups)</h3>
 
 planteamos una app móvil en forma de juego, compuesta por carreras de observación creadas por usuarios y creadores, que consisten en retos, desafíos y pistas que deben seguir los usuarios para llegar a un tesoro digital y obtener recompensas dentro de la aplicación (puntos, coleccionables, medallas, logros, etc.).
