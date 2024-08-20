@@ -83,5 +83,5 @@ planteamos una app móvil en forma de juego, compuesta por carreras de observaci
 <h3>🎨 Pantallas principales de la aplicación (mockups)</h3>
 
 <p align="center">
-    <video width="700" src="https://github.com/user-attachments/assets/93bc1ab4-1847-42da-bfb9-3bf3d3f63f6d" type="video/mp4" controls autoplay loop></video>
+    <video width="400" src="https://github.com/user-attachments/assets/93bc1ab4-1847-42da-bfb9-3bf3d3f63f6d" type="video/mp4" controls autoplay loop></video>
 </p>
