@@ -16,11 +16,12 @@
 
 <h3> Indice: </h3>
 
-- 📖 Descripción
-- ⚙️ Servicios y hardware utilizados
-- 💬 ​DCU (Diagrama de Casos de Uso)
-- 📦 DC (Diagrama de Clases) 
-- 🎨 Pantallas principales de la aplicación (mockups)
+- [📖 Descripción](#-descripción)
+- [⚙️ Servicios y hardware utilizados](#️-servicios-y-hardware-utilizados)
+- [💬 ​DCU (Diagrama de Casos de Uso)](#-dcu-diagrama-de-casos-de-uso)
+- [📦 DC (Diagrama de Clases)](#-dc-diagrama-de-clases)
+- [🎨 Pantallas principales de la aplicación (mockups)](#-pantallas-principales-de-la-aplicación-mockups)
+
 
 <!--horizontal divider(gradiant)-->
 <img src="https://user-images.githubusercontent.com/73097560/115834477-dbab4500-a447-11eb-908a-139a6edaec5c.gif">
