@@ -1,9 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Colores de marca -->
+    <!-- Colores de marca Day-->
     <color name="primaryColor">#FFC83D</color> <!-- Amarillo (Sunglow) -->
     <color name="tertiaryColor">#010400</color> <!-- Negro (Black) -->
     <color name="secondaryColor">#3D73FF</color> <!-- Azul (Blue Crayola) -->
     <color name="dangerColor">#DE3B40</color>
     <color name="white">#FFFFFF</color> <!-- Blanco -->
+
+    <!-- Colores de marca Night-->
+    <color name="tertiaryColorNight">#FFFFFF</color> <!-- Negro (Black) -->
+    <color name="whiteNight">#010400</color> <!-- Blanco -->
 </resources>

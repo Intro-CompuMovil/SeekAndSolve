@@ -20,6 +20,9 @@
         <!-- Barra de navegación y barra de estado -->
         <item name="android:navigationBarColor">@color/primaryColor</item>
         <item name="android:statusBarColor">@color/secondaryColor</item>
+
+        <!-- Color del texto -->
+        <item name="android:textColor">@color/tertiaryColor</item>
     </style>
 
     <style name="Theme.SeekAndSolve" parent="Base.Theme.SeekAndSolve" />

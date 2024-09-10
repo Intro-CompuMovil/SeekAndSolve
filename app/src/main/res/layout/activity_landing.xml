@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".Logica.landingActivity">
+
+    <ImageView
+        android:id="@+id/seekAndSolveLogo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:contentDescription="@string/app_logo"
+        android:src="@drawable/logo"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:padding="15dp"/>
+
+   <TextView
+       android:id="@+id/slogan"
+       android:layout_width="wrap_content"
+       android:layout_height="wrap_content"
+       android:text="@string/slogan"
+       android:textSize="15sp"
+       app:layout_constraintTop_toBottomOf="@+id/seekAndSolveLogo"
+       app:layout_constraintStart_toStartOf="parent"
+       app:layout_constraintEnd_toEndOf="parent"
+       android:fontFamily="@font/lexend_font"
+       android:textStyle="bold"/>
+
+    <ImageView
+        android:id="@+id/cofreLaunch"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:contentDescription="@string/cofre"
+        android:padding="50dp"
+        android:src="@drawable/cofre_launch"
+        app:layout_constraintBottom_toTopOf="@+id/comienzaTuAventura"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/slogan" />
+
+    <Button
+        android:id="@+id/comienzaTuAventura"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/comienza_tu_aventura"
+        android:textColor="@color/tertiaryColor"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_margin="20dp"
+        android:drawableEnd="@drawable/baseline_arrow_forward_24" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
