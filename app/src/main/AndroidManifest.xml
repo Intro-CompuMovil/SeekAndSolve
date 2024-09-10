@@ -10,10 +10,18 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.SeekAndSolve"
-        tools:targetApi="31">
+        android:theme="@style/Theme.SeekAndSolve">
         <activity
-            android:name=".MainActivity"
+            android:name=".Logica.RankingActivity"
+            android:exported="false" />
+        <activity
+            android:name=".Logica.LoginActivity"
+            android:exported="false" />
+        <activity
+            android:name=".Logica.registerActivity"
+            android:exported="false" />
+        <activity
+            android:name=".Logica.landingActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -21,6 +29,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".Logica.MainActivity"
+            android:exported="false" />
     </application>
 
 </manifest>
