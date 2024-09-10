@@ -1,7 +1,25 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
+
+    <!-- Tema oscuro -->
     <style name="Base.Theme.SeekAndSolve" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your dark theme here. -->
-        <!-- <item name="colorPrimary">@color/my_dark_primary</item> -->
+        <!-- Colores principales -->
+        <item name="colorPrimary">@color/primaryColor</item> <!-- Amarillo -->
+        <item name="colorPrimaryVariant">@color/primaryColor</item> <!-- Amarillo sin cambio de variante -->
+        <item name="colorOnPrimary">@color/tertiaryColor</item> <!-- Texto sobre color primario en modo oscuro -->
+
+        <!-- Colores secundarios -->
+        <item name="colorSecondary">@color/secondaryColor</item> <!-- Azul -->
+        <item name="colorOnSecondary">@color/white</item> <!-- Texto sobre color secundario -->
+
+        <!-- Colores terciarios y otros -->
+        <item name="colorTertiary">@color/tertiaryColor</item> <!-- Negro, terciario -->
+        <item name="colorError">@color/dangerColor</item> <!-- Rojo para errores -->
+
+        <!-- Fondo oscuro -->
+        <item name="android:colorBackground">@color/tertiaryColor</item> <!-- Fondo negro para modo oscuro -->
+
+        <!-- Barra de navegación y barra de estado -->
+        <item name="android:navigationBarColor">@color/tertiaryColor</item>
+        <item name="android:statusBarColor">@color/tertiaryColor</item>
     </style>
 </resources>

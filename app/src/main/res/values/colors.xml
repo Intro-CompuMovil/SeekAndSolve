@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="black">#FF000000</color>
-    <color name="white">#FFFFFFFF</color>
-    <color name="primaryColor">#FFC83D</color>
-    <color name="secondaryColor">#010400</color>
-    <color name="tertiaryColor">#3D73FF</color>
+    <!-- Colores de marca -->
+    <color name="primaryColor">#FFC83D</color> <!-- Amarillo (Sunglow) -->
+    <color name="tertiaryColor">#010400</color> <!-- Negro (Black) -->
+    <color name="secondaryColor">#3D73FF</color> <!-- Azul (Blue Crayola) -->
     <color name="dangerColor">#DE3B40</color>
+    <color name="white">#FFFFFF</color> <!-- Blanco -->
 </resources>
