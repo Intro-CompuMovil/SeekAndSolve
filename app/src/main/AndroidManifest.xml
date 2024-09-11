@@ -33,7 +33,7 @@
             android:name=".Logica.IniciarRutaActivity"
             android:exported="false" />
         <activity
-            android:name=".Logica.InvitarAmigoDesafioActivity"
+            android:name=".Logica.InvitarAmigosDesafioActivity"
             android:exported="false" />
         <activity
             android:name=".Logica.ConfigurarDesafioActivity"

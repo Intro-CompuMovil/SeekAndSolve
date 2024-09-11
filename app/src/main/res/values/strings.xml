@@ -12,4 +12,24 @@
     <string name="contrasenia">Contrasenia</string>
     <string name="fecha_de_nacimiento">Fecha de nacimiento</string>
     <string name="confirmar_contrasenia">Confirmar contrasenia</string>
+    <string name="revisar_trayecto">Revisar Trayecto</string>
+    <string name="iniciar_desafio">Iniciar Desafío</string>
+    <string name="resolver_acertijo">Resolver acertijo</string>
+    <string name="abandonar">Abandonar</string>
+    <string name="desafio_terminado">Desafío terminado</string>
+    <string name="titulo_pista">Obtén una pista</string>
+    <string name="volver">Volver</string>
+    <string name="estadisticas">Estadísticas</string>
+    <string name="estadisticas_de_carrera">Estadísticas de carrera</string>
+    <string name="pista">Pista</string>
+    <string name="marcar_checkpoint">Marcar Checkpoint</string>
+    <string name="cerca_de_ti">Cerca de ti</string>
+    <string name="agregar_checkpoint">Agregar Checkpoint</string>
+    <string name="invitar_amigos">Invitar amigos</string>
+    <string name="a_punto_de_jugar">Estas a punto de jugar</string>
+    <string name="jugar_desafio">Jugar desafío</string>
+    <string name="creacion_de_desafio">Creación de Desafío</string>
+    <string name="descripcion">Descripción</string>
+    <string name="crear_desafio">Crear Desafío</string>
+    <string name="cambiar_foto">Cambiar foto</string>
 </resources>

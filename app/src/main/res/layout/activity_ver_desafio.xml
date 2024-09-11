@@ -5,6 +5,86 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".Logica.VerDesafioActivity">
+    tools:context=".Logica.VerDesafioActivity"
+    android:layout_margin="16dp">
 
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Username"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <LinearLayout
+        android:id="@+id/linearLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toTopOf="@+id/linearLayout2"
+        app:layout_constraintTop_toBottomOf="@+id/textView">
+
+        <TextView
+            android:id="@+id/tituloDesafio"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Título Desafío"
+            style="@style/TitleStyle" />
+
+        <ImageView
+            android:id="@+id/imagenDesafio"
+            android:layout_width="216dp"
+            android:layout_height="220dp"
+            android:layout_marginTop="16dp"
+            tools:srcCompat="@tools:sample/avatars" />
+
+        <TextView
+            android:id="@+id/descripcionDesafio"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="The Legend of Zelda: Breath of the Wild es un videojuego de acción-aventura de 2017 de la serie The Legend of Zelda, desarrollado por la filial Nintendo EPD en colaboración con Monolith Soft y publicado por Nintendo para las consolas  Wii U y Nintendo Switch."
+            style="@style/NormalTextStyle"
+            android:layout_marginTop="16dp"/>
+
+        <TextView
+            android:id="@+id/puntoInicial"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Punto Inicial: Universidad Javeriana"
+            style="@style/NormalTextStyle"
+            android:layout_marginTop="16dp" />
+
+        <TextView
+            android:id="@+id/puntoFinal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Punto Final: Museo del oro"
+            style="@style/NormalTextStyle"
+            android:layout_marginTop="16dp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/linearLayout2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <Button
+            android:id="@+id/revisarTrayecto"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.5"
+            android:text="@string/revisar_trayecto"
+            android:backgroundTint="@color/secondaryColor"
+            android:layout_marginRight="5dp"/>
+
+        <Button
+            android:id="@+id/iniciarDesafio"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.5"
+            android:text="@string/iniciar_desafio"
+            android:layout_marginLeft="5dp" />
+    </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

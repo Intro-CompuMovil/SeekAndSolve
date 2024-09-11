@@ -5,7 +5,7 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".Logica.PistaActivity"
+    tools:context=".Logica.InvitarAmigosDesafioActivity"
     android:layout_margin="16dp">
 
     <TextView
@@ -19,50 +19,47 @@
     <LinearLayout
         android:id="@+id/linearLayout"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="500dp"
         android:gravity="center"
         android:orientation="vertical"
-        app:layout_constraintBottom_toTopOf="@+id/volver"
+        app:layout_constraintBottom_toTopOf="@+id/linearLayout2"
         app:layout_constraintTop_toBottomOf="@+id/textView">
 
         <TextView
-            android:id="@+id/tituloPista"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Selecciona los amigos a invitar"
             style="@style/TitleStyle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/titulo_pista" />
+            android:layout_marginBottom="16dp"/>
 
-        <TextView
-            android:id="@+id/subtituloPista"
-            style="@style/SubtitleStyle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Usa el sensor X para X"
-            android:layout_marginTop="16dp" />
-
-        <LinearLayout
+        <ListView
+            android:id="@+id/listaEstadisticas"
             android:layout_width="match_parent"
-            android:layout_height="300dp"
-            android:background="@color/secondaryColor"
-            android:gravity="center"
-            android:layout_marginTop="16dp">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Pista: papas con mayonesa"
-                style="@style/NormalTextStyle"/>
-
-        </LinearLayout>
-
+            android:layout_height="wrap_content" />
     </LinearLayout>
 
-    <Button
-        android:id="@+id/volver"
+    <LinearLayout
+        android:id="@+id/linearLayout2"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/volver"
-        android:backgroundTint="@color/gray"
-        app:layout_constraintBottom_toBottomOf="parent" />
+        app:layout_constraintBottom_toBottomOf="parent">
 
+        <Button
+            android:id="@+id/volver"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.5"
+            android:text="@string/volver"
+            android:backgroundTint="@color/gray"
+            android:layout_marginRight="5dp"/>
+
+        <Button
+            android:id="@+id/invitarAmigos"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.5"
+            android:text="@string/invitar_amigos"
+            android:backgroundTint="@color/secondaryColor"
+            android:layout_marginLeft="5dp"/>
+    </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -5,6 +5,87 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".Logica.CrearDesafioActivity">
+    tools:context=".Logica.CrearDesafioActivity"
+    android:layout_margin="16dp">
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Username"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <LinearLayout
+        android:id="@+id/linearLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toTopOf="@+id/crearDesafio"
+        app:layout_constraintTop_toBottomOf="@+id/textView">
+
+        <TextView
+            style="@style/TitleStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/creacion_de_desafio"/>
+
+        <EditText
+            android:id="@+id/nombre"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:autofillHints=""
+            android:hint="@string/nombre"
+            android:inputType="textPersonName"
+            android:background="@drawable/edit_text_border"
+            android:layout_marginTop="16dp"/>
+
+        <ImageView
+            android:id="@+id/imagenDesafio"
+            android:layout_width="128dp"
+            android:layout_height="128dp"
+            android:layout_marginTop="16dp"
+            tools:srcCompat="@tools:sample/avatars" />
+
+        <Button
+            android:id="@+id/cambiarFoto"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/cambiar_foto"
+            android:backgroundTint="@color/secondaryColor"
+            android:layout_marginBottom="16dp" />
+
+        <ListView
+            android:layout_width="match_parent"
+            android:layout_height="150dp"
+            android:layout_marginBottom="16dp"/>
+
+        <Button
+            android:id="@+id/agregarCheckpoint"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/agregar_checkpoint"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:backgroundTint="@color/secondaryColor"/>
+
+        <EditText
+            android:id="@+id/descripcionDesafio"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:autofillHints=""
+            android:hint="@string/descripcion"
+            android:inputType="textPersonName"
+            android:background="@drawable/edit_text_border"
+            android:layout_marginTop="16dp"/>
+
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/crearDesafio"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/crear_desafio"
+        app:layout_constraintBottom_toBottomOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

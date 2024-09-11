@@ -6,6 +6,7 @@
     <color name="secondaryColor">#3D73FF</color> <!-- Azul (Blue Crayola) -->
     <color name="dangerColor">#DE3B40</color>
     <color name="white">#FFFFFF</color> <!-- Blanco -->
+    <color name="gray">#565D6D</color> <!-- Gris -->
 
     <!-- Colores de marca Night-->
     <color name="tertiaryColorNight">#FFFFFF</color> <!-- Negro (Black) -->
