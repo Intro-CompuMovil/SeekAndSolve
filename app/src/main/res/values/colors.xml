@@ -9,6 +9,8 @@
     <color name="transparent">#00000000</color>  <!-- Transparente -->
     <color name="buttonBlackColor">#805f09</color>
     <color name="buttonGrayBackground">#9095A1</color>
+    <color name="changePicColor">#fff9eb</color>
+    <color name="changePicTextColor">#8c6400</color>
 
     <!-- Colores de marca Night-->
     <color name="tertiaryColorNight">#FFFFFF</color> <!-- Negro (Black) -->

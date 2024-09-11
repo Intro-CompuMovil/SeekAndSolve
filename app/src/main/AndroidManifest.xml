@@ -12,6 +12,15 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.SeekAndSolve">
         <activity
+            android:name=".Logica.EstadisticasCarreras"
+            android:exported="false" />
+        <activity
+            android:name=".Logica.RecompensasCarrera"
+            android:exported="false" />
+        <activity
+            android:name=".Logica.EditarPerfil"
+            android:exported="false" />
+        <activity
             android:name=".Logica.VerPerfil"
             android:exported="false" />
         <activity

@@ -21,4 +21,6 @@
     <string name="estadisticas">Estadísticas</string>
     <string name="volver">Volver</string>
     <string name="editar_perfil">Editar Perfil</string>
+    <string name="cambiar_foto">Cambiar Foto</string>
+    <string name="tus_recompensas">Tus recompensas</string>
 </resources>

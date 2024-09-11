@@ -5,39 +5,51 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".Logica.VerPerfil">
-
-    <TextView
-        android:id="@+id/textView"
+    tools:context=".Logica.EditarPerfil">
+    <EditText
+        android:id="@+id/nombreUsuarioETxt"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center"
-        android:layout_marginTop="30dp"
-        android:text="@string/nombre_de_usuario"
-        android:textSize="24sp"
-        android:textStyle="bold"
+        android:layout_marginTop="20dp"
+        android:layout_marginEnd="27dp"
+        android:layout_marginStart="27dp"
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp"
+        android:background="@drawable/edit_text_border"
         app:layout_constraintTop_toTopOf="parent" />
 
     <ImageView
         android:id="@+id/imagenPerfil"
         android:layout_width="230dp"
         android:layout_height="230dp"
-        android:layout_marginTop="49dp"
+        android:layout_marginTop="13dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView" />
+        app:layout_constraintTop_toBottomOf="@+id/nombreUsuarioETxt" />
+
+    <Button
+        android:id="@+id/cambiarFotoBtn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:backgroundTint="@color/changePicColor"
+        android:textColor="@color/changePicTextColor"
+        android:text="@string/cambiar_foto"
+        android:layout_marginTop="13dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/imagenPerfil" />
 
     <EditText
         android:id="@+id/nombreETxt"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="39dp"
+        android:layout_marginTop="13dp"
         android:layout_marginEnd="27dp"
         android:layout_marginStart="27dp"
         android:paddingStart="20dp"
         android:paddingEnd="20dp"
         android:background="@drawable/edit_text_border"
-        app:layout_constraintTop_toBottomOf="@+id/imagenPerfil" />
+        app:layout_constraintTop_toBottomOf="@+id/cambiarFotoBtn" />
 
     <EditText
         android:id="@+id/corrreoETxt"
@@ -52,6 +64,19 @@
         app:layout_constraintTop_toBottomOf="@+id/nombreETxt"/>
 
     <EditText
+        android:id="@+id/contraETxt"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/edit_text_border"
+        android:layout_marginTop="18dp"
+        android:layout_marginEnd="27dp"
+        android:layout_marginStart="27dp"
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp"
+        android:drawableEnd="@drawable/visibility_off"
+        app:layout_constraintTop_toBottomOf="@+id/corrreoETxt"/>
+
+    <EditText
         android:id="@+id/FechaETxt"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -62,43 +87,15 @@
         android:paddingEnd="20dp"
         android:drawableStart="@drawable/caledar_icon"
         android:background="@drawable/edit_text_border"
-        app:layout_constraintTop_toBottomOf="@+id/corrreoETxt" />
+        app:layout_constraintTop_toBottomOf="@+id/contraETxt" />
 
-    <LinearLayout
-        android:id="@+id/botonesAmarillosLayout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="45dp"
-        android:layout_marginStart="27dp"
-        android:layout_marginEnd="27dp"
-        app:layout_constraintTop_toBottomOf="@+id/FechaETxt">
-
-        <Button
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="24dp"
-            android:layout_weight="0.5"
-            android:text="@string/recompensas"
-            android:backgroundTint="@color/primaryColor"
-            android:textColor="@color/buttonBlackColor"
-            app:layout_constraintTop_toBottomOf="@+id/FechaETxt" />
-
-        <Button
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="0.5"
-            android:text="@string/estadisticas"
-            android:backgroundTint="@color/primaryColor"
-            android:textColor="@color/buttonBlackColor"
-            app:layout_constraintTop_toBottomOf="@+id/FechaETxt" />
-    </LinearLayout>
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="26dp"
         android:layout_marginStart="27dp"
         android:layout_marginEnd="27dp"
-        app:layout_constraintTop_toBottomOf="@+id/botonesAmarillosLayout">
+        app:layout_constraintTop_toBottomOf="@+id/FechaETxt">
 
         <Button
             android:layout_width="0dp"
@@ -114,8 +111,8 @@
             android:layout_height="wrap_content"
             android:layout_weight="0.5"
             android:text="@string/editar_perfil"
-            android:backgroundTint="@color/secondaryColor"
+            android:backgroundTint="@color/primaryColor"
+            android:textColor="@color/buttonBlackColor"
             app:layout_constraintTop_toBottomOf="@+id/FechaETxt" />
     </LinearLayout>
-
 </androidx.constraintlayout.widget.ConstraintLayout>
