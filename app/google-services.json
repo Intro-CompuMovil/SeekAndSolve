@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "669449036916",
+    "project_id": "seekandsolve-3a862",
+    "storage_bucket": "seekandsolve-3a862.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:669449036916:android:bf1ee798f3be45f3f35d21",
+        "android_client_info": {
+          "package_name": "com.cuatrodivinas.seekandsolve"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "669449036916-h7i6adh4km2q370i7o36j06t7mtso3tq.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.cuatrodivinas.seekandsolve",
+            "certificate_hash": "a6d254b6071dddb9b51528a49b0ea5c168ef220b"
+          }
+        },
+        {
+          "client_id": "669449036916-qs7gghktjr04ebhmu0mi078drpcqtcd8.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD0bcD7SnYrHFRsWVYnQ61pesj4ZZh5ins"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "669449036916-qs7gghktjr04ebhmu0mi078drpcqtcd8.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

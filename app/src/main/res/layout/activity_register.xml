@@ -30,89 +30,159 @@
         app:layout_constraintTop_toBottomOf="@id/createAccount"
         app:layout_constraintStart_toStartOf="parent"/>
 
-    <EditText
+    <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/nombre"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:autofillHints=""
-        android:hint="@string/nombre"
-        android:inputType="textPersonName"
-        android:background="@drawable/edit_text_border"
-        app:layout_constraintTop_toBottomOf="@id/ingresa_tus_datos"
-        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginTop="16dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintWidth_percent="0.8"
-        android:layout_marginTop="16dp"/>
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/ingresa_tus_datos"
+        app:layout_constraintWidth_percent="0.8">
 
-    <EditText
+        <com.google.android.material.textfield.TextInputEditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/nombre"
+            android:inputType="textPersonName"
+            android:fontFamily="@font/lexend_font"
+            android:padding="15dp"/>
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/nombreUsuario"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:autofillHints=""
-        android:hint="@string/nombre_de_usuario"
-        android:inputType="textPersonName"
-        android:background="@drawable/edit_text_border"
-        app:layout_constraintTop_toBottomOf="@id/nombre"
-        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginTop="16dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintWidth_percent="0.8"
-        android:layout_marginTop="16dp"/>
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/nombre"
+        app:layout_constraintWidth_percent="0.8">
 
-    <EditText
+        <com.google.android.material.textfield.TextInputEditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/nombre_de_usuario"
+            android:inputType="textPersonName"
+            android:fontFamily="@font/lexend_font"
+            android:padding="15dp"/>
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/correo"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:autofillHints=""
-        android:hint="@string/correo"
-        android:inputType="textEmailAddress"
-        android:background="@drawable/edit_text_border"
-        app:layout_constraintTop_toBottomOf="@id/nombreUsuario"
-        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginTop="16dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintWidth_percent="0.8"
-        android:layout_marginTop="16dp"/>
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/nombreUsuario"
+        app:layout_constraintWidth_percent="0.8">
 
-    <EditText
-        android:id="@+id/contrasenia"
+        <com.google.android.material.textfield.TextInputEditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/correo"
+            android:inputType="textEmailAddress"
+            android:fontFamily="@font/lexend_font"
+            android:padding="15dp"/>
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/contraseniaLayout"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:autofillHints=""
-        android:background="@drawable/edit_text_border"
-        android:hint="@string/contrasenia"
-        android:inputType="textPassword"
+        app:endIconMode="password_toggle"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/correo"
-        app:layout_constraintWidth_percent="0.8" />
+        app:layout_constraintWidth_percent="0.8">
 
-    <EditText
-        android:id="@+id/confirmarContrasenia"
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/contrasenia"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/contrasenia"
+            android:inputType="textPassword"
+            android:fontFamily="@font/lexend_font"
+            android:padding="15dp"/>
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/confirmarContraseniaLayout"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:autofillHints=""
-        android:background="@drawable/edit_text_border"
-        android:hint="@string/confirmar_contrasenia"
-        android:inputType="textPassword"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/contrasenia"
-        app:layout_constraintWidth_percent="0.8" />
+        app:layout_constraintTop_toBottomOf="@id/contraseniaLayout"
+        app:layout_constraintWidth_percent="0.8">
 
-    <EditText
-        android:id="@+id/fechaNacimiento"
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/confirmarContrasenia"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/confirmar_contrasenia"
+            android:inputType="textPassword"
+            android:fontFamily="@font/lexend_font"
+            android:padding="15dp"/>
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/fechaNacimientolayout"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:autofillHints=""
-        android:hint="@string/fecha_de_nacimiento"
-        android:inputType="date"
-        android:background="@drawable/edit_text_border"
-        app:layout_constraintTop_toBottomOf="@id/confirmarContrasenia"
+        android:layout_marginTop="16dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/confirmarContraseniaLayout"
+        app:layout_constraintWidth_percent="0.8">
+
+        <TextView
+            android:id="@+id/fechaNacimiento"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/fecha_de_nacimiento"
+            android:padding="15dp"
+            android:fontFamily="@font/lexend_font"
+            android:background="@drawable/edit_text_border"
+            android:focusable="true"
+            android:clickable="true" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <Button
+        android:id="@+id/registrarse"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/registrarse"
+        android:textColor="@color/tertiaryColor"
+        app:layout_constraintTop_toBottomOf="@id/fechaNacimientolayout"
+        android:layout_margin="20dp"/>
+
+    <TextView
+        android:id="@+id/o"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/o"
+        android:fontFamily="@font/lexend_font"
+        app:layout_constraintTop_toBottomOf="@id/registrarse"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <Button
+        android:id="@+id/googleLoginButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:drawablePadding="8dp"
+        android:text="@string/sign_up_with_google"
+        android:textColor="@color/tertiaryColor"
+        app:layout_constraintTop_toBottomOf="@id/o"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintWidth_percent="0.8"
-        android:layout_marginTop="16dp"/>
+        android:layout_margin="20dp"
+        android:drawableLeft="@drawable/google_icon"/>
+
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
