@@ -32,7 +32,7 @@
             android:text="@string/creacion_de_desafio"/>
 
         <EditText
-            android:id="@+id/nombre"
+            android:id="@+id/nombreDesafio"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:autofillHints=""
@@ -56,9 +56,52 @@
             android:backgroundTint="@color/secondaryColor"
             android:layout_marginBottom="16dp" />
 
-        <ListView
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="150dp"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.7"
+                android:text="@string/punto_inicial"
+                android:layout_marginStart="16dp"/>
+
+            <Button
+                android:id="@+id/editarPuntoInicial"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.3"
+                android:text="@string/editar"
+                android:backgroundTint="@color/secondaryColor"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.7"
+                android:text="@string/punto_final"
+                android:layout_marginStart="16dp"/>
+
+            <Button
+                android:id="@+id/editarPuntoFinal"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.3"
+                android:text="@string/editar"
+                android:backgroundTint="@color/secondaryColor"/>
+
+        </LinearLayout>
+
+        <ListView
+            android:id="@+id/listaCheckpoints"
+            android:layout_width="match_parent"
+            android:layout_height="100dp"
             android:layout_marginBottom="16dp"/>
 
         <Button

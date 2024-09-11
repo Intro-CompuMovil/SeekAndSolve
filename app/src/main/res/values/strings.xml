@@ -32,4 +32,7 @@
     <string name="descripcion">Descripción</string>
     <string name="crear_desafio">Crear Desafío</string>
     <string name="cambiar_foto">Cambiar foto</string>
+    <string name="editar">Editar</string>
+    <string name="punto_inicial">Punto inicial</string>
+    <string name="punto_final">Punto final</string>
 </resources>
