@@ -1,23 +1,113 @@
 package com.cuatrodivinas.seekandsolve.Logica
 
+import android.app.DatePickerDialog
 import android.content.Intent
+import android.icu.util.Calendar
 import android.os.Bundle
-import androidx.activity.enableEdgeToEdge
+import android.text.InputType
+import android.util.Log
+import android.widget.Button
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import com.cuatrodivinas.seekandsolve.R
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.common.api.ApiException
+import com.google.android.material.textfield.TextInputEditText
+import com.google.android.material.textfield.TextInputLayout
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.GoogleAuthProvider
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.ktx.Firebase
+
 
 class registerActivity : AppCompatActivity() {
+
+    companion object {
+        private const val RC_SIGN_IN = 9001
+    }
+
+    private lateinit var auth: FirebaseAuth
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
         setContentView(R.layout.activity_register)
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
+
+        auth = Firebase.auth
+
+        val passwordLayout: TextInputLayout = findViewById(R.id.contraseniaLayout)
+        val passwordEditText: TextInputEditText = findViewById(R.id.contrasenia)
+        val confirmPasswordEditText: TextInputEditText = findViewById(R.id.confirmarContrasenia)
+        val fechaNacimientoTextView: TextView = findViewById(R.id.fechaNacimiento)
+        val googleLoginButton: Button = findViewById(R.id.googleLoginButton)
+
+
+
+        passwordLayout.setEndIconOnClickListener {
+            val isPasswordVisible = passwordEditText.inputType == InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+            val newInputType = if (isPasswordVisible) {
+                InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
+            } else {
+                InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+            }
+            passwordEditText.inputType = newInputType
+            confirmPasswordEditText.inputType = newInputType
+            passwordEditText.setSelection(passwordEditText.text?.length ?: 0)
+            confirmPasswordEditText.setSelection(confirmPasswordEditText.text?.length ?: 0)
         }
-        startActivity(Intent(this, VerPerfil::class.java))
+        fechaNacimientoTextView.setOnClickListener {
+            val calendar = Calendar.getInstance()
+            val year = calendar.get(Calendar.YEAR)
+            val month = calendar.get(Calendar.MONTH)
+            val day = calendar.get(Calendar.DAY_OF_MONTH)
+
+            val datePickerDialog = DatePickerDialog(this, { _, selectedYear, selectedMonth, selectedDay ->
+                val selectedDate = "$selectedDay/${selectedMonth + 1}/$selectedYear"
+                fechaNacimientoTextView.text = selectedDate
+            }, year, month, day)
+
+            datePickerDialog.show()
+        }
+
+        googleLoginButton.setOnClickListener {
+            signIn()
+        }
+    }
+    private fun signIn() {
+        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+            .requestIdToken(getString(R.string.default_web_client_id))
+            .requestEmail()
+            .build()
+
+        val googleSignInClient = GoogleSignIn.getClient(this, gso)
+        val signInIntent = googleSignInClient.signInIntent
+        startActivityForResult(signInIntent, RC_SIGN_IN)
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        if (requestCode == RC_SIGN_IN) {
+            val task = GoogleSignIn.getSignedInAccountFromIntent(data)
+            try {
+                val account = task.getResult(ApiException::class.java)
+                firebaseAuthWithGoogle(account.idToken!!)
+            } catch (e: ApiException) {
+                Log.w("registerActivity", "Google sign in failed", e)
+            }
+        }
+    }
+
+    private fun firebaseAuthWithGoogle(idToken: String) {
+        val credential = GoogleAuthProvider.getCredential(idToken, null)
+        auth.signInWithCredential(credential)
+            .addOnCompleteListener(this) { task ->
+                if (task.isSuccessful) {
+                    val user = auth.currentUser
+                    Log.d("registerActivity", "signInWithCredential:success, user: ${user?.displayName}")
+                } else {
+                    Log.w("registerActivity", "signInWithCredential:failure", task.exception)
+                }
+            }
     }
 }

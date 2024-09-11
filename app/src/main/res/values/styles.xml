@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Definición de un estilo para los títulos -->
+    <style name="TitleStyle">
+        <item name="android:fontFamily">@font/lexend_font</item>
+        <item name="android:textSize">24sp</item>
+    </style>
+
+    <!-- Estilo para los subtítulos -->
+    <style name="SubtitleStyle">
+        <item name="android:fontFamily">@font/lexend_font</item>
+        <item name="android:textSize">20sp</item>
+    </style>
+
+    <!-- Texto normal -->
+    <style name="NormalTextStyle">
+        <item name="android:fontFamily">@font/lexend_font</item>
+        <item name="android:textSize">16sp</item>
+    </style>
+</resources>

@@ -15,6 +15,42 @@
             android:name=".Logica.VerPerfil"
             android:exported="false" />
         <activity
+            android:name=".Logica.SeleccionarPuntoActivity"
+            android:exported="false" />
+        <activity
+            android:name=".Logica.CrearDesafioActivity"
+            android:exported="false" />
+        <activity
+            android:name=".Logica.EstadisticasCarreraActivity"
+            android:exported="false" />
+        <activity
+            android:name=".Logica.DesafioTerminadoActivity"
+            android:exported="false" />
+        <activity
+            android:name=".Logica.PistaActivity"
+            android:exported="false" />
+        <activity
+            android:name=".Logica.ResolverAcertijoActivity"
+            android:exported="false" />
+        <activity
+            android:name=".Logica.IniciarRutaActivity"
+            android:exported="false" />
+        <activity
+            android:name=".Logica.InvitarAmigoDesafioActivity"
+            android:exported="false" />
+        <activity
+            android:name=".Logica.ConfigurarDesafioActivity"
+            android:exported="false" />
+        <activity
+            android:name=".Logica.TrayectoDesafioActivity"
+            android:exported="false" />
+        <activity
+            android:name=".Logica.VerDesafioActivity"
+            android:exported="false" />
+        <activity
+            android:name=".Logica.VerDesafiosActivity"
+            android:exported="false" />
+        <activity
             android:name=".Logica.RankingActivity"
             android:exported="false" />
         <activity

@@ -12,6 +12,11 @@
     <string name="contrasenia">Contrasenia</string>
     <string name="fecha_de_nacimiento">Fecha de nacimiento</string>
     <string name="confirmar_contrasenia">Confirmar contrasenia</string>
+    <string name="registrarse">Registrarse</string>
+    <string name="o">o</string>
+    <string name="sign_in_with_google">Sign in with Google</string>
+    <string name="sign_up_with_google">Sign up with Google</string>
+    <string name="default_web_client_id">669449036916-qs7gghktjr04ebhmu0mi078drpcqtcd8.apps.googleusercontent.com</string>
     <string name="recompensas">Recompensas</string>
     <string name="estadisticas">Estadísticas</string>
     <string name="volver">Volver</string>

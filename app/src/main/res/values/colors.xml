@@ -13,4 +13,9 @@
     <!-- Colores de marca Night-->
     <color name="tertiaryColorNight">#FFFFFF</color> <!-- Negro (Black) -->
     <color name="whiteNight">#010400</color> <!-- Blanco -->
+
+
+    <color name="blue">#459DE4</color>
+    <color name="red">#FF0000</color>
+
 </resources>

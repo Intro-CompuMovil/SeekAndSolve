@@ -19,8 +19,8 @@
         <item name="android:colorBackground">@color/whiteNight</item> <!-- Fondo negro para modo oscuro -->
 
         <!-- Barra de navegación y barra de estado -->
-        <item name="android:navigationBarColor">@color/tertiaryColor</item>
-        <item name="android:statusBarColor">@color/tertiaryColor</item>
+
+        <item name="android:statusBarColor">@color/primaryColor</item>
 
         <!-- Color del texto -->
         <item name="android:textColor">@color/tertiaryColorNight</item> <!-- Color del texto en modo oscuro -->

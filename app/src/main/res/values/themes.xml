@@ -18,8 +18,8 @@
         <item name="android:colorBackground">@color/white</item> <!-- Fondo blanco -->
 
         <!-- Barra de navegación y barra de estado -->
-        <item name="android:navigationBarColor">@color/primaryColor</item>
-        <item name="android:statusBarColor">@color/secondaryColor</item>
+
+        <item name="android:statusBarColor">@color/primaryColor</item>
 
         <!-- Color del texto -->
         <item name="android:textColor">@color/tertiaryColor</item>
