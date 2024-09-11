@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".Logica.VerPerfil">
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:layout_marginTop="20dp"
+        android:text="@string/nombre_de_usuario"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:id="@+id/imagenPerfil"
+        android:layout_width="230dp"
+        android:layout_height="230dp"
+        android:layout_marginTop="49dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView" />
+
+    <EditText
+        android:id="@+id/nombreETxt"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="39dp"
+        android:layout_marginEnd="27dp"
+        android:layout_marginStart="27dp"
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp"
+        android:background="@drawable/edit_text_border"
+        app:layout_constraintTop_toBottomOf="@+id/imagenPerfil" />
+
+    <EditText
+        android:id="@+id/corrreoETxt"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/edit_text_border"
+        android:layout_marginTop="18dp"
+        android:layout_marginEnd="27dp"
+        android:layout_marginStart="27dp"
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp"
+        app:layout_constraintTop_toBottomOf="@+id/nombreETxt"
+        tools:layout_editor_absoluteX="27dp" />
+
+    <EditText
+        android:id="@+id/FechaETxt"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="18dp"
+        android:layout_marginEnd="27dp"
+        android:layout_marginStart="27dp"
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp"
+        android:drawableStart="@drawable/caledar_icon"
+        android:background="@drawable/edit_text_border"
+        app:layout_constraintTop_toBottomOf="@+id/corrreoETxt" />
+
+    <LinearLayout
+        android:id="@+id/botonesAmarillosLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="45dp"
+        android:layout_marginStart="27dp"
+        android:layout_marginEnd="27dp"
+        app:layout_constraintTop_toBottomOf="@+id/FechaETxt">
+
+        <Button
+            style="@android:style/Widget.Holo.Button"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="32dp"
+            android:layout_weight="0.5"
+            android:text="@string/recompensas"
+            android:background="@color/primaryColor"
+            android:textColor="@color/buttonBlackColor"
+            app:layout_constraintTop_toBottomOf="@+id/FechaETxt" />
+
+        <Button
+            style="@android:style/Widget.Holo.Button"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.5"
+            android:text="@string/estadisticas"
+            android:background="@color/primaryColor"
+            android:textColor="@color/buttonBlackColor"
+            app:layout_constraintTop_toBottomOf="@+id/FechaETxt" />
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="26dp"
+        android:layout_marginStart="27dp"
+        android:layout_marginEnd="27dp"
+        app:layout_constraintTop_toBottomOf="@+id/botonesAmarillosLayout">
+
+        <Button
+            style="@android:style/Widget.Holo.Button"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="32dp"
+            android:layout_weight="0.5"
+            android:backgroundTint="@color/buttonGrayBackground"
+            android:text="@string/volver"
+            android:textColor="@color/buttonBlackColor"
+            app:layout_constraintTop_toBottomOf="@+id/FechaETxt" />
+
+        <Button
+            style="@android:style/Widget.Holo.Button"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.5"
+            android:text="@string/editar_perfil"
+            android:backgroundTint="@color/secondaryColor"
+            android:textColor="@color/buttonBlackColor"
+            app:layout_constraintTop_toBottomOf="@+id/FechaETxt" />
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

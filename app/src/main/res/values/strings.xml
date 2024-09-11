@@ -12,4 +12,8 @@
     <string name="contrasenia">Contrasenia</string>
     <string name="fecha_de_nacimiento">Fecha de nacimiento</string>
     <string name="confirmar_contrasenia">Confirmar contrasenia</string>
+    <string name="recompensas">Recompensas</string>
+    <string name="estadisticas">Estadísticas</string>
+    <string name="volver">Volver</string>
+    <string name="editar_perfil">Editar Perfil</string>
 </resources>
