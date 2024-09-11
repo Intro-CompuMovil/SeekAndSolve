@@ -3,10 +3,7 @@ package com.cuatrodivinas.seekandsolve.Logica
 import android.os.Bundle
 import android.view.animation.AnimationUtils
 import android.widget.ImageView
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import com.cuatrodivinas.seekandsolve.R
 import android.content.Intent
 import android.widget.Button
@@ -28,7 +25,7 @@ class landingActivity : AppCompatActivity() {
         val button: Button = findViewById(R.id.comienzaTuAventura)
         // Configurar el OnClickListener
         button.setOnClickListener {
-            val intent = Intent(this, registerActivity::class.java)
+            val intent = Intent(this, RegisterActivity::class.java)
             startActivity(intent)
         }
     }
