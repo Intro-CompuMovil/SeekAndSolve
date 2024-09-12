@@ -9,38 +9,52 @@ import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
 import android.os.Bundle
-import android.widget.Button
 import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.bumptech.glide.Glide
-import com.bumptech.glide.request.target.CustomTarget
-import com.bumptech.glide.request.transition.Transition
 import com.cuatrodivinas.seekandsolve.R
-import org.json.JSONObject
+import org.json.JSONArray
 import org.osmdroid.config.Configuration
 import org.osmdroid.library.BuildConfig
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.Marker
 import java.io.FileInputStream
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInClient
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 
 class MainActivity : AppCompatActivity(), LocationListener {
     private lateinit var map: MapView
     private val REQUEST_PERMISSIONS_REQUEST_CODE = 1
     private lateinit var locationManager: LocationManager
+    private lateinit var googleSignInClient: GoogleSignInClient
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setTheme(R.style.Base_Theme_SeekAndSolve)
         setContentView(R.layout.activity_main)
 
+        // Configurar GoogleSignInClient
+        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+            .requestIdToken(getString(R.string.default_web_client_id))
+            .requestEmail()
+            .build()
+        googleSignInClient = GoogleSignIn.getClient(this, gso)
+
         checkSession()
         setupMap()
         setupLocationManager()
         setUsernameText()
+        // metodo de prueba y desarrollo
+        val profileLayout: LinearLayout = findViewById(R.id.profileLayout)
+        profileLayout.setOnClickListener {
+            setupProfileLogout()
+        }
     }
 
     private fun checkSession() {
@@ -50,6 +64,24 @@ class MainActivity : AppCompatActivity(), LocationListener {
             val intent = Intent(this, LandingActivity::class.java)
             startActivity(intent)
             finish()
+        }
+    }
+
+    private fun setupProfileLogout() {
+        // Borrar session_id
+        val sharedPreferences = getSharedPreferences("user_session", Context.MODE_PRIVATE)
+        with(sharedPreferences.edit()) {
+            remove("session_id")
+            apply()
+        }
+        // Cerrar sesión de Google y revocar acceso
+        googleSignInClient.signOut().addOnCompleteListener(this) {
+            googleSignInClient.revokeAccess().addOnCompleteListener(this) {
+                // Redirigir a la pantalla de inicio de sesión
+                val intent = Intent(this, LoginActivity::class.java)
+                startActivity(intent)
+                finish()
+            }
         }
     }
 
@@ -75,23 +107,26 @@ class MainActivity : AppCompatActivity(), LocationListener {
     private fun setUsernameText() {
         val userDataJson = readJsonFromFile("user_data.json")
         if (userDataJson != null) {
-            val userData = JSONObject(userDataJson)
-            val username = userData.getString("username")
-            val usernameText: TextView = findViewById(R.id.usernameText)
-            val profileImage: ImageView = findViewById(R.id.profileImage)
-            usernameText.text = username
+            val usersArray = JSONArray(userDataJson)
+            if (usersArray.length() > 0) {
+                val user = usersArray.getJSONObject(usersArray.length() - 1) // Obtener el último usuario registrado
+                val username = user.getString("username")
+                val usernameText: TextView = findViewById(R.id.usernameText)
+                val profileImage: ImageView = findViewById(R.id.profileImage)
+                usernameText.text = username
 
-            if (userData.has("photoUrl") && !userData.isNull("photoUrl")) {
-                val photoUrl = userData.getString("photoUrl")
-                Glide.with(this)
-                    .load(photoUrl)
-                    .override(24, 24) // Establecer el tamaño de la imagen en 24x24 px
-                    .circleCrop() // Para hacer la imagen circular
-                    .into(profileImage) // Establecer la imagen en el ImageView
+                if (user.has("photoUrl") && !user.isNull("photoUrl")) {
+                    val photoUrl = user.getString("photoUrl")
+                    Glide.with(this)
+                        .load(photoUrl)
+                        .override(24, 24) // Establecer el tamaño de la imagen en 24x24 px
+                        .circleCrop() // Para hacer la imagen circular
+                        .into(profileImage) // Establecer la imagen en el ImageView
 
-                profileImage.background = null
-            } else {
-                profileImage.imageTintList = ContextCompat.getColorStateList(this, R.color.primaryColor)
+                    profileImage.background = null
+                } else {
+                    profileImage.imageTintList = ContextCompat.getColorStateList(this, R.color.primaryColor)
+                }
             }
         }
     }

@@ -28,7 +28,10 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
+import org.json.JSONArray
 import org.json.JSONObject
+import java.io.File
+import java.io.FileInputStream
 import java.io.FileOutputStream
 import javax.crypto.Cipher
 import javax.crypto.KeyGenerator
@@ -149,27 +152,58 @@ class RegisterActivity : AppCompatActivity() {
                     val email = user?.email
                     val photoUrl = user?.photoUrl.toString() // Obtener la URL de la foto de perfil
 
-                    // Mostrar un cuadro de diálogo para editar el nombre
-                    val editText = EditText(this)
-                    editText.setText(username)
-                    AlertDialog.Builder(this)
-                        .setTitle("Confirmar nombre")
-                        .setView(editText)
-                        .setPositiveButton("Confirmar") { _, _ ->
-                            val editedName = editText.text.toString()
-                            saveUserDataToJson(editedName,email, username, photoUrl)
-                            // Generate and save session_id
-                            val sessionId = generateSessionId()
-                            saveSessionId(sessionId)
-                            // Redirigir a MainActivity
-                            navigateToMain()
-                        }
-                        .setNegativeButton("Cancelar", null)
-                        .show()
+                    if (isEmailRegistered(email)) {
+                        showToast("Correo ya registrado, por favor inicie sesión")
+                        navigateToLogin()
+                    } else {
+                        // Mostrar un cuadro de diálogo para editar el nombre
+                        val editText = EditText(this)
+                        editText.setText(username)
+                        AlertDialog.Builder(this)
+                            .setTitle("Confirmar nombre")
+                            .setView(editText)
+                            .setPositiveButton("Confirmar") { _, _ ->
+                                val editedName = editText.text.toString()
+                                saveUserDataToJson(editedName, email, username, photoUrl, "Google")
+                                // Generate and save session_id
+                                val sessionId = generateSessionId()
+                                saveSessionId(sessionId)
+                                // Redirigir a MainActivity
+                                navigateToMain()
+                            }
+                            .setNegativeButton("Cancelar", null)
+                            .show()
+                    }
                 } else {
                     Log.w("registerActivity", "signInWithCredential:failure", task.exception)
                 }
             }
+    }
+
+    private fun isEmailRegistered(email: String?): Boolean {
+        val userDataJson = readJsonFromFile("user_data.json")
+        if (userDataJson != null) {
+            val usersArray = JSONArray(userDataJson)
+            for (i in 0 until usersArray.length()) {
+                val user = usersArray.getJSONObject(i)
+                if (user.getString("email") == email) {
+                    return true
+                }
+            }
+        }
+        return false
+    }
+
+    private fun readJsonFromFile(fileName: String): String? {
+        return try {
+            val fileInputStream: FileInputStream = openFileInput(fileName)
+            val bytes = fileInputStream.readBytes()
+            fileInputStream.close()
+            String(bytes)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
     }
 
     private fun hashPassword(password: String): String {
@@ -219,20 +253,33 @@ class RegisterActivity : AppCompatActivity() {
         if (name.isNotEmpty() && username.isNotEmpty() && email.isNotEmpty() && password.isNotEmpty() && confirmPassword.isNotEmpty() && fechaNacimiento.isNotEmpty()) {
             if (password == confirmPassword) {
                 val hashedPassword = hashPassword(password)
-                val userData = JSONObject()
-                userData.put("name", name)
-                userData.put("username", username)
-                userData.put("email", email)
-                userData.put("password", hashedPassword)
-                userData.put("fechaNacimiento", fechaNacimiento)
+                if (isEmailRegistered(email)) {
+                    showToast("Correo ya registrado, por favor inicie sesión")
+                    navigateToLogin()
+                } else {
+                    val userData = JSONObject()
+                    userData.put("name", name)
+                    userData.put("username", username)
+                    userData.put("email", email)
+                    userData.put("password", hashedPassword)
+                    userData.put("fechaNacimiento", fechaNacimiento)
+                    userData.put("signInType", "Normal")
 
-                saveJsonToFile(userData)
-                println(userData)
-                // Generate and save session_id
-                val sessionId = generateSessionId()
-                saveSessionId(sessionId)
-                // Redirigir a MainActivity
-                navigateToMain()
+                    // Eliminar el archivo JSON existente
+                    deleteFile("user_data.json")
+
+                    // Crear un nuevo JSONArray y agregar el nuevo usuario
+                    val usersArray = JSONArray()
+                    usersArray.put(userData)
+
+                    saveJsonToFile(usersArray)
+                    println(userData)
+                    // Generate and save session_id
+                    val sessionId = generateSessionId()
+                    saveSessionId(sessionId)
+                    // Redirigir a MainActivity
+                    navigateToMain()
+                }
             } else {
                 Log.e("registerActivity", "Las contraseñas no coinciden")
                 showToast("Las contraseñas no coinciden")
@@ -249,23 +296,27 @@ class RegisterActivity : AppCompatActivity() {
         toast.show()
     }
 
-    private fun saveUserDataToJson(name: String?, email: String?, username: String?, photoUrl: String) {
+    private fun saveUserDataToJson(name: String?, email: String?, username: String?, photoUrl: String, signInType: String) {
+        // Eliminar el archivo JSON existente
+        deleteFile("user_data.json")
+        // Crear un nuevo JSONArray y agregar el nuevo usuario
+        val usersArray = JSONArray()
         val userData = JSONObject()
         userData.put("name", name)
         userData.put("email", email)
         userData.put("username", username)
         userData.put("photoUrl", photoUrl)
+        userData.put("signInType", signInType)
+        usersArray.put(userData)
 
-        saveJsonToFile(userData)
-        println(userData)
+        saveJsonToFile(usersArray)
     }
 
-    private fun saveJsonToFile(jsonObject: JSONObject) {
+    private fun saveJsonToFile(usersArray: JSONArray) {
         val fileName = "user_data.json"
-        val fileOutputStream: FileOutputStream
         try {
-            fileOutputStream = openFileOutput(fileName, Context.MODE_PRIVATE)
-            fileOutputStream.write(jsonObject.toString().toByteArray())
+            val fileOutputStream: FileOutputStream = openFileOutput(fileName, Context.MODE_PRIVATE)
+            fileOutputStream.write(usersArray.toString().toByteArray())
             fileOutputStream.close()
         } catch (e: Exception) {
             e.printStackTrace()

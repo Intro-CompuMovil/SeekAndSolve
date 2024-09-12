@@ -42,6 +42,7 @@
         app:layout_constraintWidth_percent="0.8">
 
         <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/nombreUsuarioOCorreo"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="@string/nombre_de_usuario_o_correo"
