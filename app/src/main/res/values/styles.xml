@@ -17,4 +17,9 @@
         <item name="android:fontFamily">@font/lexend_font</item>
         <item name="android:textSize">16sp</item>
     </style>
+
+    <!-- Splash Screen Theme -->
+    <style name="SplashTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="android:windowBackground">@drawable/splash_screen</item>
+    </style>
 </resources>

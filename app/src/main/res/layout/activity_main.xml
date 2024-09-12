@@ -8,12 +8,173 @@
     tools:context=".Logica.MainActivity">
 
     <TextView
+        android:id="@+id/usernameTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Hello World!"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:text="@string/username"
+        android:textSize="18sp"
+        android:fontFamily="@font/lexend_font"
+        android:textStyle="bold"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/profileImageView"
+        android:layout_marginEnd="8dp"
+        android:layout_marginTop="40dp"
+        app:layout_constraintVertical_bias="0.5"/>
+
+
+    <ImageView
+        android:id="@+id/profileImageView"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:src="@drawable/profile_user_svgrepo_com"
+        android:contentDescription="@string/profile_image"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginTop="30dp"
+        android:layout_marginEnd="20dp"
+        app:tint="@color/primaryColor"/>
+
+    <LinearLayout
+        android:id="@+id/secondaryColorBox"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintTop_toBottomOf="@id/profileImageView"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="16dp"
+        android:layout_marginHorizontal="15dp"
+        android:background="@drawable/rounded_corners">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:layout_marginStart="10dp">
+
+            <TextView
+                android:id="@+id/innerTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/tu_aventura_comienza_aqui"
+                android:textColor="@color/white"
+                android:textStyle="bold"
+                android:fontFamily="@font/lexend_font"
+                android:textSize="24sp"
+                android:layout_marginTop="30dp"/>
+
+            <TextView
+                android:id="@+id/secondTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/busca_un_desaf_o_para_empezar"
+                android:textColor="@color/white"
+                android:fontFamily="@font/lexend_font"
+                android:textSize="12sp"
+                android:layout_marginTop="8dp"/>
+        </LinearLayout>
+
+        <ImageView
+            android:id="@+id/phoneImageView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:contentDescription="@string/phone_hand_image"
+            android:src="@drawable/phone_hand" />
+
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/desafiosButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/ver_desafios"
+        android:textColor="?android:textColor"
+        android:fontFamily="@font/lexend_font"
+        android:textSize="24sp"
+        android:padding="8dp"
+        android:drawableLeft="@drawable/compass"
+        android:drawableTint="@color/primaryColor"
+        android:background="@android:color/transparent"
+        app:layout_constraintTop_toBottomOf="@+id/secondaryColorBox"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="10dp"/>
+
+    <Button
+        android:id="@+id/crearDesafioButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/crear_desafio"
+        android:textColor="?android:textColor"
+        android:fontFamily="@font/lexend_font"
+        android:textSize="24sp"
+        android:padding="8dp"
+        android:drawableLeft="@drawable/baseline_map_24"
+        android:drawableTint="@color/primaryColor"
+        android:background="@android:color/transparent"
+        app:layout_constraintTop_toBottomOf="@+id/desafiosButton"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="10dp"/>
+
+    <Button
+        android:id="@+id/clasificacionesButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/clasificaciones"
+        android:textColor="?android:textColor"
+        android:fontFamily="@font/lexend_font"
+        android:textSize="24sp"
+        android:padding="8dp"
+        android:drawableLeft="@drawable/compass"
+        android:drawableTint="@color/primaryColor"
+        android:background="@android:color/transparent"
+        app:layout_constraintTop_toBottomOf="@+id/crearDesafioButton"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="10dp"/>
+
+    <Button
+        android:id="@+id/amigosButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/amigos"
+        android:textColor="?android:textColor"
+        android:fontFamily="@font/lexend_font"
+        android:textSize="24sp"
+        android:padding="8dp"
+        android:drawableLeft="@drawable/friends"
+        android:drawableTint="@color/primaryColor"
+        android:background="@android:color/transparent"
+        app:layout_constraintTop_toBottomOf="@+id/clasificacionesButton"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="10dp"/>
+
+    <TextView
+        android:id="@+id/cercaDeTiTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/cerca_de_ti"
+        android:textStyle="bold"
+        android:textSize="24sp"
+        android:fontFamily="@font/lexend_font"
+        app:layout_constraintTop_toBottomOf="@+id/amigosButton"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginStart="15dp"
+        android:layout_marginTop="20dp"/>
+
+    <org.osmdroid.views.MapView
+        android:id="@+id/map"
+        android:layout_width="match_parent"
+        android:layout_height="190dp"
+        app:layout_constraintTop_toBottomOf="@+id/cercaDeTiTextView"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginStart="15dp"
+        android:layout_marginEnd="20dp"
+        android:layout_marginBottom="10dp"/>
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

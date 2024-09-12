@@ -30,4 +30,14 @@
     <string name="nombre_de_usuario_o_correo">Nombre de usuario o correo</string>
     <string name="no_tienes_una_cuenta">No tienes una cuenta?</string>
     <string name="reg_strate">Regístrate</string>
+    <string name="username">Username</string>
+    <string name="profile_image">profile image</string>
+    <string name="tu_aventura_comienza_aqui">Tu aventura comienza aquí 🚀</string>
+    <string name="phone_hand_image">phone hand image</string>
+    <string name="busca_un_desaf_o_para_empezar">Busca un desafío para empezar</string>
+    <string name="ver_desafios">Ver desafíos</string>
+    <string name="crear_desafio">Crear desafío</string>
+    <string name="clasificaciones">Clasificaciones</string>
+    <string name="amigos">Amigos</string>
+    <string name="cerca_de_ti">Cerca de ti</string>
 </resources>

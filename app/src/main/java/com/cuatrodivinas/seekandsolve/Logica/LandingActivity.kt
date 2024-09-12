@@ -8,7 +8,7 @@ import com.cuatrodivinas.seekandsolve.R
 import android.content.Intent
 import android.widget.Button
 
-class landingActivity : AppCompatActivity() {
+class LandingActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_landing)
