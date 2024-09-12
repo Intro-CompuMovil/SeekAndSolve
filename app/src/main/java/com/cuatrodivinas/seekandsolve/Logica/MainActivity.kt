@@ -9,6 +9,7 @@ import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
 import android.os.Bundle
+import android.widget.Button
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -30,7 +31,7 @@ class MainActivity : AppCompatActivity(), LocationListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         setTheme(R.style.Base_Theme_SeekAndSolve)
         super.onCreate(savedInstanceState)
-
+        setContentView(R.layout.activity_main)
         // Verificar si hay una sesión válida
         val sharedPreferences = getSharedPreferences("user_session", Context.MODE_PRIVATE)
         val sessionId = sharedPreferences.getString("session_id", null)
@@ -64,9 +65,19 @@ class MainActivity : AppCompatActivity(), LocationListener {
         } else {
             requestLocationPermissions()
         }
+
+        setUsernameText()
     }
 
-
+    private fun setUsernameText() {
+        val userDataJson = readJsonFromFile("user_data.json")
+        if (userDataJson != null) {
+            val userData = JSONObject(userDataJson)
+            val username = userData.getString("username")
+            val usernameButton: Button = findViewById(R.id.profileButton)
+            usernameButton.text = username
+        }
+    }
 
 
     private fun hasLocationPermissions(): Boolean {
@@ -94,24 +105,17 @@ class MainActivity : AppCompatActivity(), LocationListener {
         }
     }
 
-
-
-
-
     override fun onLocationChanged(location: Location) {
-        if (::map.isInitialized && map != null && map.handler != null && map.controller != null) {
+        if (::map.isInitialized && map.handler != null && map.controller != null) {
             val currentLocation = GeoPoint(location.latitude, location.longitude)
             map.controller.setCenter(currentLocation)
-
             // Crea un marcador solo si el mapa está listo
             try {
                 val marker = Marker(map)
                 marker.position = currentLocation
                 marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
-
                 val icon: Drawable = ContextCompat.getDrawable(this, R.drawable.ic_location)!!
                 marker.icon = icon
-
                 map.overlays.clear()
                 map.overlays.add(marker)
                 map.invalidate()
@@ -124,9 +128,6 @@ class MainActivity : AppCompatActivity(), LocationListener {
             println("El mapa no está listo aún")
         }
     }
-
-
-
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)

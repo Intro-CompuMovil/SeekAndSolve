@@ -7,39 +7,31 @@
     android:layout_height="match_parent"
     tools:context=".Logica.MainActivity">
 
-    <TextView
-        android:id="@+id/usernameTextView"
+    <Button
+        android:id="@+id/profileButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/username"
-        android:textSize="18sp"
+        android:textColor="?android:textColor"
         android:fontFamily="@font/lexend_font"
-        android:textStyle="bold"
+        android:textSize="18sp"
+        android:padding="8dp"
+        android:drawableRight="@drawable/profile_user_svgrepo_com"
+        android:drawableTint="@color/primaryColor"
+        android:background="@android:color/transparent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/profileImageView"
-        android:layout_marginEnd="8dp"
-        android:layout_marginTop="40dp"
-        app:layout_constraintVertical_bias="0.5"/>
-
-
-    <ImageView
-        android:id="@+id/profileImageView"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
-        android:src="@drawable/profile_user_svgrepo_com"
-        android:contentDescription="@string/profile_image"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        android:layout_marginTop="30dp"
-        android:layout_marginEnd="20dp"
-        app:tint="@color/primaryColor"/>
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="20dp"/>
+
+
 
     <LinearLayout
         android:id="@+id/secondaryColorBox"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintTop_toBottomOf="@id/profileImageView"
+        app:layout_constraintTop_toBottomOf="@id/profileButton"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="16dp"
