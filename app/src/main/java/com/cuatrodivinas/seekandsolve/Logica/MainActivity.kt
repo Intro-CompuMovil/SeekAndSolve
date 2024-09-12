@@ -10,10 +10,14 @@ import android.location.LocationListener
 import android.location.LocationManager
 import android.os.Bundle
 import android.widget.Button
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.bumptech.glide.Glide
+import com.bumptech.glide.request.target.CustomTarget
+import com.bumptech.glide.request.transition.Transition
 import com.cuatrodivinas.seekandsolve.R
 import org.json.JSONObject
 import org.osmdroid.config.Configuration
@@ -29,44 +33,43 @@ class MainActivity : AppCompatActivity(), LocationListener {
     private lateinit var locationManager: LocationManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        setTheme(R.style.Base_Theme_SeekAndSolve)
         super.onCreate(savedInstanceState)
+        setTheme(R.style.Base_Theme_SeekAndSolve)
         setContentView(R.layout.activity_main)
-        // Verificar si hay una sesión válida
+
+        checkSession()
+        setupMap()
+        setupLocationManager()
+        setUsernameText()
+    }
+
+    private fun checkSession() {
         val sharedPreferences = getSharedPreferences("user_session", Context.MODE_PRIVATE)
         val sessionId = sharedPreferences.getString("session_id", null)
-
         if (sessionId == null) {
             val intent = Intent(this, LandingActivity::class.java)
             startActivity(intent)
             finish()
-            return
         }
+    }
 
-        // Establecer el layout de la actividad
-        setContentView(R.layout.activity_main)
-
-        // Configurar osmdroid
+    private fun setupMap() {
         Configuration.getInstance().userAgentValue = BuildConfig.APPLICATION_ID
-
-        // Inicializar el MapView
         map = findViewById(R.id.map)
         map.setMultiTouchControls(true)
         val mapController = map.controller
         mapController.setZoom(17.0)
         val startPoint = GeoPoint(48.8583, 2.2944)
         mapController.setCenter(startPoint)
+    }
 
-        // Inicializar el LocationManager
+    private fun setupLocationManager() {
         locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
-
         if (hasLocationPermissions()) {
             initializeMap()
         } else {
             requestLocationPermissions()
         }
-
-        setUsernameText()
     }
 
     private fun setUsernameText() {
@@ -74,11 +77,24 @@ class MainActivity : AppCompatActivity(), LocationListener {
         if (userDataJson != null) {
             val userData = JSONObject(userDataJson)
             val username = userData.getString("username")
-            val usernameButton: Button = findViewById(R.id.profileButton)
-            usernameButton.text = username
+            val usernameText: TextView = findViewById(R.id.usernameText)
+            val profileImage: ImageView = findViewById(R.id.profileImage)
+            usernameText.text = username
+
+            if (userData.has("photoUrl") && !userData.isNull("photoUrl")) {
+                val photoUrl = userData.getString("photoUrl")
+                Glide.with(this)
+                    .load(photoUrl)
+                    .override(24, 24) // Establecer el tamaño de la imagen en 24x24 px
+                    .circleCrop() // Para hacer la imagen circular
+                    .into(profileImage) // Establecer la imagen en el ImageView
+
+                profileImage.background = null
+            } else {
+                profileImage.imageTintList = ContextCompat.getColorStateList(this, R.color.primaryColor)
+            }
         }
     }
-
 
     private fun hasLocationPermissions(): Boolean {
         val fineLocationPermission = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
@@ -121,7 +137,6 @@ class MainActivity : AppCompatActivity(), LocationListener {
                 map.invalidate()
             } catch (e: Exception) {
                 e.printStackTrace()
-                // Log para depuración
                 println("Error al crear el marcador: ${e.message}")
             }
         } else {

@@ -1,5 +1,6 @@
 package com.cuatrodivinas.seekandsolve.Logica
 
+import android.app.AlertDialog
 import android.app.DatePickerDialog
 import android.content.Context
 import android.content.Intent
@@ -12,6 +13,7 @@ import android.text.InputType
 import android.util.Base64
 import android.util.Log
 import android.widget.Button
+import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -143,18 +145,27 @@ class RegisterActivity : AppCompatActivity() {
             .addOnCompleteListener(this) { task ->
                 if (task.isSuccessful) {
                     val user = auth.currentUser
-                    val displayName = user?.displayName
-                    val email = user?.email
                     val username = user?.displayName
-                    Log.d("registerActivity", "signInWithCredential:success, user: ${user?.displayName}")
-                    saveUserDataToJson(displayName, email, username)
+                    val email = user?.email
+                    val photoUrl = user?.photoUrl.toString() // Obtener la URL de la foto de perfil
 
-                    // Generate and save session_id
-                    val sessionId = generateSessionId()
-                    saveSessionId(sessionId)
-                    // Redirigir a MainActivity
-                    navigateToMain()
-
+                    // Mostrar un cuadro de diálogo para editar el nombre
+                    val editText = EditText(this)
+                    editText.setText(username)
+                    AlertDialog.Builder(this)
+                        .setTitle("Confirmar nombre")
+                        .setView(editText)
+                        .setPositiveButton("Confirmar") { _, _ ->
+                            val editedName = editText.text.toString()
+                            saveUserDataToJson(editedName,email, username, photoUrl)
+                            // Generate and save session_id
+                            val sessionId = generateSessionId()
+                            saveSessionId(sessionId)
+                            // Redirigir a MainActivity
+                            navigateToMain()
+                        }
+                        .setNegativeButton("Cancelar", null)
+                        .show()
                 } else {
                     Log.w("registerActivity", "signInWithCredential:failure", task.exception)
                 }
@@ -238,11 +249,12 @@ class RegisterActivity : AppCompatActivity() {
         toast.show()
     }
 
-    private fun saveUserDataToJson(name: String?, email: String?, username: String?) {
+    private fun saveUserDataToJson(name: String?, email: String?, username: String?, photoUrl: String) {
         val userData = JSONObject()
         userData.put("name", name)
         userData.put("email", email)
         userData.put("username", username)
+        userData.put("photoUrl", photoUrl)
 
         saveJsonToFile(userData)
         println(userData)
@@ -251,7 +263,6 @@ class RegisterActivity : AppCompatActivity() {
     private fun saveJsonToFile(jsonObject: JSONObject) {
         val fileName = "user_data.json"
         val fileOutputStream: FileOutputStream
-
         try {
             fileOutputStream = openFileOutput(fileName, Context.MODE_PRIVATE)
             fileOutputStream.write(jsonObject.toString().toByteArray())
