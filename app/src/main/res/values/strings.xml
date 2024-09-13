@@ -40,4 +40,6 @@
     <string name="clasificaciones">Clasificaciones</string>
     <string name="amigos">Amigos</string>
     <string name="cerca_de_ti">Cerca de ti</string>
+    <string name="clasificacion">Clasificación</string>
+    <string name="medalla">medalla</string>
 </resources>

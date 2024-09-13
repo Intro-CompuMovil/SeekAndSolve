@@ -1,0 +1,24 @@
+{
+  "users": [
+    {
+      "username": "El_Chotsi777",
+      "recompenzas": 10,
+      "photoUrl": "https://avatars.githubusercontent.com/u/155045111?v=4"
+    },
+    {
+      "username": "alexoberco",
+      "recompenzas": 9,
+      "photoUrl": "https://avatars.githubusercontent.com/u/133521849?v=4"
+    },
+    {
+      "username": "AlbertoElOmnisciente",
+      "recompenzas": 8,
+      "photoUrl": "https://avatars.githubusercontent.com/u/169292875?v=4"
+    },
+    {
+      "username": "DFallenKinght",
+      "recompenzas": 7,
+      "photoUrl": "https://avatars.githubusercontent.com/u/178740893?v=4"
+    }
+  ]
+}

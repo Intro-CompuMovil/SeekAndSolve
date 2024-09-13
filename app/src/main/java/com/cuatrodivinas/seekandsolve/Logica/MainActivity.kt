@@ -9,6 +9,7 @@ import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
 import android.os.Bundle
+import android.widget.Button
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -54,6 +55,13 @@ class MainActivity : AppCompatActivity(), LocationListener {
         val profileLayout: LinearLayout = findViewById(R.id.profileLayout)
         profileLayout.setOnClickListener {
             setupProfileLogout()
+        }
+
+        // Configurar el OnClickListener para el botón de clasificaciones
+        val clasificacionesButton: Button = findViewById(R.id.clasificacionesButton)
+        clasificacionesButton.setOnClickListener {
+            val intent = Intent(this, RankingActivity::class.java)
+            startActivity(intent)
         }
     }
 
