@@ -4,8 +4,6 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Paint
 import android.os.Bundle
-import android.security.keystore.KeyGenParameterSpec
-import android.security.keystore.KeyProperties
 import android.util.Base64
 import android.util.Log
 import android.widget.Button
@@ -24,7 +22,6 @@ import java.io.FileInputStream
 import java.security.KeyStore
 import java.util.UUID
 import javax.crypto.Cipher
-import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
 import javax.crypto.spec.GCMParameterSpec
 

@@ -38,6 +38,7 @@ android {
 
 dependencies {
     implementation (libs.glide)
+    implementation(libs.firebase.crashlytics.buildtools)
     annotationProcessor (libs.compiler)
     implementation (libs.osmdroid.android)
     implementation("androidx.credentials:credentials:1.2.2")

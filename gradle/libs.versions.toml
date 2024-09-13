@@ -13,6 +13,7 @@ constraintlayout = "2.1.4"
 googleGmsGoogleServices = "4.4.2"
 firebaseAuth = "23.0.0"
 osmdroidAndroid = "6.1.10"
+firebaseCrashlyticsBuildtools = "3.0.2"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -27,6 +28,7 @@ androidx-activity = { group = "androidx.activity", name = "activity", version.re
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
 firebase-auth = { group = "com.google.firebase", name = "firebase-auth", version.ref = "firebaseAuth" }
 osmdroid-android = { module = "org.osmdroid:osmdroid-android", version.ref = "osmdroidAndroid" }
+firebase-crashlytics-buildtools = { group = "com.google.firebase", name = "firebase-crashlytics-buildtools", version.ref = "firebaseCrashlyticsBuildtools" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

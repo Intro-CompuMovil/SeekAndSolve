@@ -14,16 +14,18 @@ class LandingActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_landing)
 
-        // Inicializar el ImageView
-        val cofreLaunch: ImageView = findViewById(R.id.cofreLaunch)
-        // Cargar la animación
-        val jumpAnimation = AnimationUtils.loadAnimation(this, R.anim.jump)
-        // Aplicar la animación al ImageView
-        cofreLaunch.startAnimation(jumpAnimation)
+        setupAnimation()
+        setupButton()
+    }
 
-        // Inicializar el botón
+    private fun setupAnimation() {
+        val cofreLaunch: ImageView = findViewById(R.id.cofreLaunch)
+        val jumpAnimation = AnimationUtils.loadAnimation(this, R.anim.jump)
+        cofreLaunch.startAnimation(jumpAnimation)
+    }
+
+    private fun setupButton() {
         val button: Button = findViewById(R.id.comienzaTuAventura)
-        // Configurar el OnClickListener
         button.setOnClickListener {
             checkJsonAndNavigate()
         }

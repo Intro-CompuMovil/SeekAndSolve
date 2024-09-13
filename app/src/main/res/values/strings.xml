@@ -42,4 +42,5 @@
     <string name="cerca_de_ti">Cerca de ti</string>
     <string name="clasificacion">Clasificación</string>
     <string name="medalla">medalla</string>
+    <string name="rewards_text">%1$d recompensas</string>
 </resources>

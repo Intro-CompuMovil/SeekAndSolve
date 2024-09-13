@@ -34,30 +34,39 @@ class MainActivity : AppCompatActivity(), LocationListener {
     private val REQUEST_PERMISSIONS_REQUEST_CODE = 1
     private lateinit var locationManager: LocationManager
     private lateinit var googleSignInClient: GoogleSignInClient
+    private var isFirstLocation = true
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setTheme(R.style.Base_Theme_SeekAndSolve)
         setContentView(R.layout.activity_main)
 
-        // Configurar GoogleSignInClient
+        setupGoogleSignInClient()
+        checkSession()
+        setupMap()
+        setupLocationManager()
+        setUsernameText()
+        setupProfileLayout()
+        setupRankingButton()
+    }
+
+    private fun setupGoogleSignInClient() {
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestIdToken(getString(R.string.default_web_client_id))
             .requestEmail()
             .build()
         googleSignInClient = GoogleSignIn.getClient(this, gso)
+    }
 
-        checkSession()
-        setupMap()
-        setupLocationManager()
-        setUsernameText()
-        // metodo de prueba y desarrollo
+    private fun setupProfileLayout() {
         val profileLayout: LinearLayout = findViewById(R.id.profileLayout)
         profileLayout.setOnClickListener {
             setupProfileLogout()
         }
+    }
 
-        // Configurar el OnClickListener para el botón de clasificaciones
+    private fun setupRankingButton() {
         val clasificacionesButton: Button = findViewById(R.id.clasificacionesButton)
         clasificacionesButton.setOnClickListener {
             val intent = Intent(this, RankingActivity::class.java)
@@ -167,7 +176,10 @@ class MainActivity : AppCompatActivity(), LocationListener {
     override fun onLocationChanged(location: Location) {
         if (::map.isInitialized && map.handler != null && map.controller != null) {
             val currentLocation = GeoPoint(location.latitude, location.longitude)
-            map.controller.setCenter(currentLocation)
+            if (isFirstLocation) {
+                map.controller.setCenter(currentLocation)
+                isFirstLocation = false
+            }
             // Crea un marcador solo si el mapa está listo
             try {
                 val marker = Marker(map)
