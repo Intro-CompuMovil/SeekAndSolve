@@ -8,7 +8,7 @@
     tools:context=".Logica.VerPerfil">
 
     <TextView
-        android:id="@+id/textView"
+        android:id="@+id/nombreUsuarioTxt"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
@@ -25,7 +25,7 @@
         android:layout_marginTop="49dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView" />
+        app:layout_constraintTop_toBottomOf="@+id/nombreUsuarioTxt" />
 
     <EditText
         android:id="@+id/nombreETxt"
@@ -74,6 +74,7 @@
         app:layout_constraintTop_toBottomOf="@+id/FechaETxt">
 
         <Button
+            android:id="@+id/recompensasBtn"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginEnd="24dp"
@@ -84,6 +85,7 @@
             app:layout_constraintTop_toBottomOf="@+id/FechaETxt" />
 
         <Button
+            android:id="@+id/estadisticasBtn"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="0.5"
@@ -101,6 +103,7 @@
         app:layout_constraintTop_toBottomOf="@+id/botonesAmarillosLayout">
 
         <Button
+            android:id="@+id/volverBtn"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginEnd="24dp"
@@ -110,6 +113,7 @@
             app:layout_constraintTop_toBottomOf="@+id/FechaETxt" />
 
         <Button
+            android:id="@+id/editarPerfilBtn"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="0.5"

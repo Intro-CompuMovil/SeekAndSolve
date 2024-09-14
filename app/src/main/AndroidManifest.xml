@@ -12,6 +12,12 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.SeekAndSolve">
         <activity
+            android:name=".Logica.AgregarAmigos"
+            android:exported="false" />
+        <activity
+            android:name=".Logica.Amigos"
+            android:exported="false" />
+        <activity
             android:name=".Logica.EstadisticasCarreras"
             android:exported="false" />
         <activity

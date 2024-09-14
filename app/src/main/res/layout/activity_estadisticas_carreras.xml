@@ -7,4 +7,171 @@
     android:layout_height="match_parent"
     tools:context=".Logica.EstadisticasCarreras">
 
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:layout_marginTop="30dp"
+        android:text="@string/estadisticas_carreras"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <LinearLayout
+        android:id="@+id/botonesEstadisticas"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@+id/textView"
+        android:layout_marginTop="28dp"
+        android:layout_marginStart="18dp"
+        android:layout_marginEnd="18dp"
+        android:gravity="center"
+        android:orientation="horizontal"
+        >
+        <LinearLayout
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:orientation="vertical"
+            >
+            <Button
+                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"
+
+                android:backgroundTint="@color/transparent"
+                android:text="@string/esta_semana"
+                android:textColor="@color/primaryColor"
+                />
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="4dp"
+                android:background="@color/primaryColor"
+                android:layout_gravity="center" />
+        </LinearLayout>
+        <LinearLayout
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:orientation="vertical"
+            >
+            <Button
+                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"
+
+                android:backgroundTint="@color/transparent"
+                android:text="@string/este_mes"
+                android:textColor="@color/buttonGrayBackground"
+                />
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="4dp"
+                android:background="@color/transparent"
+                android:layout_gravity="center" />
+        </LinearLayout>
+        <LinearLayout
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:orientation="vertical"
+            >
+            <Button
+                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"
+
+                android:backgroundTint="@color/transparent"
+                android:text="@string/este_anio"
+                android:textColor="@color/buttonGrayBackground"
+                />
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="4dp"
+                android:background="@color/transparent"
+                android:layout_gravity="center" />
+        </LinearLayout>
+        <LinearLayout
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:orientation="vertical"
+            >
+            <Button
+                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"
+
+                android:backgroundTint="@color/transparent"
+                android:text="@string/todo_tiempo"
+                android:textColor="@color/buttonGrayBackground"
+                />
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="4dp"
+                android:background="@color/transparent"
+                android:layout_gravity="center" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <ImageView
+        android:id="@+id/imagenEstadistica"
+        android:layout_width="match_parent"
+        android:layout_height="230dp"
+        android:layout_marginTop="28dp"
+        android:layout_marginStart="18dp"
+        android:layout_marginEnd="18dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/botonesEstadisticas"
+        />
+
+    <LinearLayout
+        android:id="@+id/botonesTipoEstadisticas"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@+id/imagenEstadistica"
+        android:layout_marginTop="28dp"
+        android:layout_marginStart="13dp"
+        android:layout_marginEnd="13dp"
+        android:gravity="center"
+        android:orientation="horizontal">
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="9dp"
+            android:textSize="11sp"
+            android:background="@drawable/border_tipo_estadisticas_btn"
+            android:textColor="@color/buttonGrayBackground"
+            android:text="@string/carreras"
+            android:drawableLeft="@drawable/check_circle"
+            />
+        <Button
+            android:layout_width="wrap_content"
+            android:textSize="11sp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="9dp"
+            android:background="@drawable/border_tipo_estadisticas_btn"
+            android:textColor="@color/primaryColor"
+            android:text="@string/duracion"
+            android:drawableLeft="@drawable/watch_icon"
+            />
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="11sp"
+            android:background="@drawable/border_tipo_estadisticas_btn"
+            android:textColor="@color/buttonGrayBackground"
+            android:text="@string/desafios"
+            android:drawableLeft="@drawable/add_icon"
+            />
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/volverBtn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="116dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="116dp"
+        android:backgroundTint="@color/buttonGrayBackground"
+        android:text="@string/volver"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/botonesTipoEstadisticas" />
 </androidx.constraintlayout.widget.ConstraintLayout>

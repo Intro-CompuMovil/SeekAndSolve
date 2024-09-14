@@ -23,4 +23,17 @@
     <string name="editar_perfil">Editar Perfil</string>
     <string name="cambiar_foto">Cambiar Foto</string>
     <string name="tus_recompensas">Tus recompensas</string>
+    <string name="estadisticas_carreras">Estadísticas de carrreras</string>
+    <string name="esta_semana">Semana</string>
+    <string name="este_mes">Mes</string>
+    <string name="este_anio">Año</string>
+    <string name="todo_tiempo">Todo</string>
+    <string name="carreras">Carreras</string>
+    <string name="duracion">Duración</string>
+    <string name="desafios">Desafíos</string>
+    <string name="aplicar_cambios">Aplicar Cambios</string>
+    <string name="tus_amigos">Tus Amigos</string>
+    <string name="agregar_amigos">Agregar Amigos</string>
+    <string name="agregar">Agregar</string>
+    <string name="usuario_correo">Usuario/Correo</string>
 </resources>

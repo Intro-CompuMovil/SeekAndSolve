@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <ImageView
+        android:id="@+id/imagenUsuario"
+        android:layout_width="0dp"
+        android:layout_height="75dp"
+        android:layout_weight="0.25"
+        />
+
+    <TextView
+        android:id="@+id/nombreUsuario"
+        android:layout_width="0dp"
+        android:layout_height="75dp"
+        android:layout_weight="0.50"
+        android:gravity="center"
+        />
+    <Button
+        android:id="@+id/botonAgregar"
+        android:layout_width="0dp"
+        android:layout_height="50dp"
+        android:text="@string/agregar"
+        android:textColor="@color/buttonBlackColor"
+        android:layout_weight="0.25"
+        />
+</LinearLayout>
