@@ -290,7 +290,7 @@ class RegisterActivity : AppCompatActivity() {
     }
 
     private fun showToast(message: String) {
-        val toast = Toast.makeText(this, message, Toast.LENGTH_LONG)
+        val toast = Toast.makeText(this, message, Toast.LENGTH_SHORT)
         val view = toast.view
         view?.setBackgroundColor(ContextCompat.getColor(this, android.R.color.holo_red_dark))
         toast.show()
