@@ -4,6 +4,7 @@
     <style name="TitleStyle">
         <item name="android:fontFamily">@font/lexend_font</item>
         <item name="android:textSize">24sp</item>
+        <item name="android:gravity">center</item>
     </style>
 
     <!-- Estilo para los subtítulos -->

@@ -11,6 +11,7 @@
     <color name="buttonGrayBackground">#9095A1</color>
     <color name="changePicColor">#fff9eb</color>
     <color name="changePicTextColor">#8c6400</color>
+    <color name="gray">#565D6D</color> <!-- Gris -->
 
     <!-- Colores de marca Night-->
     <color name="tertiaryColorNight">#FFFFFF</color> <!-- Negro (Black) -->
