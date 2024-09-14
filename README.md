@@ -1,5 +1,5 @@
 <p align="center">
-    <img width="200" src="https://github.com/Intro-CompuMovil/SeekAndSolve/blob/main/Kit%20de%20Marca/SeekAndSolveLogoNoSloganNobg.png">
+    <img width="200" src="https://github.com/alexoberco/marcaSeekAndSolve/blob/master/Kit%20de%20Marca/logos/SeekAndSolveLogoNoSloganNobg.png">
 </p>
 <!--horizontal divider(gradiant)-->
 <img src="https://user-images.githubusercontent.com/73097560/115834477-dbab4500-a447-11eb-908a-139a6edaec5c.gif">
@@ -70,13 +70,13 @@ planteamos una app móvil en forma de juego, compuesta por carreras de observaci
 <h3>💬 ​DCU (Diagrama de Casos de Uso)</h3>
 
 <p align="center">
-    <img width="1000" src="https://github.com/Intro-CompuMovil/SeekAndSolve/blob/main/Diagramas/Diagrama%20de%20Casos%20de%20Uso.jpg">
+    <img width="1000" src="https://github.com/alexoberco/marcaSeekAndSolve/blob/master/Diagramas/Diagrama%20de%20Casos%20de%20Uso.jpg">
 </p>
 
 <h3>📦 DC (Diagrama de Clases)</h3>
 
 <p align="center">
-    <img width="1000" src="https://github.com/Intro-CompuMovil/SeekAndSolve/blob/main/Diagramas/Diagrama%20de%20Clases%20-%20SeekAndSolve.png">
+    <img width="1000" src="https://github.com/alexoberco/marcaSeekAndSolve/blob/master/Diagramas/Diagrama%20de%20Clases%20-%20SeekAndSolve.png">
 </p>
 
 

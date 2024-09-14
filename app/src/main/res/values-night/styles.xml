@@ -1,0 +1,6 @@
+<resources>
+    <!-- Splash Screen Theme for Dark Mode -->
+    <style name="SplashTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="android:windowBackground">@drawable/splash_screen_dark</item>
+    </style>
+</resources>

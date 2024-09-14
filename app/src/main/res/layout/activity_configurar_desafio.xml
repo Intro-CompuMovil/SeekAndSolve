@@ -5,6 +5,76 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".Logica.ConfigurarDesafioActivity">
+    tools:context=".Logica.ConfigurarDesafioActivity"
+    android:layout_margin="16dp">
 
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Username"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <LinearLayout
+        android:id="@+id/linearLayout"
+        android:layout_width="match_parent"
+        android:layout_height="600dp"
+        android:gravity="center"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toTopOf="@+id/linearLayout2"
+        app:layout_constraintTop_toBottomOf="@+id/textView">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/a_punto_de_jugar"
+            style="@style/TitleStyle"
+            android:layout_marginBottom="16dp"/>
+
+        <TextView
+            android:id="@+id/tituloDesafio"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Aliento de lo salvaje"
+            style="@style/TitleStyle"
+            android:layout_marginBottom="16dp"/>
+
+        <ImageView
+            android:id="@+id/imagenDesafio"
+            android:layout_width="216dp"
+            android:layout_height="220dp"
+            android:layout_marginTop="16dp"
+            tools:srcCompat="@tools:sample/avatars"
+            android:layout_marginBottom="16dp" />
+
+        <ListView
+            android:id="@+id/listaAmigos"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/linearLayout2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <Button
+            android:id="@+id/invitarAmigos"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.5"
+            android:text="@string/invitar_amigos"
+            android:backgroundTint="@color/secondaryColor"
+            android:layout_marginRight="5dp"/>
+
+        <Button
+            android:id="@+id/jugarDesafio"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.5"
+            android:text="@string/jugar_desafio"
+            android:layout_marginLeft="5dp" />
+    </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

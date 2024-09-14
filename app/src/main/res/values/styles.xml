@@ -4,6 +4,8 @@
     <style name="TitleStyle">
         <item name="android:fontFamily">@font/lexend_font</item>
         <item name="android:textSize">24sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:gravity">center</item>
     </style>
 
     <!-- Estilo para los subtítulos -->
@@ -16,5 +18,10 @@
     <style name="NormalTextStyle">
         <item name="android:fontFamily">@font/lexend_font</item>
         <item name="android:textSize">16sp</item>
+    </style>
+
+    <!-- Splash Screen Theme -->
+    <style name="SplashTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="android:windowBackground">@drawable/splash_screen</item>
     </style>
 </resources>

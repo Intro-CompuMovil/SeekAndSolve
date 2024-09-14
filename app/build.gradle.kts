@@ -40,6 +40,10 @@ android {
 }
 
 dependencies {
+    implementation (libs.glide)
+    implementation(libs.firebase.crashlytics.buildtools)
+    annotationProcessor (libs.compiler)
+    implementation (libs.osmdroid.android)
     implementation("androidx.credentials:credentials:1.2.2")
     implementation("androidx.credentials:credentials-play-services-auth:1.2.2")
     implementation("com.google.android.libraries.identity.googleid:googleid:1.1.1")
@@ -52,11 +56,7 @@ dependencies {
     implementation(libs.material)
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
-    implementation(libs.firebase.auth)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
-    implementation("com.google.android.material:material:1.8.0")
-
 }
-
