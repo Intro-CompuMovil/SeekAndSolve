@@ -33,7 +33,7 @@
             android:text="@string/titulo_pista" />
 
         <TextView
-            android:id="@+id/subtituloPista"
+            android:id="@+id/acertijo"
             style="@style/SubtitleStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -48,6 +48,7 @@
             android:layout_marginTop="16dp">
 
             <TextView
+                android:id="@+id/pista"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Pista: papas con mayonesa"
