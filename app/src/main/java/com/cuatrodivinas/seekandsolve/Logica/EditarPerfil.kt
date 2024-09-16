@@ -133,14 +133,11 @@ class EditarPerfil : AppCompatActivity() {
     private fun eventoVolver() {
         binding.backButtonEditarPerfil.setOnClickListener {
             finish()
-        binding.volverBtn.setOnClickListener {
-            finish()
         }
     }
 
-    private fun eventoAplicarCambios() {
+    fun eventoAplicarCambios() {
         binding.aplicarCambiosBtn.setOnClickListener {
-            finish()
             finish()
         }
     }

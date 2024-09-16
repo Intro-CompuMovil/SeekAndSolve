@@ -26,4 +26,5 @@ class PistaActivity : AppCompatActivity() {
         btnVolver.setOnClickListener {
             startActivity(intent)
         }
+    }
 }
