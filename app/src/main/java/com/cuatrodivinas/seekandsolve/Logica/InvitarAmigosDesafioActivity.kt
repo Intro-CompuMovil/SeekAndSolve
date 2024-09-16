@@ -14,24 +14,25 @@ class InvitarAmigosDesafioActivity : AppCompatActivity() {
     lateinit var listaAmigos: ListView
     lateinit var btnVolver: Button
     lateinit var btnInvitar: Button
-    lateinit var intent: Intent
+    lateinit var intentConfigurar: Intent
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_invitar_amigos_desafio)
         listaAmigos = findViewById(R.id.listaAmigos)
         btnVolver = findViewById(R.id.volver)
         btnInvitar = findViewById(R.id.invitarAmigos)
-        intent = Intent(this, ConfigurarDesafioActivity::class.java)
+        intentConfigurar = Intent(this, ConfigurarDesafioActivity::class.java)
     }
 
     override fun onResume() {
         super.onResume()
         btnVolver.setOnClickListener {
-            startActivity(intent)
+            startActivity(intentConfigurar)
         }
 
         btnInvitar.setOnClickListener {
-            startActivity(intent)
+            startActivity(intentConfigurar)
         }
     }
 }

@@ -76,4 +76,5 @@
     <string name="abandonar">Abandonar</string>
     <string name="perfil">Perfil</string>
     <string name="cerrar_sesion">Cerrar sesión</string>
+    <string name="eliminar">Eliminar</string>
 </resources>

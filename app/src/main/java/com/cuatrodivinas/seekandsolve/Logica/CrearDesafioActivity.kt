@@ -37,6 +37,7 @@ class CrearDesafioActivity : AppCompatActivity() {
         botonEditarPuntoInicial = findViewById(R.id.editarPuntoInicial)
         botonEditarPuntoFinal = findViewById(R.id.editarPuntoFinal)
         listaCheckpoints = findViewById(R.id.listaCheckpoints)
+        listaCheckpoints.adapter = CheckpointsAdapter(this, null, 0)
         botonAgregarCheckpoint = findViewById(R.id.agregarCheckpoint)
         etDescripcionDesafio = findViewById(R.id.descripcionDesafio)
         botonCrearDesafio = findViewById(R.id.crearDesafio)

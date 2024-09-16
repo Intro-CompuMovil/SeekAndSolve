@@ -48,7 +48,34 @@ class MainActivity : AppCompatActivity(), LocationListener {
         setupLocationManager()
         setUsernameText()
         setupProfileLayout()
+        setupVerDesafiosButton()
+        setupCrearDesafioButton()
         setupRankingButton()
+        setupAmigosButton()
+    }
+
+    private fun setupAmigosButton() {
+        val amigosButton: Button = findViewById(R.id.amigosButton)
+        amigosButton.setOnClickListener {
+            val intent = Intent(this, Amigos::class.java)
+            startActivity(intent)
+        }
+    }
+
+    private fun setupCrearDesafioButton() {
+        val crearDesafioButton: Button = findViewById(R.id.crearDesafioButton)
+        crearDesafioButton.setOnClickListener {
+            val intent = Intent(this, CrearDesafioActivity::class.java)
+            startActivity(intent)
+        }
+    }
+
+    private fun setupVerDesafiosButton() {
+        val verDesafiosButton: Button = findViewById(R.id.desafiosButton)
+        verDesafiosButton.setOnClickListener {
+            val intent = Intent(this, VerDesafiosActivity::class.java)
+            startActivity(intent)
+        }
     }
 
     private fun setupGoogleSignInClient() {
