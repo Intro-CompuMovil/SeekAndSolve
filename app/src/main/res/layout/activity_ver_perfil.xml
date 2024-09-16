@@ -7,6 +7,46 @@
     android:layout_height="match_parent"
     tools:context=".Logica.VerPerfil">
 
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/header_user"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?android:attr/colorPrimary"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:orientation="horizontal">
+
+        <ImageButton
+            android:id="@+id/backButton_user"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/baseline_arrow_back_24"
+            android:background="?android:attr/selectableItemBackground"
+            android:padding="15dp"
+            android:contentDescription="@string/volver"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"/>
+
+        <TextView
+            android:id="@+id/profileText"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_weight="1"
+            android:fontFamily="@font/lexend_font"
+            android:gravity="center"
+            android:text="@string/perfil"
+            android:textColor="@color/tertiaryColor"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
     <TextView
         android:id="@+id/nombreUsuarioTxt"
         android:layout_width="match_parent"
@@ -14,39 +54,45 @@
         android:gravity="center"
         android:layout_marginTop="30dp"
         android:text="@string/nombre_de_usuario"
+        android:fontFamily="@font/lexend_font"
         android:textSize="24sp"
         android:textStyle="bold"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@id/header_user" />
 
     <ImageView
         android:id="@+id/imagenPerfil"
         android:layout_width="230dp"
         android:layout_height="230dp"
-        android:layout_marginTop="49dp"
+        android:layout_marginTop="20dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/nombreUsuarioTxt" />
+        app:layout_constraintTop_toBottomOf="@+id/nombreUsuarioTxt"
+        android:src="@drawable/profile_user_svgrepo_com"/>
 
     <EditText
         android:id="@+id/nombreETxt"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="39dp"
+        android:layout_marginTop="30dp"
         android:layout_marginEnd="27dp"
         android:layout_marginStart="27dp"
+        android:text="@string/nombre"
+        android:fontFamily="@font/lexend_font"
+        android:textColor="?android:textColor"
         android:paddingStart="20dp"
         android:paddingEnd="20dp"
-        android:background="@drawable/edit_text_border"
         app:layout_constraintTop_toBottomOf="@+id/imagenPerfil" />
 
     <EditText
         android:id="@+id/corrreoETxt"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@drawable/edit_text_border"
         android:layout_marginTop="18dp"
         android:layout_marginEnd="27dp"
         android:layout_marginStart="27dp"
+        android:text="@string/correo"
+        android:textColor="?android:textColor"
+        android:textSize="14dp"
         android:paddingStart="20dp"
         android:paddingEnd="20dp"
         app:layout_constraintTop_toBottomOf="@+id/nombreETxt"/>
@@ -58,10 +104,12 @@
         android:layout_marginTop="18dp"
         android:layout_marginEnd="27dp"
         android:layout_marginStart="27dp"
+        android:text="@string/fecha_de_nacimiento"
+        android:textColor="?android:textColor"
+        android:fontFamily="@font/lexend_font"
         android:paddingStart="20dp"
         android:paddingEnd="20dp"
         android:drawableStart="@drawable/caledar_icon"
-        android:background="@drawable/edit_text_border"
         app:layout_constraintTop_toBottomOf="@+id/corrreoETxt" />
 
     <LinearLayout
@@ -80,8 +128,9 @@
             android:layout_marginEnd="24dp"
             android:layout_weight="0.5"
             android:text="@string/recompensas"
+            android:fontFamily="@font/lexend_font"
             android:backgroundTint="@color/primaryColor"
-            android:textColor="@color/buttonBlackColor"
+            android:textColor="@color/tertiaryColor"
             app:layout_constraintTop_toBottomOf="@+id/FechaETxt" />
 
         <Button
@@ -90,8 +139,9 @@
             android:layout_height="wrap_content"
             android:layout_weight="0.5"
             android:text="@string/estadisticas"
+            android:fontFamily="@font/lexend_font"
             android:backgroundTint="@color/primaryColor"
-            android:textColor="@color/buttonBlackColor"
+            android:textColor="@color/tertiaryColor"
             app:layout_constraintTop_toBottomOf="@+id/FechaETxt" />
     </LinearLayout>
     <LinearLayout
@@ -103,13 +153,14 @@
         app:layout_constraintTop_toBottomOf="@+id/botonesAmarillosLayout">
 
         <Button
-            android:id="@+id/volverBtn"
+            android:id="@+id/logOutBtn"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginEnd="24dp"
             android:layout_weight="0.5"
-            android:backgroundTint="@color/buttonGrayBackground"
-            android:text="@string/volver"
+            android:backgroundTint="@color/secondaryColor"
+            android:fontFamily="@font/lexend_font"
+            android:text="@string/cerrar_sesion"
             app:layout_constraintTop_toBottomOf="@+id/FechaETxt" />
 
         <Button
@@ -118,6 +169,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="0.5"
             android:text="@string/editar_perfil"
+            android:fontFamily="@font/lexend_font"
             android:backgroundTint="@color/secondaryColor"
             app:layout_constraintTop_toBottomOf="@+id/FechaETxt" />
     </LinearLayout>

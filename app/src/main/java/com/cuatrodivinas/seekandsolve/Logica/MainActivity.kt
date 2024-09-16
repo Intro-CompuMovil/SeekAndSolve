@@ -62,7 +62,8 @@ class MainActivity : AppCompatActivity(), LocationListener {
     private fun setupProfileLayout() {
         val profileLayout: LinearLayout = findViewById(R.id.profileLayout)
         profileLayout.setOnClickListener {
-            setupProfileLogout()
+            val intent = Intent(this, VerPerfil::class.java)
+            startActivity(intent)
         }
     }
 
@@ -84,23 +85,6 @@ class MainActivity : AppCompatActivity(), LocationListener {
         }
     }
 
-    private fun setupProfileLogout() {
-        // Borrar session_id
-        val sharedPreferences = getSharedPreferences("user_session", Context.MODE_PRIVATE)
-        with(sharedPreferences.edit()) {
-            remove("session_id")
-            apply()
-        }
-        // Cerrar sesión de Google y revocar acceso
-        googleSignInClient.signOut().addOnCompleteListener(this) {
-            googleSignInClient.revokeAccess().addOnCompleteListener(this) {
-                // Redirigir a la pantalla de inicio de sesión
-                val intent = Intent(this, LoginActivity::class.java)
-                startActivity(intent)
-                finish()
-            }
-        }
-    }
 
     private fun setupMap() {
         Configuration.getInstance().userAgentValue = BuildConfig.APPLICATION_ID
