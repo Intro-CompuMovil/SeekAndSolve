@@ -74,4 +74,6 @@
     <string name="iniciar_desafio">Iniciar Desafío</string>
     <string name="resolver_acertijo">Resolver acertijo</string>
     <string name="abandonar">Abandonar</string>
+    <string name="perfil">Perfil</string>
+    <string name="cerrar_sesion">Cerrar sesión</string>
 </resources>

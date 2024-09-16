@@ -13,7 +13,9 @@ import android.text.InputType
 import android.util.Base64
 import android.util.Log
 import android.widget.Button
+import android.widget.DatePicker
 import android.widget.EditText
+import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -30,7 +32,6 @@ import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import org.json.JSONArray
 import org.json.JSONObject
-import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import javax.crypto.Cipher
@@ -156,15 +157,37 @@ class RegisterActivity : AppCompatActivity() {
                         showToast("Correo ya registrado, por favor inicie sesión")
                         navigateToLogin()
                     } else {
-                        // Mostrar un cuadro de diálogo para editar el nombre
+                        // Mostrar un cuadro de diálogo para editar el nombre y seleccionar la fecha de nacimiento
                         val editText = EditText(this)
                         editText.setText(username)
+                        val birthDateEditText = EditText(this)
+                        birthDateEditText.hint = "Fecha de nacimiento"
+                        birthDateEditText.isFocusable = false
+                        birthDateEditText.setOnClickListener {
+                            val calendar = Calendar.getInstance()
+                            val year = calendar.get(Calendar.YEAR)
+                            val month = calendar.get(Calendar.MONTH)
+                            val day = calendar.get(Calendar.DAY_OF_MONTH)
+                            val datePickerDialog = DatePickerDialog(this, { _, selectedYear, selectedMonth, selectedDay ->
+                                val selectedDate = "$selectedDay/${selectedMonth + 1}/$selectedYear"
+                                birthDateEditText.setText(selectedDate)
+                            }, year, month, day)
+                            datePickerDialog.show()
+                        }
+                        val layout = LinearLayout(this)
+                        layout.orientation = LinearLayout.VERTICAL
+                        layout.addView(editText)
+                        layout.addView(birthDateEditText)
+                        // Agregar un margen alrededor de los campos de texto
+                        val margin = 20
+                        layout.setPadding(margin, margin, margin, margin)
                         AlertDialog.Builder(this)
-                            .setTitle("Confirmar nombre")
-                            .setView(editText)
+                            .setTitle("Confirmar nombre y fecha de nacimiento")
+                            .setView(layout)
                             .setPositiveButton("Confirmar") { _, _ ->
                                 val editedName = editText.text.toString()
-                                saveUserDataToJson(editedName, email, username, photoUrl, "Google")
+                                val birthDate = birthDateEditText.text.toString()
+                                saveUserDataToJson(editedName, email, username, photoUrl, "Google", birthDate)
                                 // Generate and save session_id
                                 val sessionId = generateSessionId()
                                 saveSessionId(sessionId)
@@ -296,7 +319,7 @@ class RegisterActivity : AppCompatActivity() {
         toast.show()
     }
 
-    private fun saveUserDataToJson(name: String?, email: String?, username: String?, photoUrl: String, signInType: String) {
+    private fun saveUserDataToJson(name: String?, email: String?, username: String?, photoUrl: String, signInType: String, birthDate: String) {
         // Eliminar el archivo JSON existente
         deleteFile("user_data.json")
         // Crear un nuevo JSONArray y agregar el nuevo usuario
@@ -306,6 +329,7 @@ class RegisterActivity : AppCompatActivity() {
         userData.put("email", email)
         userData.put("username", username)
         userData.put("photoUrl", photoUrl)
+        userData.put("fechaNacimiento", birthDate)
         userData.put("signInType", signInType)
         usersArray.put(userData)
 

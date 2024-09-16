@@ -25,8 +25,8 @@ class EstadisticasCarreras : AppCompatActivity() {
     }
 
     private fun eventoVolver(){
-        binding.volverBtn.setOnClickListener {
-            startActivity(Intent(this, VerPerfil::class.java))
+        binding.backButtonStats.setOnClickListener {
+            finish()
         }
     }
 }

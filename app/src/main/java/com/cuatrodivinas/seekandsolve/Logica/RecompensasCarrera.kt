@@ -36,8 +36,8 @@ class RecompensasCarrera : AppCompatActivity() {
     }
 
     private fun eventoVolver(){
-        binding.volverBtn.setOnClickListener {
-            startActivity(Intent(this, VerPerfil::class.java))
+        binding.backButtonRewards.setOnClickListener {
+            finish()
         }
     }
 }
