@@ -1,11 +1,15 @@
 package com.cuatrodivinas.seekandsolve.Logica
 
 import android.annotation.SuppressLint
+import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
 import android.os.Bundle
+import android.provider.MediaStore
 import android.text.InputType
+import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import android.widget.Toast
@@ -108,6 +112,7 @@ class EditarPerfil : AppCompatActivity() {
         }
         else{
             Toast.makeText(context, "Permiso otorgado", Toast.LENGTH_SHORT).show()
+            takePicture()
         }
     }
 
@@ -118,6 +123,7 @@ class EditarPerfil : AppCompatActivity() {
                 // If request is cancelled, the result arrays are empty.
                 if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
                     Toast.makeText(this, "Permiso otorgado", Toast.LENGTH_SHORT).show()
+                    takePicture()
                 } else {
                     Toast.makeText(this, "FUNCIONALIDADES REDUCIDAS", Toast.LENGTH_LONG).show()
                 }
@@ -125,6 +131,33 @@ class EditarPerfil : AppCompatActivity() {
             }
             else -> {
                 // Ignore all other requests.
+            }
+        }
+    }
+
+    private fun takePicture() {
+        val takePictureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+        try {
+            startActivityForResult(takePictureIntent, PERMISO_CAMARA)
+        } catch (e: ActivityNotFoundException) {
+            e.message?. let{ Log.e("PERMISSION_APP",it) }
+            Toast.makeText(this, "No se puede abrir la cámara", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    override fun onActivityResult (requestCode: Int, resultCode:Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == PERMISO_CAMARA && resultCode == RESULT_OK) {
+            if (data?.extras == null) {
+                Toast.makeText(this, "Me corrol", Toast.LENGTH_SHORT).show()
+            } else {
+                val imageBitmap = data.extras?.get("data") as? Bitmap
+                if (imageBitmap == null) {
+                    Toast.makeText(this, "No se pudo obtener la foto de perfil", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(this, "Foto de perfil actualizada", Toast.LENGTH_SHORT).show()
+                    binding.imagenPerfil.setImageBitmap(imageBitmap)
+                }
             }
         }
     }
