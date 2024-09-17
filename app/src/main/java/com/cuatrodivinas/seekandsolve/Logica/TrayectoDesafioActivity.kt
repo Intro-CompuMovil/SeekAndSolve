@@ -35,6 +35,8 @@ class TrayectoDesafioActivity : AppCompatActivity(), LocationListener {
         binding = ActivityTrayectoDesafioBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        val textoTitulo = "Ruta de " + intent.getBundleExtra("bundle")!!.getString("nombre")
+        binding.tituloTrayecto.text = textoTitulo
         setupMap()
         setupLocationManager()
     }
@@ -124,7 +126,9 @@ class TrayectoDesafioActivity : AppCompatActivity(), LocationListener {
         super.onResume()
 
         binding.iniciarDesafio.setOnClickListener {
-            startActivity(Intent(this, ConfigurarDesafioActivity::class.java))
+            val intentIniciarDesafio = Intent(this, ConfigurarDesafioActivity::class.java)
+            intentIniciarDesafio.putExtra("bundle", intent.getBundleExtra("bundle"))
+            startActivity(intentIniciarDesafio)
         }
 
         if (::map.isInitialized) {

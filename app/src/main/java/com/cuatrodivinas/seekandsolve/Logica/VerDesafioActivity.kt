@@ -60,7 +60,7 @@ class VerDesafioActivity : AppCompatActivity() {
     }
 
     private fun eventoVolver(){
-        binding.backButtonStats.setOnClickListener {
+        binding.backButtonChallenge.setOnClickListener {
             finish()
         }
     }

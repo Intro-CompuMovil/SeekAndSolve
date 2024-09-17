@@ -40,8 +40,8 @@ class AgregarAmigos : AppCompatActivity() {
             startActivity(Intent(this, Amigos::class.java))
         }
 
-        binding.backButtonStats.setOnClickListener {
-            startActivity(Intent(this, Amigos::class.java))
+        binding.backButtonAddFriends.setOnClickListener {
+            finish()
         }
     }
 }

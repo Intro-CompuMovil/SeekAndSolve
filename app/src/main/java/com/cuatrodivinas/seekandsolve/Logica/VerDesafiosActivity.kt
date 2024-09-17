@@ -209,7 +209,7 @@ class VerDesafiosActivity : AppCompatActivity(), LocationListener {
 
 
     private fun eventoVolver(){
-        binding.backButtonStats.setOnClickListener {
+        binding.backButtonChallenges.setOnClickListener {
             finish()
         }
     }

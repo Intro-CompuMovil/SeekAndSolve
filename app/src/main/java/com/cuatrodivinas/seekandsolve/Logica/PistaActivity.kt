@@ -24,7 +24,7 @@ class PistaActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         btnVolver.setOnClickListener {
-            startActivity(intentResolverAcertijo)
+            finish()
         }
     }
 }

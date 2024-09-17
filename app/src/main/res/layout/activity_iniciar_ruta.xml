@@ -24,8 +24,8 @@
             android:layout_height="wrap_content"
             android:text="De Javeriana a Museo del oro" />
 
-        <com.google.android.gms.maps.MapView
-            android:id="@+id/mapView"
+        <org.osmdroid.views.MapView
+            android:id="@+id/map"
             android:layout_width="match_parent"
             android:layout_height="500dp"
             android:layout_marginTop="16dp" />
