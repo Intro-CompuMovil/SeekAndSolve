@@ -45,5 +45,9 @@ class Amigos : AppCompatActivity() {
         binding.volverBtn.setOnClickListener {
             startActivity(Intent(this, MainActivity::class.java))
         }
+
+        binding.backButtonStats.setOnClickListener {
+            startActivity(Intent(this, Amigos::class.java))
+        }
     }
 }

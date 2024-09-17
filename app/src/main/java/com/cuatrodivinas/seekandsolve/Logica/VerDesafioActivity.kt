@@ -45,7 +45,7 @@ class VerDesafioActivity : AppCompatActivity() {
         }
 
         binding.iniciarDesafio.setOnClickListener {
-            val intentIniciarDesafio = Intent(this, IniciarRutaActivity::class.java)
+            val intentIniciarDesafio = Intent(this, ConfigurarDesafioActivity::class.java)
             intentIniciarDesafio.putExtra("bundle", desafio)
             startActivity(intentIniciarDesafio)
         }

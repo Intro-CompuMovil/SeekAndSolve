@@ -79,4 +79,7 @@
     <string name="eliminar">Eliminar</string>
     <string name="desafios_disponibles">Desafíos disponibles</string>
     <string name="ver_desafio">Ver Desafío</string>
+    <string name="configurar_desafio">Configurar desafío</string>
+    <string name="invitar_amigos_desafio">Invita amigos al desafío</string>
+    <string name="seleccionar_punto">Seleccionar punto</string>
 </resources>

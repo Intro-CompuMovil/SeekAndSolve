@@ -39,5 +39,9 @@ class AgregarAmigos : AppCompatActivity() {
         binding.volverBtn.setOnClickListener {
             startActivity(Intent(this, Amigos::class.java))
         }
+
+        binding.backButtonStats.setOnClickListener {
+            startActivity(Intent(this, Amigos::class.java))
+        }
     }
 }

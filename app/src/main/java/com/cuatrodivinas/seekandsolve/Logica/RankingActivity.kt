@@ -39,7 +39,7 @@ class RankingActivity : AppCompatActivity() {
         rankingList.layoutManager = LinearLayoutManager(this)
         rankingList.adapter = object : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
             override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
-                val view = LayoutInflater.from(parent.context).inflate(R.layout.item_ranking, parent, false)
+                val view = LayoutInflater.from(parent.context).inflate(R.layout.adapter_ranking, parent, false)
                 return object : RecyclerView.ViewHolder(view) {}
             }
 
@@ -80,7 +80,7 @@ class RankingActivity : AppCompatActivity() {
         rankingList.layoutManager = LinearLayoutManager(this)
         rankingList.adapter = object : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
             override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
-                val view = LayoutInflater.from(parent.context).inflate(R.layout.item_ranking, parent, false)
+                val view = LayoutInflater.from(parent.context).inflate(R.layout.adapter_ranking, parent, false)
                 return object : RecyclerView.ViewHolder(view) {}
             }
 
