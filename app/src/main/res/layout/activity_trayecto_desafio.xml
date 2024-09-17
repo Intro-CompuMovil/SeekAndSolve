@@ -25,7 +25,7 @@
             android:text="Ruta de Aliento de lo salvaje" />
 
         <org.osmdroid.views.MapView
-            android:id="@+id/mapView"
+            android:id="@+id/map"
             android:layout_width="match_parent"
             android:layout_height="500dp"
             android:layout_marginTop="32dp"/>
