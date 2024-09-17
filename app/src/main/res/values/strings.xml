@@ -23,7 +23,7 @@
     <string name="editar_perfil">Editar Perfil</string>
     <string name="cambiar_foto">Cambiar Foto</string>
     <string name="tus_recompensas">Tus recompensas</string>
-    <string name="estadisticas_carreras">Estadísticas de carrreras</string>
+    <string name="estadisticas_carreras">Estadísticas de carreras</string>
     <string name="esta_semana">Semana</string>
     <string name="este_mes">Mes</string>
     <string name="este_anio">Año</string>
@@ -77,4 +77,6 @@
     <string name="perfil">Perfil</string>
     <string name="cerrar_sesion">Cerrar sesión</string>
     <string name="eliminar">Eliminar</string>
+    <string name="desafios_disponibles">Desafíos disponibles</string>
+    <string name="ver_desafio">Ver Desafío</string>
 </resources>

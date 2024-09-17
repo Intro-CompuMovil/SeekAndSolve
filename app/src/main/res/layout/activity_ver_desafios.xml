@@ -5,16 +5,48 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".Logica.VerDesafiosActivity"
-    android:layout_margin="16dp">
+    tools:context=".Logica.VerDesafiosActivity">
 
-    <TextView
-        android:id="@+id/textView"
-        android:layout_width="wrap_content"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/header_stats"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Username"
+        android:background="?android:attr/colorPrimary"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:orientation="horizontal">
+
+        <ImageButton
+            android:id="@+id/backButton_stats"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/baseline_arrow_back_24"
+            android:background="?android:attr/selectableItemBackground"
+            android:padding="15dp"
+            android:contentDescription="@string/volver"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"/>
+
+
+        <TextView
+            android:id="@+id/estadisticasCarrerasTxt"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_weight="1"
+            android:fontFamily="@font/lexend_font"
+            android:gravity="center"
+            android:text="@string/desafios_disponibles"
+            android:textColor="@color/tertiaryColor"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <LinearLayout
         android:id="@+id/linearLayout"
@@ -23,14 +55,8 @@
         android:gravity="center"
         android:orientation="vertical"
         app:layout_constraintBottom_toTopOf="@+id/subtituloDesafiosCercanos"
-        app:layout_constraintTop_toBottomOf="@+id/textView">
-
-        <TextView
-            android:id="@+id/tituloDesafios"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Desafios disponibles"
-            style="@style/TitleStyle" />
+        app:layout_constraintTop_toBottomOf="@+id/header_stats"
+        android:layout_margin="16dp">
 
         <ListView
             android:id="@+id/listaDesafios"
@@ -46,11 +72,19 @@
         android:layout_height="wrap_content"
         android:text="@string/cerca_de_ti"
         android:layout_marginBottom="16dp"
-        app:layout_constraintBottom_toTopOf="@+id/mapView" />
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginStart="15dp"
+        android:layout_marginTop="20dp" />
 
-    <com.google.android.gms.maps.MapView
-        android:id="@+id/mapView"
+    <org.osmdroid.views.MapView
+        android:id="@+id/map"
         android:layout_width="match_parent"
-        android:layout_height="200dp"
-        app:layout_constraintBottom_toBottomOf="parent" />
+        android:layout_height="190dp"
+        app:layout_constraintTop_toBottomOf="@+id/subtituloDesafiosCercanos"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginStart="15dp"
+        android:layout_marginEnd="20dp"
+        android:layout_marginBottom="10dp"/>
 </androidx.constraintlayout.widget.ConstraintLayout>

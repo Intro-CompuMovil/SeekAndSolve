@@ -5,16 +5,47 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".Logica.CrearDesafioActivity"
-    android:layout_margin="16dp">
+    tools:context=".Logica.CrearDesafioActivity">
 
-    <TextView
-        android:id="@+id/textView"
-        android:layout_width="wrap_content"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/header"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Username"
+        android:background="?android:attr/colorPrimary"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:orientation="horizontal">
+
+        <ImageButton
+            android:id="@+id/backButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/baseline_arrow_back_24"
+            android:background="?android:attr/selectableItemBackground"
+            android:padding="15dp"
+            android:contentDescription="@string/volver"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"/>
+
+        <TextView
+            android:id="@+id/rankingText"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_weight="1"
+            android:fontFamily="@font/lexend_font"
+            android:gravity="center"
+            android:text="@string/creacion_de_desafio"
+            android:textColor="@color/tertiaryColor"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <LinearLayout
         android:id="@+id/linearLayout"
@@ -23,13 +54,8 @@
         android:gravity="center"
         android:orientation="vertical"
         app:layout_constraintBottom_toTopOf="@+id/crearDesafio"
-        app:layout_constraintTop_toBottomOf="@+id/textView">
-
-        <TextView
-            style="@style/TitleStyle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/creacion_de_desafio"/>
+        app:layout_constraintTop_toBottomOf="@+id/header"
+        android:layout_margin="16dp">
 
         <EditText
             android:id="@+id/nombreDesafio"
@@ -38,8 +64,7 @@
             android:autofillHints=""
             android:hint="@string/nombre"
             android:inputType="textPersonName"
-            android:background="@drawable/edit_text_border"
-            android:layout_marginTop="16dp"/>
+            android:background="@drawable/edit_text_border"/>
 
         <ImageView
             android:id="@+id/imagenDesafio"

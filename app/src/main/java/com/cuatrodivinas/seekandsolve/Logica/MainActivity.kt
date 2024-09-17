@@ -46,8 +46,10 @@ class MainActivity : AppCompatActivity(), LocationListener {
         checkSession()
         setupMap()
         setupLocationManager()
+
         setUsernameText()
         setupProfileLayout()
+
         setupVerDesafiosButton()
         setupCrearDesafioButton()
         setupRankingButton()
