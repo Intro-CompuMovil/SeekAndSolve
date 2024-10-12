@@ -21,7 +21,7 @@ class InvitarAmigosDesafioActivity : AppCompatActivity() {
         }
 
         binding.invitarAmigos.setOnClickListener {
-            val intentConfigurar = Intent(this, ConfigurarDesafioActivity::class.java)
+            val intentConfigurar = Intent(this, ConfigurarCarreraActivity::class.java)
             intentConfigurar.putExtra("bundle", intent.getBundleExtra("bundle"))
             startActivity(intentConfigurar)
             finish()

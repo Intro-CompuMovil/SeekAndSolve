@@ -1,0 +1,13 @@
+{
+  "carreras":[
+    {
+      "id": 1,
+      "idDesafio": 1,
+      "tiempoTotal": 100,
+      "acertijosPrimerIntento": 5,
+      "velocidadMedia": 10,
+      "distanciaTotal": 1000,
+      "fecha": "2021-06-01"
+    }
+  ]
+}

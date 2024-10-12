@@ -1,0 +1,13 @@
+{
+  "usuarios": [
+    {
+      "id": 1,
+      "nombre": "Juanito",
+      "username": "juanito-alimana",
+      "correo": "jualima@gmail.com",
+      "contrasena": "123456",
+      "fotoUrl": "https://avatars.githubusercontent.com/u/155045111?v=4",
+      "fechaNacimiento": "1999-01-01"
+    }
+  ]
+}

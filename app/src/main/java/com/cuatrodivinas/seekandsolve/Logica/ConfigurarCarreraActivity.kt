@@ -2,23 +2,17 @@ package com.cuatrodivinas.seekandsolve.Logica
 
 import android.content.Intent
 import android.os.Bundle
-import android.widget.Button
-import android.widget.ListView
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import com.bumptech.glide.Glide
 import com.cuatrodivinas.seekandsolve.R
-import com.cuatrodivinas.seekandsolve.databinding.ActivityConfigurarDesafioBinding
-import com.cuatrodivinas.seekandsolve.databinding.ActivityVerDesafiosBinding
+import com.cuatrodivinas.seekandsolve.databinding.ActivityConfigurarCarreraBinding
 
-class ConfigurarDesafioActivity : AppCompatActivity() {
-    private lateinit var binding: ActivityConfigurarDesafioBinding
+class ConfigurarCarreraActivity : AppCompatActivity() {
+    private lateinit var binding: ActivityConfigurarCarreraBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityConfigurarDesafioBinding.inflate(layoutInflater)
+        binding = ActivityConfigurarCarreraBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         inicializarElementos()

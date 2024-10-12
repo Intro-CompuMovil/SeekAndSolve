@@ -71,9 +71,9 @@ class VerDesafiosActivity : AppCompatActivity(), LocationListener {
         if (desafios != null) {
             for (i in 0 until desafios!!.length()) {
                 val jsonObject = desafios!!.getJSONObject(i)
-                val name = jsonObject.getString("name")
-                val desafioImageUrl = jsonObject.getString("photoUrl")
-                val description = jsonObject.getString("description")
+                val name = jsonObject.getString("nombre")
+                val desafioImageUrl = jsonObject.getString("fotoUrl")
+                val description = jsonObject.getString("descripcion")
                 val puntoInicial = jsonObject.getString("puntoInicial")
                 val puntoFinal = jsonObject.getString("puntoFinal")
                 matrixCursor.addRow(arrayOf(i, R.drawable.foto_bandera, name))

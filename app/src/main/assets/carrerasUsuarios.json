@@ -1,0 +1,9 @@
+{
+  "carrerasUsuarios": [
+    {
+      "idUsuario": 1,
+      "idCarrera": 1,
+      "idRecompensa": 1
+    }
+  ]
+}

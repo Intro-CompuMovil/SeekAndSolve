@@ -1,39 +1,88 @@
 {
   "desafios": [
     {
-      "name": "Descubre los QR por la Javeriana",
-      "photoUrl": "https://data.org/wp-content/uploads/2022/02/javeriana-logo-1.png",
-      "description": "Explora los rincones de la universidad buscando códigos QR escondidos para obtener recompensas.",
-      "puntoInicial": "Entrada principal, Universidad Javeriana",
-      "puntoFinal": "Biblioteca General, Universidad Javeriana"
+      "id": 1,
+      "nombre": "Descubre los QR por la Javeriana",
+      "fotoUrl": "https://data.org/wp-content/uploads/2022/02/javeriana-logo-1.png",
+      "descripcion": "Explora los rincones de la universidad buscando códigos QR escondidos para obtener recompensas.",
+      "puntoInicial": {
+        "latitud": 4.6381,
+        "longitud": -74.0849
+      },
+      "puntosIntermedios": [
+        {
+          "latitud": 4.8381,
+          "longitud": -74.0849
+        },
+        {
+          "latitud": 4.6381,
+          "longitud": -75.0849
+        },
+        {
+          "latitud": 4.9381,
+          "longitud": -74.0849
+        }
+      ],
+      "puntoFinal": {
+        "latitud": 4.7381,
+        "longitud": -76.0849
+      }
     },
     {
-      "name": "Conquista la bandera",
-      "photoUrl": "https://th.bing.com/th/id/OIP.Z5vT9SG0SMyBnF1qhyKJmAAAAA?rs=1&pid=ImgDetMain",
-      "description": "Compite contra otros jugadores para capturar la bandera oculta en la ciudad.",
-      "puntoInicial": "Plaza de Bolívar, Bogotá",
-      "puntoFinal": "Parque de los Periodistas, Bogotá"
+      "id": 2,
+      "nombre": "Conquista la bandera",
+      "fotoUrl": "https://th.bing.com/th/id/OIP.Z5vT9SG0SMyBnF1qhyKJmAAAAA?rs=1&pid=ImgDetMain",
+      "descripcion": "Compite contra otros jugadores para capturar la bandera oculta en la ciudad.",
+      "puntoInicial": {
+        "latitud": 4.6381,
+        "longitud": -74.0849
+      },
+      "puntoFinal": {
+        "latitud": 4.7381,
+        "longitud": -74.0849
+      }
     },
     {
-      "name": "NirFix",
-      "photoUrl": "https://th.bing.com/th/id/OIP.fukKFIoS4NZieuDFYmlhRQHaEK?rs=1&pid=ImgDetMain",
-      "description": "Soluciona acertijos desafiantes mientras recorres diferentes locaciones secretas para encontrar el tesoro final.",
-      "puntoInicial": "Museo Nacional, Bogotá",
-      "puntoFinal": "Cerro de Monserrate, Bogotá"
+      "id": 3,
+      "nombre": "NirFix",
+      "fotoUrl": "https://th.bing.com/th/id/OIP.fukKFIoS4NZieuDFYmlhRQHaEK?rs=1&pid=ImgDetMain",
+      "descripcion": "Soluciona acertijos desafiantes mientras recorres diferentes locaciones secretas para encontrar el tesoro final.",
+      "puntoInicial": {
+        "latitud": 4.6381,
+        "longitud": -74.0849
+      },
+      "puntoFinal": {
+        "latitud": 4.7381,
+        "longitud": -74.0849
+      }
     },
     {
-      "name": "PackMyTrip",
-      "photoUrl": "https://static.wikia.nocookie.net/disney/images/9/9c/Profile_-_WALL-E.png/revision/latest?cb=20190314123748",
-      "description": "Organiza y completa tu aventura al empacar todos los objetos necesarios mientras resuelves enigmas.",
-      "puntoInicial": "Aeropuerto El Dorado, Bogotá",
-      "puntoFinal": "Parque Simón Bolívar, Bogotá"
+      "id": 4,
+      "nombre": "PackMyTrip",
+      "fotoUrl": "https://static.wikia.nocookie.net/disney/images/9/9c/Profile_-_WALL-E.png/revision/latest?cb=20190314123748",
+      "descripcion": "Organiza y completa tu aventura al empacar todos los objetos necesarios mientras resuelves enigmas.",
+      "puntoInicial": {
+        "latitud": 4.6381,
+        "longitud": -74.0849
+      },
+      "puntoFinal": {
+        "latitud": 4.7381,
+        "longitud": -74.0849
+      }
     },
     {
-      "name": "Aliento de lo salvaje",
-      "photoUrl": "https://wallpapercave.com/wp/wp3277347.jpg",
-      "description": "Atraviesa zonas selváticas y urbanas siguiendo pistas que te llevarán a lo más profundo de la naturaleza. The Legend of Zelda: Breath of the Wild es un videojuego de acción-aventura de 2017 de la serie The Legend of Zelda, desarrollado por la filial Nintendo EPD en colaboración con Monolith Soft y publicado por Nintendo.",
-      "puntoInicial": "Zoológico de Cali, Cali",
-      "puntoFinal": "Cerro de las Tres Cruces, Cali"
+      "id": 5,
+      "nombre": "Aliento de lo salvaje",
+      "fotoUrl": "https://wallpapercave.com/wp/wp3277347.jpg",
+      "descripcion": "Atraviesa zonas selváticas y urbanas siguiendo pistas que te llevarán a lo más profundo de la naturaleza. The Legend of Zelda: Breath of the Wild es un videojuego de acción-aventura de 2017 de la serie The Legend of Zelda, desarrollado por la filial Nintendo EPD en colaboración con Monolith Soft y publicado por Nintendo.",
+      "puntoInicial": {
+        "latitud": 4.6381,
+        "longitud": -74.0849
+      },
+      "puntoFinal": {
+        "latitud": 4.7381,
+        "longitud": -74.0849
+      }
     }
   ]
 }

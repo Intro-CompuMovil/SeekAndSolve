@@ -77,7 +77,8 @@ class RankingActivity : AppCompatActivity() {
     private fun cargarJson(): String? {
         val json: String?
         try {
-            val isStream: InputStream = assets.open("ranking.json")
+            // TODO: Leer carrerasUsuarios.json y hacer un count de quienes tengan más recompensas
+            val isStream: InputStream = assets.open("carrerasUsuarios.json")
             val size: Int = isStream.available()
             val buffer = ByteArray(size)
             isStream.read(buffer)

@@ -9,14 +9,11 @@ import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
 import android.os.Bundle
-import android.widget.Button
-import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.cuatrodivinas.seekandsolve.R
 import com.cuatrodivinas.seekandsolve.databinding.ActivityTrayectoDesafioBinding
-import com.cuatrodivinas.seekandsolve.databinding.ActivityVerDesafiosBinding
 import org.osmdroid.config.Configuration
 import org.osmdroid.library.BuildConfig
 import org.osmdroid.util.GeoPoint
@@ -126,7 +123,7 @@ class TrayectoDesafioActivity : AppCompatActivity(), LocationListener {
         super.onResume()
 
         binding.iniciarDesafio.setOnClickListener {
-            val intentIniciarDesafio = Intent(this, ConfigurarDesafioActivity::class.java)
+            val intentIniciarDesafio = Intent(this, ConfigurarCarreraActivity::class.java)
             intentIniciarDesafio.putExtra("bundle", intent.getBundleExtra("bundle"))
             startActivity(intentIniciarDesafio)
         }

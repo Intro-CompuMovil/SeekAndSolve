@@ -65,7 +65,7 @@
             android:name=".Logica.InvitarAmigosDesafioActivity"
             android:exported="false" />
         <activity
-            android:name=".Logica.ConfigurarDesafioActivity"
+            android:name=".Logica.ConfigurarCarreraActivity"
             android:exported="false" />
         <activity
             android:name=".Logica.TrayectoDesafioActivity"
