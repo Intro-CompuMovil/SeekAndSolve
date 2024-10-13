@@ -28,15 +28,34 @@ import org.json.JSONException
 import org.json.JSONObject
 import java.io.IOException
 import java.io.InputStream
+import kotlin.properties.Delegates
 
 class EditarPerfil : AppCompatActivity() {
     private lateinit var binding: ActivityEditarPerfilBinding
     private var contraseniaVisible = false
 
+    private var id by Delegates.notNull<Int>()
+    private lateinit var nombre: String
+    private lateinit var username: String
+    private lateinit var correo: String
+    private lateinit var contrasena: String
+    private lateinit var fotoUrl: String
+    private lateinit var fechaNacimiento: String
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityEditarPerfilBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        val bundle = intent.extras
+        if (bundle != null) {
+            id = bundle.getInt("id")
+            nombre = bundle.getString("nombre") ?: ""
+            username = bundle.getString("username") ?: ""
+            correo = bundle.getString("correo") ?: ""
+            contrasena = bundle.getString("contrasena") ?: ""
+            fotoUrl = bundle.getString("fotoUrl") ?: ""
+            fechaNacimiento = bundle.getString("fechaNacimiento") ?: ""
+        }
         quemarDatos()
         eventoCambiarFoto()
         eventoVolver()
@@ -44,54 +63,26 @@ class EditarPerfil : AppCompatActivity() {
     }
 
     private fun quemarDatos() {
-        val user = getLastRegisteredUser()
-        if (user != null) {
-            val username = user.getString("username")
-            val name = user.getString("name")
-            val email = user.getString("email")
-            val birthDate = user.getString("fechaNacimiento")
-            val sessionType = user.getString("signInType")
-            val photoUrl = if (user.has("photoUrl") && !user.isNull("photoUrl")) user.getString("photoUrl") else null
+        binding.nombreETxt.setText(nombre)
+        if (fotoUrl != "") {
             Glide.with(this)
-                .load(photoUrl)
-                .error(getDrawable(R.drawable.profile_user_svgrepo_com)?.mutate()?.apply {
-                    setTint(getColor(R.color.primaryColor))
-                })
-                .apply(RequestOptions.circleCropTransform())
-                .into(binding.imagenPerfil)
-            binding.nombreUsuarioETxt.setText(username)
-            binding.nombreETxt.setText(name)
-            binding.corrreoETxt.setText(email)
-            binding.FechaETxt.setText(birthDate)
-            if (sessionType == "Google") {
-                binding.nombreUsuarioETxtLayout.visibility = View.GONE
-                binding.contraETxtLayout.visibility = View.GONE
-            } else {
-                binding.nombreUsuarioETxt.isEnabled = true
-                binding.contraETxt.isEnabled = true
-            }
+                .load(fotoUrl)
+                .override(24, 24) // Establecer el tamaño de la imagen en 24x24 px
+                .circleCrop() // Para hacer la imagen circular
+                .into(binding.imagenPerfil) // Establecer la imagen en el ImageView
+        } else {
+            binding.imagenPerfil.imageTintList = ContextCompat.getColorStateList(this, R.color.primaryColor)
         }
-    }
-
-    private fun getLastRegisteredUser(): JSONObject? {
-        try {
-            val inputStream: InputStream = openFileInput("user_data.json")
-            val size: Int = inputStream.available()
-            val buffer = ByteArray(size)
-            inputStream.read(buffer)
-            inputStream.close()
-            val json = String(buffer, Charsets.UTF_8)
-            val jsonArray = JSONArray(json)
-            if (jsonArray.length() > 0) {
-                // Devuelve el último usuario registrado
-                return jsonArray.getJSONObject(jsonArray.length() - 1)
-            }
-        } catch (e: IOException) {
-            e.printStackTrace()
-        } catch (e: JSONException) {
-            e.printStackTrace()
-        }
-        return null
+        binding.nombreETxt.setText(nombre)
+        binding.corrreoETxt.setText(correo)
+        binding.FechaETxt.setText(fechaNacimiento)
+        /*if (sessionType == "Google") {
+            binding.nombreUsuarioETxtLayout.visibility = View.GONE
+            binding.contraETxtLayout.visibility = View.GONE
+        } else {
+            binding.nombreUsuarioETxt.isEnabled = true
+            binding.contraETxt.isEnabled = true
+        } */
     }
 
     private fun eventoCambiarFoto(){
@@ -171,6 +162,7 @@ class EditarPerfil : AppCompatActivity() {
 
     fun eventoAplicarCambios() {
         binding.aplicarCambiosBtn.setOnClickListener {
+            //actualizarInfo(id, binding.nombreETxt.text.toString(), binding.nombreUsuarioETxt.text.toString(), binding.corrreoETxt.toString(), binding.contraETxt.text.toString())
             finish()
         }
     }

@@ -28,6 +28,7 @@ import java.io.FileInputStream
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import kotlin.properties.Delegates
 
 class MainActivity : AppCompatActivity(), LocationListener {
     private lateinit var map: MapView
@@ -36,11 +37,29 @@ class MainActivity : AppCompatActivity(), LocationListener {
     private lateinit var googleSignInClient: GoogleSignInClient
     private var isFirstLocation = true
 
+    private var id by Delegates.notNull<Int>()
+    private lateinit var nombre: String
+    private lateinit var username: String
+    private lateinit var correo: String
+    private lateinit var contrasena: String
+    private lateinit var fotoUrl: String
+    private lateinit var fechaNacimiento: String
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setTheme(R.style.Base_Theme_SeekAndSolve)
         setContentView(R.layout.activity_main)
+        val bundle = intent.extras
+        if (bundle != null) {
+            id = bundle.getInt("id")
+            nombre = bundle.getString("nombre")!!
+            username = bundle.getString("username")!!
+            correo = bundle.getString("correo")!!
+            contrasena = bundle.getString("contrasena")!!
+            fotoUrl = bundle.getString("fotoUrl")?: ""
+            fechaNacimiento = bundle.getString("fechaNacimiento")!!
+        }
 
         setupGoogleSignInClient()
         checkSession()
@@ -60,6 +79,15 @@ class MainActivity : AppCompatActivity(), LocationListener {
         val amigosButton: Button = findViewById(R.id.amigosButton)
         amigosButton.setOnClickListener {
             val intent = Intent(this, Amigos::class.java)
+            val bundle = Bundle()
+            bundle.putInt("id", id)
+            bundle.putString("nombre", nombre)
+            bundle.putString("username", username)
+            bundle.putString("correo", correo)
+            bundle.putString("contrasena", contrasena)
+            bundle.putString("fotoUrl", fotoUrl)
+            bundle.putString("fechaNacimiento", fechaNacimiento)
+            intent.putExtras(bundle)
             startActivity(intent)
         }
     }
@@ -68,6 +96,15 @@ class MainActivity : AppCompatActivity(), LocationListener {
         val crearDesafioButton: Button = findViewById(R.id.crearDesafioButton)
         crearDesafioButton.setOnClickListener {
             val intent = Intent(this, CrearDesafioActivity::class.java)
+            val bundle = Bundle()
+            bundle.putInt("id", id)
+            bundle.putString("nombre", nombre)
+            bundle.putString("username", username)
+            bundle.putString("correo", correo)
+            bundle.putString("contrasena", contrasena)
+            bundle.putString("fotoUrl", fotoUrl)
+            bundle.putString("fechaNacimiento", fechaNacimiento)
+            intent.putExtras(bundle)
             startActivity(intent)
         }
     }
@@ -76,6 +113,15 @@ class MainActivity : AppCompatActivity(), LocationListener {
         val verDesafiosButton: Button = findViewById(R.id.desafiosButton)
         verDesafiosButton.setOnClickListener {
             val intent = Intent(this, VerDesafiosActivity::class.java)
+            val bundle = Bundle()
+            bundle.putInt("id", id)
+            bundle.putString("nombre", nombre)
+            bundle.putString("username", username)
+            bundle.putString("correo", correo)
+            bundle.putString("contrasena", contrasena)
+            bundle.putString("fotoUrl", fotoUrl)
+            bundle.putString("fechaNacimiento", fechaNacimiento)
+            intent.putExtras(bundle)
             startActivity(intent)
         }
     }
@@ -92,6 +138,15 @@ class MainActivity : AppCompatActivity(), LocationListener {
         val profileLayout: LinearLayout = findViewById(R.id.profileLayout)
         profileLayout.setOnClickListener {
             val intent = Intent(this, VerPerfil::class.java)
+            val bundle = Bundle()
+            bundle.putInt("id", id)
+            bundle.putString("nombre", nombre)
+            bundle.putString("username", username)
+            bundle.putString("correo", correo)
+            bundle.putString("contrasena", contrasena)
+            bundle.putString("fotoUrl", fotoUrl)
+            bundle.putString("fechaNacimiento", fechaNacimiento)
+            intent.putExtras(bundle)
             startActivity(intent)
         }
     }
@@ -135,29 +190,18 @@ class MainActivity : AppCompatActivity(), LocationListener {
     }
 
     private fun setUsernameText() {
-        val userDataJson = readJsonFromFile("user_data.json")
-        if (userDataJson != null) {
-            val usersArray = JSONArray(userDataJson)
-            if (usersArray.length() > 0) {
-                val user = usersArray.getJSONObject(usersArray.length() - 1) // Obtener el último usuario registrado
-                val username = user.getString("username")
-                val usernameText: TextView = findViewById(R.id.usernameText)
-                val profileImage: ImageView = findViewById(R.id.profileImage)
-                usernameText.text = username
-
-                if (user.has("photoUrl") && !user.isNull("photoUrl")) {
-                    val photoUrl = user.getString("photoUrl")
-                    Glide.with(this)
-                        .load(photoUrl)
-                        .override(24, 24) // Establecer el tamaño de la imagen en 24x24 px
-                        .circleCrop() // Para hacer la imagen circular
-                        .into(profileImage) // Establecer la imagen en el ImageView
-
-                    profileImage.background = null
-                } else {
-                    profileImage.imageTintList = ContextCompat.getColorStateList(this, R.color.primaryColor)
-                }
-            }
+        val usernameText: TextView = findViewById(R.id.usernameText)
+        val profileImage: ImageView = findViewById(R.id.profileImage)
+        usernameText.text = username
+        if (fotoUrl != "") {
+            Glide.with(this)
+                .load(fotoUrl)
+                .override(24, 24) // Establecer el tamaño de la imagen en 24x24 px
+                .circleCrop() // Para hacer la imagen circular
+                .into(profileImage) // Establecer la imagen en el ImageView
+            profileImage.background = null
+        } else {
+            profileImage.imageTintList = ContextCompat.getColorStateList(this, R.color.primaryColor)
         }
     }
 
@@ -247,16 +291,4 @@ class MainActivity : AppCompatActivity(), LocationListener {
     override fun onProviderEnabled(provider: String) {}
     override fun onProviderDisabled(provider: String) {}
     override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) {}
-
-    private fun readJsonFromFile(fileName: String): String? {
-        return try {
-            val fileInputStream: FileInputStream = openFileInput(fileName)
-            val bytes = fileInputStream.readBytes()
-            fileInputStream.close()
-            String(bytes)
-        } catch (e: Exception) {
-            e.printStackTrace()
-            null
-        }
-    }
 }

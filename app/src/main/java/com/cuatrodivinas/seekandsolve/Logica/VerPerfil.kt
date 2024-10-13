@@ -8,6 +8,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.cuatrodivinas.seekandsolve.R
 import com.cuatrodivinas.seekandsolve.databinding.ActivityVerPerfilBinding
 import android.graphics.drawable.Drawable
+import androidx.core.content.ContextCompat
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.google.android.gms.auth.api.signin.GoogleSignIn
@@ -16,14 +17,33 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.FileInputStream
+import kotlin.properties.Delegates
 
 class VerPerfil : AppCompatActivity() {
     private lateinit var binding: ActivityVerPerfilBinding
+
+    private var id by Delegates.notNull<Int>()
+    private lateinit var nombre: String
+    private lateinit var username: String
+    private lateinit var correo: String
+    private lateinit var contrasena: String
+    private lateinit var fotoUrl: String
+    private lateinit var fechaNacimiento: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityVerPerfilBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        val bundle = intent.extras
+        if (bundle != null) {
+            id = bundle.getInt("id")
+            nombre = bundle.getString("nombre") ?: ""
+            username = bundle.getString("username") ?: ""
+            correo = bundle.getString("correo") ?: ""
+            contrasena = bundle.getString("contrasena") ?: ""
+            fotoUrl = bundle.getString("fotoUrl") ?: ""
+            fechaNacimiento = bundle.getString("fechaNacimiento") ?: ""
+        }
         inicializarComponentes()
         quemarDatos()
         eventoRecompensas()
@@ -40,44 +60,19 @@ class VerPerfil : AppCompatActivity() {
     }
 
     private fun quemarDatos(){
-        val user = getLastRegisteredUser()
-        if (user != null) {
-            binding.nombreUsuarioTxt.text = user.getString("username")
-            val photoUrl = if (user.has("photoUrl") && !user.isNull("photoUrl")) user.getString("photoUrl") else null
+        binding.nombreUsuarioTxt.text = username
+        if (fotoUrl != "") {
             Glide.with(this)
-                .load(photoUrl)
-                .error(getDrawable(R.drawable.profile_user_svgrepo_com)?.mutate()?.apply {
-                    setTint(getColor(R.color.primaryColor))
-                })
-                .apply(RequestOptions.circleCropTransform())
-                .into(binding.imagenPerfil)
-            binding.nombreETxt.setText(user.getString("name"))
-            binding.corrreoETxt.setText(user.getString("email"))
-            binding.FechaETxt.setText(user.getString("fechaNacimiento"))
+                .load(fotoUrl)
+                .override(24, 24) // Establecer el tamaño de la imagen en 24x24 px
+                .circleCrop() // Para hacer la imagen circular
+                .into(binding.imagenPerfil) // Establecer la imagen en el ImageView
+        } else {
+            binding.imagenPerfil.imageTintList = ContextCompat.getColorStateList(this, R.color.primaryColor)
         }
-    }
-
-    private fun getLastRegisteredUser(): JSONObject? {
-        val userDataJson = readJsonFromFile("user_data.json")
-        if (userDataJson != null) {
-            val usersArray = JSONArray(userDataJson)
-            if (usersArray.length() > 0) {
-                return usersArray.getJSONObject(usersArray.length() - 1) // Obtener el último usuario registrado
-            }
-        }
-        return null
-    }
-
-    private fun readJsonFromFile(fileName: String): String? {
-        return try {
-            val fileInputStream: FileInputStream = openFileInput(fileName)
-            val bytes = fileInputStream.readBytes()
-            fileInputStream.close()
-            String(bytes)
-        } catch (e: Exception) {
-            e.printStackTrace()
-            null
-        }
+        binding.nombreETxt.setText(nombre)
+        binding.corrreoETxt.setText(correo)
+        binding.FechaETxt.setText(fechaNacimiento)
     }
 
     private fun eventoRecompensas() {
@@ -121,7 +116,17 @@ class VerPerfil : AppCompatActivity() {
 
     private fun eventoEditarPerfil() {
         binding.editarPerfilBtn.setOnClickListener {
-            startActivity(Intent(this, EditarPerfil::class.java))
+            val intent = Intent(this, EditarPerfil::class.java)
+            val bundle = Bundle()
+            bundle.putInt("id", id)
+            bundle.putString("nombre", nombre)
+            bundle.putString("username", username)
+            bundle.putString("correo", correo)
+            bundle.putString("contrasena", contrasena)
+            bundle.putString("fotoUrl", fotoUrl)
+            bundle.putString("fechaNacimiento", fechaNacimiento)
+            intent.putExtras(bundle)
+            startActivity(intent)
         }
     }
 }

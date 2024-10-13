@@ -76,7 +76,7 @@ class LoginActivity : AppCompatActivity() {
                         showToast("Sesion iniciada con Google. Usa el inicio de sesión con Google.")
                     } else if (validateNormalLogin(usernameOrEmail, password)) {
                         saveSessionId()
-                        navigateToMain()
+                        navigateToMain(user)
                     } else {
                         showToast("Credenciales incorrectas")
                     }
@@ -142,8 +142,17 @@ class LoginActivity : AppCompatActivity() {
         }
     }
 
-    private fun navigateToMain() {
+    private fun navigateToMain(user: JSONObject? = null) {
         val intent = Intent(this, MainActivity::class.java)
+        val bundle = Bundle()
+        bundle.putInt("id", user?.getInt("id") ?: -1)
+        bundle.putString("nombre", user?.getString("nombre") ?: "")
+        bundle.putString("username", user?.getString("username") ?: "")
+        bundle.putString("correo", user?.getString("correo") ?: "")
+        bundle.putString("contrasena", user?.getString("contrasena") ?: "")
+        bundle.putString("fotoUrl", user?.getString("fotoUrl") ?: "")
+        bundle.putString("fechaNacimiento", user?.getString("fechaNacimiento") ?: "")
+        intent.putExtras(bundle)
         startActivity(intent)
         finish()
     }
@@ -188,7 +197,7 @@ class LoginActivity : AppCompatActivity() {
                     if (username != null && isUsernameRegistered(username)) {
                         Log.d("LoginActivity", "signInWithCredential:success, user: ${user.displayName}")
                         saveSessionId()
-                        navigateToMain()
+                        navigateToMain(searchUserByUsername(username))
                     } else {
                         showToast("Usuario no registrado")
                         signOutFromGoogle()
@@ -198,6 +207,17 @@ class LoginActivity : AppCompatActivity() {
                     Log.w("LoginActivity", "signInWithCredential:failure", task.exception)
                 }
             }
+    }
+
+    private fun searchUserByUsername(username: String): JSONObject? {
+        val usersArray = readUserDataFromJson() ?: return null
+        for (i in 0 until usersArray.length()) {
+            val user = usersArray.getJSONObject(i)
+            if (user.getString("username") == username) {
+                return user
+            }
+        }
+        return null
     }
 
     private fun signOutFromGoogle() {
