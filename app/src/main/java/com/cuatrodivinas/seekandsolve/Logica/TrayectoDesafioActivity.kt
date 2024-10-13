@@ -15,7 +15,6 @@ class TrayectoDesafioActivity : AppCompatActivity() {
     lateinit var tituloTrayecto: TextView
     lateinit var mapa: MapView
     lateinit var btnIniciarDesafio: Button
-    lateinit var intent: Intent
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -23,10 +22,11 @@ class TrayectoDesafioActivity : AppCompatActivity() {
         tituloTrayecto = findViewById(R.id.tituloTrayecto)
         mapa = findViewById(R.id.mapView)
         btnIniciarDesafio = findViewById(R.id.iniciarDesafio)
-        intent = Intent(this, IniciarRutaActivity::class.java)
+
     }
 
     override fun onResume() {
+        val intent = Intent(this, IniciarRutaActivity::class.java)
         super.onResume()
         btnIniciarDesafio.setOnClickListener {
             startActivity(intent)

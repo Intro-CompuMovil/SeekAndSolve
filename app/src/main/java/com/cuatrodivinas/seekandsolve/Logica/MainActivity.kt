@@ -28,6 +28,7 @@ import java.io.FileInputStream
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import org.osmdroid.api.IMapController
 
 class MainActivity : AppCompatActivity(), LocationListener {
     private lateinit var map: MapView
@@ -35,13 +36,15 @@ class MainActivity : AppCompatActivity(), LocationListener {
     private lateinit var locationManager: LocationManager
     private lateinit var googleSignInClient: GoogleSignInClient
     private var isFirstLocation = true
+    private lateinit var locationListener: LocationListener
+    private lateinit var mapController: IMapController
+    private lateinit var marcador: Marker
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setTheme(R.style.Base_Theme_SeekAndSolve)
         setContentView(R.layout.activity_main)
-
         setupGoogleSignInClient()
         checkSession()
         setupMap()
@@ -49,6 +52,24 @@ class MainActivity : AppCompatActivity(), LocationListener {
         setUsernameText()
         setupProfileLayout()
         setupRankingButton()
+        startLocationUpdates()
+    }
+
+    private fun startLocationUpdates() {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), 1)
+            return
+        }
+        locationManager.requestLocationUpdates(
+            LocationManager.GPS_PROVIDER,
+            1000L,
+            1f,
+            object: LocationListener {
+                override fun onLocationChanged(location: Location) {
+                    setPoint(location.latitude, location.longitude)
+                }
+            }
+        )
     }
 
     private fun setupGoogleSignInClient() {
@@ -90,10 +111,28 @@ class MainActivity : AppCompatActivity(), LocationListener {
         Configuration.getInstance().userAgentValue = BuildConfig.APPLICATION_ID
         map = findViewById(R.id.map)
         map.setMultiTouchControls(true)
-        val mapController = map.controller
+        mapController = map.controller
         mapController.setZoom(17.0)
-        val startPoint = GeoPoint(48.8583, 2.2944)
-        mapController.setCenter(startPoint)
+        marcador = Marker(map)
+        marcador.position = GeoPoint(0.0, 0.0)
+        marcador.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
+        marcador.title = "Posición actual"
+        map.overlays.add(marcador)
+    }
+
+    private fun setPoint(lalitud: Double, longitud: Double){
+        //Obtener el GeoPoint
+        val newPoint = GeoPoint(lalitud, longitud)
+
+        //Crear el marcador
+        marcador.position = newPoint
+
+        //Mover el mapa
+        map.controller.animateTo(newPoint)
+
+        //Refrescar cambios en el mapa
+        map.invalidate()
+
     }
 
     private fun setupLocationManager() {
@@ -151,7 +190,7 @@ class MainActivity : AppCompatActivity(), LocationListener {
             ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
 
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0L, 0f, this)
-            locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0L, 0f, this)
+            //locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0L, 0f, this)
         } else {
             println("Permisos de ubicación no concedidos")
         }
