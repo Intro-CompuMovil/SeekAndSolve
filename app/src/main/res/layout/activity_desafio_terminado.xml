@@ -8,14 +8,6 @@
     tools:context=".Logica.DesafioTerminadoActivity"
     android:layout_margin="16dp">
 
-    <TextView
-        android:id="@+id/textView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Username"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
     <LinearLayout
         android:id="@+id/linearLayout"
         android:layout_width="match_parent"
@@ -23,14 +15,14 @@
         android:gravity="center"
         android:orientation="vertical"
         app:layout_constraintBottom_toTopOf="@+id/estadisticas"
-        app:layout_constraintTop_toBottomOf="@+id/textView">
+        app:layout_constraintTop_toTopOf="parent">
 
         <TextView
             android:id="@+id/tituloDesafio"
             style="@style/TitleStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Completaste Aliento de lo salvaje"/>
+            android:text="Completaste Aliento de lo salvaje" />
 
         <ImageView
             android:id="@+id/imagenDesafio"
@@ -44,8 +36,8 @@
             style="@style/SubtitleStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Recompensa"
-            android:layout_marginTop="16dp" />
+            android:layout_marginTop="16dp"
+            android:text="Recompensa" />
 
         <ImageView
             android:id="@+id/imagenRecompensa"
@@ -56,13 +48,13 @@
 
         <TextView
             android:id="@+id/descripcionRecompensa"
+            style="@style/NormalTextStyle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="¡Capitán cuac cuac!"
-            style="@style/NormalTextStyle"
+            android:layout_marginTop="16dp"
             android:gravity="center"
-            android:textStyle="bold"
-            android:layout_marginTop="16dp"/>
+            android:text="¡Capitán cuac cuac!"
+            android:textStyle="bold" />
 
     </LinearLayout>
 

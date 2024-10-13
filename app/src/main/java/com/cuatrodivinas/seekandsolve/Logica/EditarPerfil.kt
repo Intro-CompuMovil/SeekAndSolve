@@ -1,11 +1,15 @@
 package com.cuatrodivinas.seekandsolve.Logica
 
 import android.annotation.SuppressLint
+import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
 import android.os.Bundle
+import android.provider.MediaStore
 import android.text.InputType
+import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import android.widget.Toast
@@ -24,15 +28,34 @@ import org.json.JSONException
 import org.json.JSONObject
 import java.io.IOException
 import java.io.InputStream
+import kotlin.properties.Delegates
 
 class EditarPerfil : AppCompatActivity() {
     private lateinit var binding: ActivityEditarPerfilBinding
     private var contraseniaVisible = false
 
+    private var id by Delegates.notNull<Int>()
+    private lateinit var nombre: String
+    private lateinit var username: String
+    private lateinit var correo: String
+    private lateinit var contrasena: String
+    private lateinit var fotoUrl: String
+    private lateinit var fechaNacimiento: String
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityEditarPerfilBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        val bundle = intent.extras
+        if (bundle != null) {
+            id = bundle.getInt("id")
+            nombre = bundle.getString("nombre") ?: ""
+            username = bundle.getString("username") ?: ""
+            correo = bundle.getString("correo") ?: ""
+            contrasena = bundle.getString("contrasena") ?: ""
+            fotoUrl = bundle.getString("fotoUrl") ?: ""
+            fechaNacimiento = bundle.getString("fechaNacimiento") ?: ""
+        }
         quemarDatos()
         eventoCambiarFoto()
         eventoVolver()
@@ -40,54 +63,26 @@ class EditarPerfil : AppCompatActivity() {
     }
 
     private fun quemarDatos() {
-        val user = getLastRegisteredUser()
-        if (user != null) {
-            val username = user.getString("username")
-            val name = user.getString("name")
-            val email = user.getString("email")
-            val birthDate = user.getString("fechaNacimiento")
-            val sessionType = user.getString("signInType")
-            val photoUrl = if (user.has("photoUrl") && !user.isNull("photoUrl")) user.getString("photoUrl") else null
+        binding.nombreETxt.setText(nombre)
+        if (fotoUrl != "") {
             Glide.with(this)
-                .load(photoUrl)
-                .error(getDrawable(R.drawable.profile_user_svgrepo_com)?.mutate()?.apply {
-                    setTint(getColor(R.color.primaryColor))
-                })
-                .apply(RequestOptions.circleCropTransform())
-                .into(binding.imagenPerfil)
-            binding.nombreUsuarioETxt.setText(username)
-            binding.nombreETxt.setText(name)
-            binding.corrreoETxt.setText(email)
-            binding.FechaETxt.setText(birthDate)
-            if (sessionType == "Google") {
-                binding.nombreUsuarioETxtLayout.visibility = View.GONE
-                binding.contraETxtLayout.visibility = View.GONE
-            } else {
-                binding.nombreUsuarioETxt.isEnabled = true
-                binding.contraETxt.isEnabled = true
-            }
+                .load(fotoUrl)
+                .override(24, 24) // Establecer el tamaño de la imagen en 24x24 px
+                .circleCrop() // Para hacer la imagen circular
+                .into(binding.imagenPerfil) // Establecer la imagen en el ImageView
+        } else {
+            binding.imagenPerfil.imageTintList = ContextCompat.getColorStateList(this, R.color.primaryColor)
         }
-    }
-
-    private fun getLastRegisteredUser(): JSONObject? {
-        try {
-            val inputStream: InputStream = openFileInput("user_data.json")
-            val size: Int = inputStream.available()
-            val buffer = ByteArray(size)
-            inputStream.read(buffer)
-            inputStream.close()
-            val json = String(buffer, Charsets.UTF_8)
-            val jsonArray = JSONArray(json)
-            if (jsonArray.length() > 0) {
-                // Devuelve el último usuario registrado
-                return jsonArray.getJSONObject(jsonArray.length() - 1)
-            }
-        } catch (e: IOException) {
-            e.printStackTrace()
-        } catch (e: JSONException) {
-            e.printStackTrace()
-        }
-        return null
+        binding.nombreETxt.setText(nombre)
+        binding.corrreoETxt.setText(correo)
+        binding.FechaETxt.setText(fechaNacimiento)
+        /*if (sessionType == "Google") {
+            binding.nombreUsuarioETxtLayout.visibility = View.GONE
+            binding.contraETxtLayout.visibility = View.GONE
+        } else {
+            binding.nombreUsuarioETxt.isEnabled = true
+            binding.contraETxt.isEnabled = true
+        } */
     }
 
     private fun eventoCambiarFoto(){
@@ -108,6 +103,7 @@ class EditarPerfil : AppCompatActivity() {
         }
         else{
             Toast.makeText(context, "Permiso otorgado", Toast.LENGTH_SHORT).show()
+            takePicture()
         }
     }
 
@@ -118,6 +114,7 @@ class EditarPerfil : AppCompatActivity() {
                 // If request is cancelled, the result arrays are empty.
                 if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
                     Toast.makeText(this, "Permiso otorgado", Toast.LENGTH_SHORT).show()
+                    takePicture()
                 } else {
                     Toast.makeText(this, "FUNCIONALIDADES REDUCIDAS", Toast.LENGTH_LONG).show()
                 }
@@ -125,6 +122,33 @@ class EditarPerfil : AppCompatActivity() {
             }
             else -> {
                 // Ignore all other requests.
+            }
+        }
+    }
+
+    private fun takePicture() {
+        val takePictureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+        try {
+            startActivityForResult(takePictureIntent, PERMISO_CAMARA)
+        } catch (e: ActivityNotFoundException) {
+            e.message?. let{ Log.e("PERMISSION_APP",it) }
+            Toast.makeText(this, "No se puede abrir la cámara", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    override fun onActivityResult (requestCode: Int, resultCode:Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == PERMISO_CAMARA && resultCode == RESULT_OK) {
+            if (data?.extras == null) {
+                Toast.makeText(this, "Me corrol", Toast.LENGTH_SHORT).show()
+            } else {
+                val imageBitmap = data.extras?.get("data") as? Bitmap
+                if (imageBitmap == null) {
+                    Toast.makeText(this, "No se pudo obtener la foto de perfil", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(this, "Foto de perfil actualizada", Toast.LENGTH_SHORT).show()
+                    binding.imagenPerfil.setImageBitmap(imageBitmap)
+                }
             }
         }
     }
@@ -138,6 +162,7 @@ class EditarPerfil : AppCompatActivity() {
 
     fun eventoAplicarCambios() {
         binding.aplicarCambiosBtn.setOnClickListener {
+            //actualizarInfo(id, binding.nombreETxt.text.toString(), binding.nombreUsuarioETxt.text.toString(), binding.corrreoETxt.toString(), binding.contraETxt.text.toString())
             finish()
         }
     }

@@ -1,45 +1,40 @@
 package com.cuatrodivinas.seekandsolve.Logica
 
+import android.content.ActivityNotFoundException
+import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.graphics.Bitmap
 import android.os.Bundle
+import android.provider.MediaStore
+import android.util.Log
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ListView
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.PERMISO_CAMARA
 import com.cuatrodivinas.seekandsolve.R
+import com.cuatrodivinas.seekandsolve.databinding.ActivityCrearDesafioBinding
+import com.cuatrodivinas.seekandsolve.databinding.ActivityEditarPerfilBinding
 
 class CrearDesafioActivity : AppCompatActivity() {
-    private lateinit var etNombreDesafio: EditText
+    private lateinit var binding: ActivityCrearDesafioBinding
 
-    private lateinit var botonCambiarFoto: Button
-
-
-    private lateinit var botonEditarPuntoInicial: Button
-    private lateinit var botonEditarPuntoFinal: Button
     private lateinit var intentEditarPunto: Intent
 
-    private lateinit var listaCheckpoints: ListView
-    private lateinit var botonAgregarCheckpoint: Button
-    private lateinit var etDescripcionDesafio: EditText
-
-    private lateinit var botonCrearDesafio: Button
     private lateinit var intentCrearDesafio: Intent
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_crear_desafio)
+        binding = ActivityCrearDesafioBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
-        etNombreDesafio = findViewById(R.id.nombreDesafio)
-        botonCambiarFoto = findViewById(R.id.cambiarFoto)
-        botonEditarPuntoInicial = findViewById(R.id.editarPuntoInicial)
-        botonEditarPuntoFinal = findViewById(R.id.editarPuntoFinal)
-        listaCheckpoints = findViewById(R.id.listaCheckpoints)
-        botonAgregarCheckpoint = findViewById(R.id.agregarCheckpoint)
-        etDescripcionDesafio = findViewById(R.id.descripcionDesafio)
-        botonCrearDesafio = findViewById(R.id.crearDesafio)
+        binding.listaCheckpoints.adapter = CheckpointsAdapter(this, null, 0)
 
         intentEditarPunto = Intent(this, SeleccionarPuntoActivity::class.java)
         intentCrearDesafio = Intent(this, VerDesafiosActivity::class.java)
@@ -47,18 +42,88 @@ class CrearDesafioActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        botonEditarPuntoInicial.setOnClickListener {
+        binding.editarPuntoInicial.setOnClickListener {
             intentEditarPunto.putExtra("tipoPunto", "inicial")
             startActivity(intentEditarPunto)
         }
 
-        botonEditarPuntoFinal.setOnClickListener {
+        binding.editarPuntoFinal.setOnClickListener {
             intentEditarPunto.putExtra("tipoPunto", "final")
             startActivity(intentEditarPunto)
         }
 
-        botonCrearDesafio.setOnClickListener {
+        binding.crearDesafio.setOnClickListener {
             startActivity(intentCrearDesafio)
+        }
+
+        eventoCambiarFoto()
+    }
+
+    private fun eventoCambiarFoto(){
+        binding.cambiarFoto.setOnClickListener {
+            pedirPermiso(this, android.Manifest.permission.CAMERA,"Necesitamos el permiso de cámara para cambiar tu foto de perfil", PERMISO_CAMARA)
+        }
+    }
+
+    private fun pedirPermiso(context: Context, permiso: String, justificacion: String,
+                             idCode: Int){
+        if(ContextCompat.checkSelfPermission(context, permiso) !=
+            PackageManager.PERMISSION_GRANTED){
+            if (shouldShowRequestPermissionRationale(permiso)) {
+                // Explicar al usuario por qué necesitamos el permiso
+                Toast.makeText(context, justificacion, Toast.LENGTH_SHORT).show()
+            }
+            requestPermissions(arrayOf(permiso), idCode)
+        }
+        else{
+            Toast.makeText(context, "Permiso otorgado", Toast.LENGTH_SHORT).show()
+            takePicture()
+        }
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        when (requestCode) {
+            PERMISO_CAMARA -> {
+                // If request is cancelled, the result arrays are empty.
+                if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
+                    Toast.makeText(this, "Permiso otorgado", Toast.LENGTH_SHORT).show()
+                    takePicture()
+                } else {
+                    Toast.makeText(this, "FUNCIONALIDADES REDUCIDAS", Toast.LENGTH_LONG).show()
+                }
+                return
+            }
+            else -> {
+                // Ignore all other requests.
+            }
+        }
+    }
+
+    private fun takePicture() {
+        val takePictureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+        try {
+            startActivityForResult(takePictureIntent, PERMISO_CAMARA)
+        } catch (e: ActivityNotFoundException) {
+            e.message?. let{ Log.e("PERMISSION_APP",it) }
+            Toast.makeText(this, "No se puede abrir la cámara", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    override fun onActivityResult (requestCode: Int, resultCode:Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == PERMISO_CAMARA && resultCode == RESULT_OK) {
+            if (data?.extras == null) {
+                Toast.makeText(this, "Me corrol", Toast.LENGTH_SHORT).show()
+            } else {
+                val imageBitmap = data.extras?.get("data") as? Bitmap
+                if (imageBitmap == null) {
+                    Toast.makeText(this, "No se pudo obtener la foto de perfil", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(this, "Foto de perfil actualizada", Toast.LENGTH_SHORT).show()
+                    binding.imagenDesafio.setImageBitmap(imageBitmap)
+                }
+            }
         }
     }
 }

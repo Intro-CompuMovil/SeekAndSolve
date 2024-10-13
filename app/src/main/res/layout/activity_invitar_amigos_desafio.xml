@@ -5,16 +5,48 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".Logica.InvitarAmigosDesafioActivity"
-    android:layout_margin="16dp">
+    tools:context=".Logica.InvitarAmigosDesafioActivity">
 
-    <TextView
-        android:id="@+id/textView"
-        android:layout_width="wrap_content"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/header_invite_friends"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Username"
+        android:background="?android:attr/colorPrimary"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:orientation="horizontal">
+
+        <ImageButton
+            android:id="@+id/backButton_invite"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/baseline_arrow_back_24"
+            android:background="?android:attr/selectableItemBackground"
+            android:padding="15dp"
+            android:contentDescription="@string/volver"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"/>
+
+
+        <TextView
+            android:id="@+id/titleInviteFriends"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_weight="1"
+            android:fontFamily="@font/lexend_font"
+            android:gravity="center"
+            android:text="@string/invitar_amigos_desafio"
+            android:textColor="@color/tertiaryColor"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <LinearLayout
         android:id="@+id/linearLayout"
@@ -22,8 +54,8 @@
         android:layout_height="500dp"
         android:gravity="center"
         android:orientation="vertical"
-        app:layout_constraintBottom_toTopOf="@+id/linearLayout2"
-        app:layout_constraintTop_toBottomOf="@+id/textView">
+        app:layout_constraintTop_toBottomOf="@+id/header_invite_friends"
+        android:layout_marginTop="32dp">
 
         <TextView
             android:layout_width="wrap_content"
@@ -38,28 +70,15 @@
             android:layout_height="wrap_content" />
     </LinearLayout>
 
-    <LinearLayout
-        android:id="@+id/linearLayout2"
-        android:layout_width="match_parent"
+    <Button
+        android:id="@+id/invitarAmigos"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_constraintBottom_toBottomOf="parent">
-
-        <Button
-            android:id="@+id/volver"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="0.5"
-            android:text="@string/volver"
-            android:backgroundTint="@color/gray"
-            android:layout_marginRight="5dp"/>
-
-        <Button
-            android:id="@+id/invitarAmigos"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="0.5"
-            android:text="@string/invitar_amigos"
-            android:backgroundTint="@color/secondaryColor"
-            android:layout_marginLeft="5dp"/>
-    </LinearLayout>
+        android:backgroundTint="@color/secondaryColor"
+        android:gravity="center"
+        android:text="@string/invitar_amigos"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout" />
 </androidx.constraintlayout.widget.ConstraintLayout>

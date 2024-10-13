@@ -25,7 +25,7 @@ class PistaActivity : AppCompatActivity() {
         val intent = Intent(this, ResolverAcertijoActivity::class.java)
         super.onResume()
         btnVolver.setOnClickListener {
-            startActivity(intent)
+            finish()
         }
     }
 }

@@ -3,26 +3,24 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
     <ImageView
-        android:id="@+id/imagenUsuario"
+        android:id="@+id/imagenEstadistica"
         android:layout_width="0dp"
         android:layout_height="75dp"
         android:layout_weight="0.25"
         />
 
     <TextView
-        android:id="@+id/nombreUsuario"
+        android:id="@+id/nombreEstadistica"
         android:layout_width="0dp"
         android:layout_height="75dp"
-        android:layout_weight="0.50"
+        android:layout_weight="0.5"
         android:gravity="center"
         />
-    <Button
-        android:id="@+id/botonAgregar"
+    <TextView
+        android:id="@+id/datoEstadistica"
         android:layout_width="0dp"
-        android:layout_height="50dp"
-        android:text="@string/agregar"
-        android:textSize="12sp"
-        android:textColor="@color/buttonBlackColor"
+        android:layout_height="75dp"
         android:layout_weight="0.25"
+        android:gravity="center"
         />
 </LinearLayout>

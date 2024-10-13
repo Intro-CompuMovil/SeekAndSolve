@@ -27,19 +27,31 @@ class RankingActivity : AppCompatActivity() {
         setContentView(R.layout.activity_ranking)
 
         findViewById<ImageView>(R.id.backButton).setOnClickListener { finish() }
-        inicializarElementos()
         setupRankingList()
         findViewById<ImageView>(R.id.medalImageView).startAnimation(AnimationUtils.loadAnimation(this, R.anim.blink))
     }
 
     private fun setupRankingList() {
+        val json = cargarJson()?.let { JSONObject(it) }
+        val ranking = json?.getJSONArray("users")
+        rankingItems = mutableListOf()
+        if (ranking != null) {
+            for (i in 0 until ranking.length()) {
+                val jsonObject = ranking.getJSONObject(i)
+                val username = jsonObject.getString("username")
+                val rewards = jsonObject.getInt("recompensas")
+                val profileImageUrl = jsonObject.getString("photoUrl")
+                rankingItems.add(RankingItem(username, rewards, profileImageUrl))
+            }
+        }
+
         val rankingList = findViewById<RecyclerView>(R.id.rankingList)
         val sortedRankingItems = rankingItems.sortedByDescending { it.rewards }
 
         rankingList.layoutManager = LinearLayoutManager(this)
         rankingList.adapter = object : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
             override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
-                val view = LayoutInflater.from(parent.context).inflate(R.layout.item_ranking, parent, false)
+                val view = LayoutInflater.from(parent.context).inflate(R.layout.adapter_ranking, parent, false)
                 return object : RecyclerView.ViewHolder(view) {}
             }
 
@@ -62,56 +74,11 @@ class RankingActivity : AppCompatActivity() {
         }
     }
 
-    private fun inicializarElementos() {
-        val rankingList = findViewById<RecyclerView>(R.id.rankingList)
-        val json = cargarJson()?.let { JSONObject(it) }
-        val ranking = json?.getJSONArray("users")
-        rankingItems = mutableListOf()
-        if (ranking != null) {
-            for (i in 0 until ranking.length()) {
-                val jsonObject = ranking.getJSONObject(i)
-                val username = jsonObject.getString("username")
-                val rewards = jsonObject.getInt("recompensas")
-                val profileImageUrl = jsonObject.getString("photoUrl")
-                rankingItems.add(RankingItem(username, rewards, profileImageUrl))
-            }
-        }
-
-        rankingList.layoutManager = LinearLayoutManager(this)
-        rankingList.adapter = object : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
-            override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
-                val view = LayoutInflater.from(parent.context).inflate(R.layout.item_ranking, parent, false)
-                return object : RecyclerView.ViewHolder(view) {}
-            }
-
-            override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-                val rankingItem = rankingItems[position]
-                val profileImageView: ImageView = holder.itemView.findViewById(R.id.profileImageView)
-                val usernameTextView: TextView = holder.itemView.findViewById(R.id.usernameTextView)
-                val rewardsTextView: TextView = holder.itemView.findViewById(R.id.scoreTextView)
-
-                if (rankingItem.profileImageUrl.isNotEmpty()) {
-                    Glide.with(profileImageView.context)
-                        .load(rankingItem.profileImageUrl)
-                        .apply(RequestOptions.circleCropTransform())
-                        .into(profileImageView)
-                    profileImageView.background = null
-                } else {
-                    profileImageView.setImageResource(R.drawable.profile_user_svgrepo_com)
-                }
-
-                usernameTextView.text = rankingItem.username
-                rewardsTextView.text = rankingItem.rewards.toString()
-            }
-
-            override fun getItemCount() = rankingItems.size
-        }
-    }
-
     private fun cargarJson(): String? {
         val json: String?
         try {
-            val isStream: InputStream = assets.open("ranking.json")
+            // TODO: Leer carrerasUsuarios.json y hacer un count de quienes tengan más recompensas
+            val isStream: InputStream = assets.open("carrerasUsuarios.json")
             val size: Int = isStream.available()
             val buffer = ByteArray(size)
             isStream.read(buffer)
