@@ -46,6 +46,18 @@ class VerDesafioActivity : AppCompatActivity() {
         binding.iniciarDesafio.setOnClickListener {
             val intentIniciarDesafio = Intent(this, ConfigurarCarreraActivity::class.java)
             intentIniciarDesafio.putExtra("bundle", desafio)
+            val gson = Gson()
+            val puntoListType = object : TypeToken<MutableList<Punto>>() {}.type
+            val puntoInicial: Punto = gson.fromJson(desafio.getString("puntoInicial"), Punto::class.java)
+            val puntoFinal: Punto = gson.fromJson(desafio.getString("puntoFinal"), Punto::class.java)
+            var puntosIntermedios: MutableList<Punto> = mutableListOf()
+            if(desafio.getString("puntosIntermedios") != null){
+                puntosIntermedios = gson.fromJson(desafio.getString("puntosIntermedios"), puntoListType)
+            }
+            val desafioVar = Desafio(desafio.getString("id")!!.toInt(), desafio.getString("nombre")!!, desafio.getString("imagen")!!,
+                desafio.getString("descripcion")!!, puntoInicial,
+                puntosIntermedios, puntoFinal)
+            intentIniciarDesafio.putExtra("desafio", desafioVar)
             startActivity(intentIniciarDesafio)
         }
 
@@ -55,7 +67,10 @@ class VerDesafioActivity : AppCompatActivity() {
             val puntoListType = object : TypeToken<MutableList<Punto>>() {}.type
             val puntoInicial: Punto = gson.fromJson(desafio.getString("puntoInicial"), Punto::class.java)
             val puntoFinal: Punto = gson.fromJson(desafio.getString("puntoFinal"), Punto::class.java)
-            val puntosIntermedios: MutableList<Punto> = gson.fromJson(desafio.getString("puntosIntermedios"), puntoListType)
+            var puntosIntermedios: MutableList<Punto> = mutableListOf()
+            if(desafio.getString("puntosIntermedios") != null){
+                puntosIntermedios = gson.fromJson(desafio.getString("puntosIntermedios"), puntoListType)
+            }
             val desafioVar = Desafio(desafio.getString("id")!!.toInt(), desafio.getString("nombre")!!, desafio.getString("imagen")!!,
                 desafio.getString("descripcion")!!, puntoInicial,
                 puntosIntermedios, puntoFinal)

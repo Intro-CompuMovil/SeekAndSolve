@@ -22,7 +22,7 @@ import androidx.core.view.WindowInsetsCompat
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.PERMISO_CAMARA
-import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.SELECCIONAR_IMAGEN
+//import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.SELECCIONAR_IMAGEN
 import com.cuatrodivinas.seekandsolve.R
 import com.cuatrodivinas.seekandsolve.databinding.ActivityEditarPerfilBinding
 import org.json.JSONArray
@@ -112,7 +112,7 @@ class EditarPerfil : AppCompatActivity() {
     private fun seleccionarDeGaleria() {
         val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
         intent.type = "image/*"
-        startActivityForResult(intent, SELECCIONAR_IMAGEN)
+        //startActivityForResult(intent, SELECCIONAR_IMAGEN)
     }
 
     private fun pedirPermiso(context: Context, permiso: String, justificacion: String,
@@ -177,7 +177,7 @@ class EditarPerfil : AppCompatActivity() {
             }
         }
 
-        else if (requestCode == SELECCIONAR_IMAGEN && resultCode == RESULT_OK) {
+        /*else if (requestCode == SELECCIONAR_IMAGEN && resultCode == RESULT_OK) {
             val imageUri = data?.data
             if (imageUri != null) {
                 binding.imagenPerfil.setImageURI(imageUri)
@@ -185,7 +185,7 @@ class EditarPerfil : AppCompatActivity() {
             } else {
                 Toast.makeText(this, "No se pudo seleccionar la imagen", Toast.LENGTH_SHORT).show()
             }
-        }
+        }*/
     }
 
 

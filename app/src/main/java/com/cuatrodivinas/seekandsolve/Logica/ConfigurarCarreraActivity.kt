@@ -4,11 +4,13 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.bumptech.glide.Glide
+import com.cuatrodivinas.seekandsolve.Datos.Desafio
 import com.cuatrodivinas.seekandsolve.R
 import com.cuatrodivinas.seekandsolve.databinding.ActivityConfigurarCarreraBinding
 
 class ConfigurarCarreraActivity : AppCompatActivity() {
     private lateinit var binding: ActivityConfigurarCarreraBinding
+    private lateinit var desafio: Desafio
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -19,10 +21,10 @@ class ConfigurarCarreraActivity : AppCompatActivity() {
     }
 
     private fun inicializarElementos() {
-        val desafio = intent.getBundleExtra("bundle")!!
-        binding.tituloDesafio.text = desafio.getString("nombre")
+        desafio = intent.getSerializableExtra("desafio") as Desafio
+        binding.tituloDesafio.text = desafio.nombre
 
-        val urlImagen = desafio.getString("imagen")
+        val urlImagen = desafio.fotoUrl
         if (urlImagen != null) {
             if (urlImagen.isNotEmpty()) {
                 Glide.with(binding.imagenDesafio.context)
@@ -45,7 +47,7 @@ class ConfigurarCarreraActivity : AppCompatActivity() {
         }
 
         binding.jugarDesafio.setOnClickListener {
-            startActivity(Intent(this, IniciarRutaActivity::class.java))
+            startActivity(Intent(this, IniciarRutaActivity::class.java).putExtra("desafio", desafio))
         }
     }
 }

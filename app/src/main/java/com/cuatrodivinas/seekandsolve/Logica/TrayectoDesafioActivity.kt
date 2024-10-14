@@ -65,7 +65,7 @@ class TrayectoDesafioActivity : AppCompatActivity(), LocationListener {
         map.setMultiTouchControls(true)
         val mapController = map.controller
         mapController.setZoom(17.0)
-        val startPoint = GeoPoint(48.8583, 2.2944)
+        val startPoint = GeoPoint(0.0, 0.0)
         mapController.setCenter(startPoint)
     }
 
@@ -77,7 +77,14 @@ class TrayectoDesafioActivity : AppCompatActivity(), LocationListener {
             override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
                 if (response.isSuccessful && response.body() != null) {
                     val routeResponse = response.body()!!.string()
-                    drawRoute(routeResponse)
+                    val routeJson = JSONObject(routeResponse)
+
+                    // Acceder a la polilínea codificada dentro del JSON
+                    val encodedPolyline = routeJson
+                        .getJSONArray("routes")
+                        .getJSONObject(0)
+                        .getString("geometry")
+                    drawRoute(encodedPolyline)
                 } else {
                     println("Error en la respuesta: ${response.errorBody()}")
                 }
@@ -91,7 +98,7 @@ class TrayectoDesafioActivity : AppCompatActivity(), LocationListener {
 
     private fun drawRoute(encoded: String) {
         val path: List<GeoPoint> = decodePolyline(encoded)
-
+        map.controller.setCenter(path[0])
         runOnUiThread {
             val polyline = Polyline()
             polyline.setPoints(path)
@@ -216,6 +223,7 @@ class TrayectoDesafioActivity : AppCompatActivity(), LocationListener {
 
         binding.iniciarDesafio.setOnClickListener {
             val intentIniciarDesafio = Intent(this, ConfigurarCarreraActivity::class.java)
+            intentIniciarDesafio.putExtra("desafio", desafio)
             intentIniciarDesafio.putExtra("bundle", intent.getBundleExtra("bundle"))
             startActivity(intentIniciarDesafio)
         }

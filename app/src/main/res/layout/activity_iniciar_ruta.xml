@@ -21,8 +21,7 @@
             android:id="@+id/tituloRuta"
             style="@style/TitleStyle"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="De Javeriana a Museo del oro" />
+            android:layout_height="wrap_content" />
 
         <org.osmdroid.views.MapView
             android:id="@+id/map"

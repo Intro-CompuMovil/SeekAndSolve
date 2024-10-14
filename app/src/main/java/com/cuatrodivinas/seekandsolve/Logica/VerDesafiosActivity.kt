@@ -82,7 +82,9 @@ class VerDesafiosActivity : AppCompatActivity(), LocationListener {
             bundle.putString("descripcion", jsonObject.getString("descripcion"))
             bundle.putString("imagen", jsonObject.getString("fotoUrl"))
             bundle.putString("puntoInicial", jsonObject.getString("puntoInicial"))
-            bundle.putString("puntosIntermedios", jsonObject.getString("puntosIntermedios"))
+            if(jsonObject.has("puntosIntermedios")){
+                bundle.putString("puntosIntermedios", jsonObject.getString("puntosIntermedios"))
+            }
             bundle.putString("puntoFinal", jsonObject.getString("puntoFinal"))
             intent.putExtra("bundle", bundle)
             startActivity(intent)
