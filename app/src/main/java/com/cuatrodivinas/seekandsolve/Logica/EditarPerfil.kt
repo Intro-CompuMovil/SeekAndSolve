@@ -1,6 +1,7 @@
 package com.cuatrodivinas.seekandsolve.Logica
 
 import android.annotation.SuppressLint
+import android.app.AlertDialog
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
@@ -21,6 +22,7 @@ import androidx.core.view.WindowInsetsCompat
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.PERMISO_CAMARA
+import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.SELECCIONAR_IMAGEN
 import com.cuatrodivinas.seekandsolve.R
 import com.cuatrodivinas.seekandsolve.databinding.ActivityEditarPerfilBinding
 import org.json.JSONArray
@@ -87,8 +89,30 @@ class EditarPerfil : AppCompatActivity() {
 
     private fun eventoCambiarFoto(){
         binding.cambiarFotoBtn.setOnClickListener {
-            pedirPermiso(this, android.Manifest.permission.CAMERA,"Necesitamos el permiso de cámara para cambiar tu foto de perfil", PERMISO_CAMARA)
+            val opciones = arrayOf("Tomar foto", "Seleccionar desde galería")
+            val builder = AlertDialog.Builder(this)
+            builder.setTitle("Cambiar foto de perfil")
+            builder.setItems(opciones) { _, which ->
+                when (which) {
+                    0 -> {
+                        // Opción para tomar una foto
+                        pedirPermiso(this, android.Manifest.permission.CAMERA,
+                            "Necesitamos el permiso de cámara para cambiar tu foto de perfil", PERMISO_CAMARA)
+                    }
+                    1 -> {
+                        // Opción para seleccionar desde la galería
+                        seleccionarDeGaleria()
+                    }
+                }
+            }
+            builder.show()
         }
+    }
+
+    private fun seleccionarDeGaleria() {
+        val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
+        intent.type = "image/*"
+        startActivityForResult(intent, SELECCIONAR_IMAGEN)
     }
 
     private fun pedirPermiso(context: Context, permiso: String, justificacion: String,
@@ -136,8 +160,9 @@ class EditarPerfil : AppCompatActivity() {
         }
     }
 
-    override fun onActivityResult (requestCode: Int, resultCode:Int, data: Intent?) {
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
+
         if (requestCode == PERMISO_CAMARA && resultCode == RESULT_OK) {
             if (data?.extras == null) {
                 Toast.makeText(this, "Me corrol", Toast.LENGTH_SHORT).show()
@@ -149,6 +174,16 @@ class EditarPerfil : AppCompatActivity() {
                     Toast.makeText(this, "Foto de perfil actualizada", Toast.LENGTH_SHORT).show()
                     binding.imagenPerfil.setImageBitmap(imageBitmap)
                 }
+            }
+        }
+
+        else if (requestCode == SELECCIONAR_IMAGEN && resultCode == RESULT_OK) {
+            val imageUri = data?.data
+            if (imageUri != null) {
+                binding.imagenPerfil.setImageURI(imageUri)
+                Toast.makeText(this, "Imagen seleccionada de la galería", Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(this, "No se pudo seleccionar la imagen", Toast.LENGTH_SHORT).show()
             }
         }
     }
