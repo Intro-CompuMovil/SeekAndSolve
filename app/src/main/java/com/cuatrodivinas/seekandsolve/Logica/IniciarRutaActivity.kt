@@ -10,6 +10,7 @@ import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
 import android.os.Bundle
+import android.util.Log
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ListView
@@ -46,6 +47,7 @@ class IniciarRutaActivity : AppCompatActivity(), LocationListener {
     private var trayectoRetrofit: RetrofitUrls
     private var geocoderRetrofit: RetrofitUrls
     private lateinit var desafio: Desafio
+    private lateinit var marcador: Marker
 
     init{
         val retrofit = RetrofitOsmClient.urlRuta()
@@ -67,17 +69,57 @@ class IniciarRutaActivity : AppCompatActivity(), LocationListener {
         buscarDireccion(puntoInicial.latitude, puntoInicial.longitude, puntoFinal.latitude,
                         puntoFinal.longitude)
         getRoute(puntoInicial, puntoFinal)
+        startLocationUpdates()
+    }
 
+    private fun startLocationUpdates() {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), 1)
+            return
+        }
+        locationManager.requestLocationUpdates(
+            LocationManager.GPS_PROVIDER,
+            1000L,
+            1f,
+            object: LocationListener {
+                override fun onLocationChanged(location: Location) {
+                    Log.d("Marcadores", "Marcadores ${map.overlays.size}")
+                    setPoint(location.latitude, location.longitude)
+                    val puntoInicial = GeoPoint(location.latitude, location.longitude)
+                    val puntoFinal = GeoPoint(desafio.puntoFinal.latitud, desafio.puntoFinal.longitud)
+                    getRoute(puntoInicial, puntoFinal)
+                }
+            }
+        )
     }
 
     private fun setupMap() {
         Configuration.getInstance().userAgentValue = BuildConfig.APPLICATION_ID
         map = findViewById(R.id.map)
         map.setMultiTouchControls(true)
+        marcador = Marker(map)
+        marcador.icon = getDrawable(R.drawable.ic_location)
         val mapController = map.controller
         mapController.setZoom(17.0)
-        val startPoint = GeoPoint(48.8583, 2.2944)
+        val startPoint = GeoPoint(0.0, 0.0)
         mapController.setCenter(startPoint)
+        map.overlays.add(marcador)
+    }
+
+    private fun setPoint(lalitud: Double, longitud: Double){
+        //Obtener el GeoPoint
+        val newPoint = GeoPoint(lalitud, longitud)
+
+        //Crear los marcadores
+        map.overlays.clear()
+        marcador.position = newPoint
+        map.overlays.add(marcador)
+
+        //Mover el mapa
+        map.controller.animateTo(newPoint)
+
+        //Refrescar cambios en el mapa
+        map.invalidate()
     }
 
     private fun getRoute(startPoint: GeoPoint, endPoint: GeoPoint) {
