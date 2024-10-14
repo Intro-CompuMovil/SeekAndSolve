@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Color
 import android.graphics.drawable.Drawable
 import android.location.Location
 import android.location.LocationListener
@@ -12,13 +13,23 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.cuatrodivinas.seekandsolve.Datos.Desafio
+import com.cuatrodivinas.seekandsolve.Datos.RetrofitOsmClient
+import com.cuatrodivinas.seekandsolve.Datos.RetrofitUrls
+import com.cuatrodivinas.seekandsolve.Datos.RouteResponse
 import com.cuatrodivinas.seekandsolve.R
 import com.cuatrodivinas.seekandsolve.databinding.ActivityTrayectoDesafioBinding
+import okhttp3.ResponseBody
+import org.json.JSONObject
 import org.osmdroid.config.Configuration
 import org.osmdroid.library.BuildConfig
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.Marker
+import org.osmdroid.views.overlay.Polyline
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 class TrayectoDesafioActivity : AppCompatActivity(), LocationListener {
     private lateinit var binding: ActivityTrayectoDesafioBinding
@@ -26,16 +37,26 @@ class TrayectoDesafioActivity : AppCompatActivity(), LocationListener {
     private val REQUEST_PERMISSIONS_REQUEST_CODE = 1
     private lateinit var locationManager: LocationManager
     private var isFirstLocation = true
+    private var retrofitUrls: RetrofitUrls
+    private lateinit var desafio: Desafio
+
+    init{
+        val retrofit = RetrofitOsmClient.urlRuta()
+        retrofitUrls = retrofit.create(RetrofitUrls::class.java)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityTrayectoDesafioBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
-        val textoTitulo = "Ruta de " + intent.getBundleExtra("bundle")!!.getString("nombre")
+        desafio = intent.getSerializableExtra("desafio") as Desafio
+        val textoTitulo = "Ruta de " + desafio.nombre
         binding.tituloTrayecto.text = textoTitulo
         setupMap()
         setupLocationManager()
+        val puntoInicial = GeoPoint(desafio.puntoInicial.latitud, desafio.puntoInicial.longitud)
+        val puntoFinal = GeoPoint(desafio.puntoFinal.latitud, desafio.puntoFinal.longitud)
+        getRoute(puntoInicial, puntoFinal)
     }
 
     private fun setupMap() {
@@ -46,6 +67,76 @@ class TrayectoDesafioActivity : AppCompatActivity(), LocationListener {
         mapController.setZoom(17.0)
         val startPoint = GeoPoint(48.8583, 2.2944)
         mapController.setCenter(startPoint)
+    }
+
+    private fun getRoute(startPoint: GeoPoint, endPoint: GeoPoint) {
+        val getRoute = retrofitUrls.getRoute(startPoint.longitude, startPoint.latitude, endPoint.longitude, endPoint.latitude)
+
+        getRoute.enqueue(object :
+            Callback<ResponseBody> {
+            override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
+                if (response.isSuccessful && response.body() != null) {
+                    val routeResponse = response.body()!!.string()
+                    drawRoute(routeResponse)
+                } else {
+                    println("Error en la respuesta: ${response.errorBody()}")
+                }
+            }
+
+            override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
+                println("Error en la llamada: ${t.message}")
+            }
+        })
+    }
+
+    private fun drawRoute(encoded: String) {
+        val path: List<GeoPoint> = decodePolyline(encoded)
+
+        runOnUiThread {
+            val polyline = Polyline()
+            polyline.setPoints(path)
+            polyline.color = Color.BLUE
+            polyline.width = 10f
+            map.overlays.add(polyline)
+            map.invalidate()
+        }
+    }
+
+    private fun decodePolyline(encoded: String): List<GeoPoint> {
+        val poly = ArrayList<GeoPoint>()
+        var index = 0
+        val len = encoded.length
+        var lat = 0
+        var lng = 0
+
+        while (index < len) {
+            var b: Int
+            var shift = 0
+            var result = 0
+            do {
+                b = encoded[index++].toInt() - 63
+                result = result or (b and 0x1f shl shift)
+                shift += 5
+            } while (b >= 0x20)
+
+            val dlat = if (result and 1 != 0) (result shr 1).inv() else (result shr 1)
+            lat += dlat
+
+            shift = 0
+            result = 0
+            do {
+                b = encoded[index++].toInt() - 63
+                result = result or (b and 0x1f shl shift)
+                shift += 5
+            } while (b >= 0x20)
+
+            val dlng = if (result and 1 != 0) (result shr 1).inv() else (result shr 1)
+            lng += dlng
+
+            val point = GeoPoint((lat / 1E5), (lng / 1E5))
+            poly.add(point)
+        }
+        return poly
     }
 
     private fun setupLocationManager() {
@@ -76,14 +167,14 @@ class TrayectoDesafioActivity : AppCompatActivity(), LocationListener {
             ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
 
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0L, 0f, this)
-            locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0L, 0f, this)
+            //locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0L, 0f, this)
         } else {
             println("Permisos de ubicación no concedidos")
         }
     }
 
     override fun onLocationChanged(location: Location) {
-        if (::map.isInitialized && map.handler != null && map.controller != null) {
+        /*if (::map.isInitialized && map.handler != null && map.controller != null) {
             val currentLocation = GeoPoint(location.latitude, location.longitude)
             if (isFirstLocation) {
                 map.controller.setCenter(currentLocation)
@@ -105,7 +196,7 @@ class TrayectoDesafioActivity : AppCompatActivity(), LocationListener {
             }
         } else {
             println("El mapa no está listo aún")
-        }
+        }*/
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {

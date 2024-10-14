@@ -11,6 +11,7 @@ import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
 import android.os.Bundle
+import android.util.Log
 import android.widget.ListView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -26,6 +27,10 @@ import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.Marker
 import java.io.IOException
 import java.io.InputStream
+import kotlin.math.atan2
+import kotlin.math.cos
+import kotlin.math.sin
+import kotlin.math.sqrt
 
 class VerDesafiosActivity : AppCompatActivity(), LocationListener {
     private lateinit var binding: ActivityVerDesafiosBinding
@@ -34,17 +39,37 @@ class VerDesafiosActivity : AppCompatActivity(), LocationListener {
     private lateinit var locationManager: LocationManager
     private var isFirstLocation = true
     private var desafios: JSONArray? = null
+    private lateinit var marcadores: MutableList<Marker>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityVerDesafiosBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
-        quemarDatos()
+        marcadores = mutableListOf()
+        inicializarDesafios()
         setupMap()
         setupLocationManager()
         eventoVolver()
         verDesafio()
+        startLocationUpdates()
+    }
+
+    private fun startLocationUpdates() {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), 1)
+            return
+        }
+        locationManager.requestLocationUpdates(
+            LocationManager.GPS_PROVIDER,
+            1000L,
+            1f,
+            object: LocationListener {
+                override fun onLocationChanged(location: Location) {
+                    Log.d("Marcadores", "Marcadores ${map.overlays.size}")
+                    setPoint(location.latitude, location.longitude)
+                }
+            }
+        )
     }
 
     private fun verDesafio() {
@@ -52,17 +77,19 @@ class VerDesafiosActivity : AppCompatActivity(), LocationListener {
             val intent = Intent(this, VerDesafioActivity::class.java)
             val bundle = Bundle()
             val jsonObject = desafios!!.getJSONObject(position)
-            bundle.putString("nombre", jsonObject.getString("name"))
-            bundle.putString("descripcion", jsonObject.getString("description"))
-            bundle.putString("imagen", jsonObject.getString("photoUrl"))
+            bundle.putString("id", jsonObject.getString("id"))
+            bundle.putString("nombre", jsonObject.getString("nombre"))
+            bundle.putString("descripcion", jsonObject.getString("descripcion"))
+            bundle.putString("imagen", jsonObject.getString("fotoUrl"))
             bundle.putString("puntoInicial", jsonObject.getString("puntoInicial"))
+            bundle.putString("puntosIntermedios", jsonObject.getString("puntosIntermedios"))
             bundle.putString("puntoFinal", jsonObject.getString("puntoFinal"))
             intent.putExtra("bundle", bundle)
             startActivity(intent)
         }
     }
 
-    private fun quemarDatos() {
+    private fun inicializarDesafios() {
         val columns = arrayOf("_id", "imagen", "nombre")
         val matrixCursor = MatrixCursor(columns)
 
@@ -76,7 +103,7 @@ class VerDesafiosActivity : AppCompatActivity(), LocationListener {
                 val description = jsonObject.getString("descripcion")
                 val puntoInicial = jsonObject.getString("puntoInicial")
                 val puntoFinal = jsonObject.getString("puntoFinal")
-                matrixCursor.addRow(arrayOf(i, R.drawable.foto_bandera, name))
+                matrixCursor.addRow(arrayOf(i, desafioImageUrl, name))
             }
         }
 
@@ -106,9 +133,76 @@ class VerDesafiosActivity : AppCompatActivity(), LocationListener {
         map = findViewById(R.id.map)
         map.setMultiTouchControls(true)
         val mapController = map.controller
-        mapController.setZoom(17.0)
-        val startPoint = GeoPoint(48.8583, 2.2944)
-        mapController.setCenter(startPoint)
+        mapController.setZoom(15.0)
+        val marcador = Marker(map)
+        marcador.icon = map.context.getDrawable(R.drawable.ic_location)
+        marcador.position = GeoPoint(0.0, 0.0)
+        marcador.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
+        marcador.title = "Posición actual"
+        marcadores.add(marcador)
+    }
+
+    private fun setPoint(lalitud: Double, longitud: Double){
+        //Obtener el GeoPoint
+        val newPoint = GeoPoint(lalitud, longitud)
+
+        //Crear los marcadores
+        eliminarDesafiosAnteriores()
+        marcadores[0].position = newPoint
+        setDesafiosCercanos(lalitud, longitud)
+        agregarMarcadores()
+
+        //Mover el mapa
+        map.controller.animateTo(newPoint)
+
+        //Refrescar cambios en el mapa
+        map.invalidate()
+    }
+
+    private fun eliminarDesafiosAnteriores(){
+        map.overlays.clear()
+        val marcadorPosicion = marcadores[0]
+        marcadores.clear()
+        marcadores.add(marcadorPosicion)
+    }
+
+    private fun agregarMarcadores(){
+        map.overlays.addAll(marcadores)
+        Log.d("Marcadores", "Marcadores ${map.overlays.size}")
+    }
+
+    private fun setDesafiosCercanos(lalitud: Double, longitud: Double){
+        if (desafios != null) {
+            for (i in 0 until desafios!!.length()){
+                val desafio = desafios!!.getJSONObject(i)
+                val puntoInicial = desafio.getJSONObject("puntoInicial")
+                val latitudPunto = puntoInicial.getDouble("latitud")
+                val longitudPunto = puntoInicial.getDouble("longitud")
+                val distancia = calcularDistancia(lalitud, longitud, latitudPunto, longitudPunto)
+                if(distancia <= 10000.0){
+                    val marcadorDesafio = Marker(map)
+                    marcadorDesafio.icon = map.context.getDrawable(R.drawable.desafio_marcador)
+                    marcadorDesafio.position = GeoPoint(latitudPunto, longitudPunto)
+                    marcadorDesafio.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
+                    marcadorDesafio.title = desafio.getString("nombre")
+                    marcadores.add(marcadorDesafio)
+                }
+            }
+        }
+    }
+
+    fun calcularDistancia(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Double {
+        val radioTierra = 6371000.0  // Radio de la Tierra en metros
+        val dLat = Math.toRadians(lat2 - lat1)
+        val dLon = Math.toRadians(lon2 - lon1)
+
+        val a = sin(dLat / 2) * sin(dLat / 2) +
+                cos(Math.toRadians(lat1)) * cos(Math.toRadians(lat2)) *
+                sin(dLon / 2) * sin(dLon / 2)
+
+        val c = 2 * atan2(sqrt(a), sqrt(1 - a))
+
+        return radioTierra * c  // Distancia en metros
     }
 
     private fun setupLocationManager() {
@@ -146,7 +240,7 @@ class VerDesafiosActivity : AppCompatActivity(), LocationListener {
     }
 
     override fun onLocationChanged(location: Location) {
-        if (::map.isInitialized && map.handler != null && map.controller != null) {
+       /* if (::map.isInitialized && map.handler != null && map.controller != null) {
             val currentLocation = GeoPoint(location.latitude, location.longitude)
             if (isFirstLocation) {
                 map.controller.setCenter(currentLocation)
@@ -168,7 +262,7 @@ class VerDesafiosActivity : AppCompatActivity(), LocationListener {
             }
         } else {
             println("El mapa no está listo aún")
-        }
+        }*/
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {

@@ -4,8 +4,12 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.bumptech.glide.Glide
+import com.cuatrodivinas.seekandsolve.Datos.Desafio
+import com.cuatrodivinas.seekandsolve.Datos.Punto
 import com.cuatrodivinas.seekandsolve.R
 import com.cuatrodivinas.seekandsolve.databinding.ActivityVerDesafioBinding
+import com.google.firebase.crashlytics.buildtools.reloc.com.google.common.reflect.TypeToken
+import com.google.gson.Gson
 
 class VerDesafioActivity : AppCompatActivity() {
     private lateinit var binding: ActivityVerDesafioBinding
@@ -47,7 +51,15 @@ class VerDesafioActivity : AppCompatActivity() {
 
         binding.revisarTrayecto.setOnClickListener {
             val intentRevisarTrayecto = Intent(this, TrayectoDesafioActivity::class.java)
-            intentRevisarTrayecto.putExtra("bundle", desafio)
+            val gson = Gson()
+            val puntoListType = object : TypeToken<MutableList<Punto>>() {}.type
+            val puntoInicial: Punto = gson.fromJson(desafio.getString("puntoInicial"), Punto::class.java)
+            val puntoFinal: Punto = gson.fromJson(desafio.getString("puntoFinal"), Punto::class.java)
+            val puntosIntermedios: MutableList<Punto> = gson.fromJson(desafio.getString("puntosIntermedios"), puntoListType)
+            val desafioVar = Desafio(desafio.getString("id")!!.toInt(), desafio.getString("nombre")!!, desafio.getString("imagen")!!,
+                desafio.getString("descripcion")!!, puntoInicial,
+                puntosIntermedios, puntoFinal)
+            intentRevisarTrayecto.putExtra("desafio", desafioVar)
             startActivity(intentRevisarTrayecto)
         }
 

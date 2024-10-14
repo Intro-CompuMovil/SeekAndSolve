@@ -9,6 +9,7 @@ import android.widget.CursorAdapter
 import android.widget.ImageView
 import android.widget.TextView
 import com.cuatrodivinas.seekandsolve.R
+import com.squareup.picasso.Picasso
 
 class AmigosAdapter(context: Context?, c: Cursor?, flags: Int ): CursorAdapter(context, c, flags) {
     private val IMAGEN = 1
@@ -22,9 +23,13 @@ class AmigosAdapter(context: Context?, c: Cursor?, flags: Int ): CursorAdapter(c
     override fun bindView(view: View?, context: Context?, cursor: Cursor?) {
         val imagenAmigo = view?.findViewById<ImageView>(R.id.imagenAmigo)
         val nombreAmigo = view?.findViewById<TextView>(R.id.nombreAmigo)
-        val imagen:Int = cursor?.getInt(IMAGEN)!!
+        val imagen:String = cursor?.getString(IMAGEN)!!
         val nombre = cursor?.getString(NOMBRE)
-        imagenAmigo!!.setImageResource(imagen)
+        Picasso.get()
+            .load(imagen)
+            .placeholder(R.drawable.foto_bandera) // Imagen de carga (opcional)
+            .error(R.drawable.foto_bandera) // Imagen de error (opcional)
+            .into(imagenAmigo)
         nombreAmigo!!.text = nombre
     }
 }

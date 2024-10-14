@@ -18,6 +18,8 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.PERMISO_CAMARA
+import com.cuatrodivinas.seekandsolve.Datos.Desafio
+import com.cuatrodivinas.seekandsolve.Datos.Punto
 import com.cuatrodivinas.seekandsolve.R
 import com.cuatrodivinas.seekandsolve.databinding.ActivityCrearDesafioBinding
 import com.cuatrodivinas.seekandsolve.databinding.ActivityEditarPerfilBinding
@@ -28,12 +30,13 @@ class CrearDesafioActivity : AppCompatActivity() {
     private lateinit var intentEditarPunto: Intent
 
     private lateinit var intentCrearDesafio: Intent
+    private lateinit var desafio: Desafio
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityCrearDesafioBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
+        desafio = Desafio(0, "", "", "", Punto(0.0,0.0), mutableListOf(), Punto(0.0,0.0))
         binding.listaCheckpoints.adapter = CheckpointsAdapter(this, null, 0)
 
         intentEditarPunto = Intent(this, SeleccionarPuntoActivity::class.java)
@@ -43,12 +46,26 @@ class CrearDesafioActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         binding.editarPuntoInicial.setOnClickListener {
-            intentEditarPunto.putExtra("tipoPunto", "inicial")
+            val bundle = Bundle()
+            bundle.putString("tipoPunto", "inicial")
+            bundle.putSerializable("desafio", desafio)
+            intentEditarPunto.putExtra("bundle", bundle)
             startActivity(intentEditarPunto)
         }
 
         binding.editarPuntoFinal.setOnClickListener {
-            intentEditarPunto.putExtra("tipoPunto", "final")
+            val bundle = Bundle()
+            bundle.putString("tipoPunto", "final")
+            bundle.putSerializable("desafio", desafio)
+            intentEditarPunto.putExtra("bundle", bundle)
+            startActivity(intentEditarPunto)
+        }
+
+        binding.agregarCheckpoint.setOnClickListener {
+            val bundle = Bundle()
+            bundle.putString("tipoPunto", "checkpoint")
+            bundle.putSerializable("desafio", desafio)
+            intentEditarPunto.putExtra("bundle", bundle)
             startActivity(intentEditarPunto)
         }
 

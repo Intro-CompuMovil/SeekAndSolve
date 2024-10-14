@@ -48,6 +48,18 @@
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
+    <EditText
+        android:id="@+id/buscar"
+        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:layout_margin="16dp"
+        app:layout_constraintBottom_toTopOf="@+id/map"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        android:background="@drawable/border"
+        app:layout_constraintTop_toBottomOf="@+id/header_select_point"
+        android:imeOptions="actionSend"/>
+
     <org.osmdroid.views.MapView
         android:id="@+id/map"
         android:layout_width="match_parent"
@@ -55,6 +67,16 @@
         app:layout_constraintBottom_toTopOf="@+id/agregarCheckpoint"
         app:layout_constraintTop_toBottomOf="@id/header_select_point"
         android:layout_margin="16dp"/>
+
+    <TextView
+        android:id="@+id/direccion"
+        android:padding="16dp"
+        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:textSize="16sp"
+        app:layout_constraintBottom_toTopOf="@+id/agregarCheckpoint"
+        app:layout_constraintTop_toBottomOf="@+id/map"
+        />
 
     <Button
         android:id="@+id/agregarCheckpoint"

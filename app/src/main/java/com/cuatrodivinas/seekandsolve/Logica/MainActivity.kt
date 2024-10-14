@@ -242,6 +242,7 @@ class MainActivity : AppCompatActivity(), LocationListener {
         mapController = map.controller
         mapController.setZoom(15.0)
         val marcador = Marker(map)
+        marcador.icon = map.context.getDrawable(R.drawable.ic_location)
         marcador.position = GeoPoint(0.0, 0.0)
         marcador.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
         marcador.title = "Posición actual"
@@ -286,9 +287,9 @@ class MainActivity : AppCompatActivity(), LocationListener {
                 val latitudPunto = puntoInicial.getDouble("latitud")
                 val longitudPunto = puntoInicial.getDouble("longitud")
                 val distancia = calcularDistancia(lalitud, longitud, latitudPunto, longitudPunto)
-                if(distancia <= 10000.0){
+                if(distancia <= 3000.0){
                     val marcadorDesafio = Marker(map)
-                    //marcadorDesafio.icon = map.context.getDrawable(R.drawable.ic_location)
+                    marcadorDesafio.icon = map.context.getDrawable(R.drawable.desafio_marcador)
                     marcadorDesafio.position = GeoPoint(latitudPunto, longitudPunto)
                     marcadorDesafio.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
                     marcadorDesafio.title = desafio.getString("nombre")
@@ -382,7 +383,7 @@ class MainActivity : AppCompatActivity(), LocationListener {
     }
 
     override fun onLocationChanged(location: Location) {
-        if (::map.isInitialized && map.handler != null && map.controller != null) {
+        /*if (::map.isInitialized && map.handler != null && map.controller != null) {
             val currentLocation = GeoPoint(location.latitude, location.longitude)
             if (isFirstLocation) {
                 map.controller.setCenter(currentLocation)
@@ -404,7 +405,7 @@ class MainActivity : AppCompatActivity(), LocationListener {
             }
         } else {
             println("El mapa no está listo aún")
-        }
+        }*/
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
