@@ -15,7 +15,7 @@ class InvitarAmigosDesafioActivity : AppCompatActivity() {
     }
 
     override fun onResume() {
-        val intent = Intent(this, ConfigurarDesafioActivity::class.java)
+        val intent = Intent(this, ConfigurarCarreraActivity::class.java)
         super.onResume()
         binding.backButtonInvite.setOnClickListener {
             finish()

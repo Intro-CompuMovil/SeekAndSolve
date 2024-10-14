@@ -9,6 +9,7 @@ import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
 import android.os.Bundle
+import android.util.Log
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.LinearLayout
@@ -24,12 +25,19 @@ import org.osmdroid.library.BuildConfig
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.Marker
-import java.io.FileInputStream
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import org.json.JSONException
+import org.json.JSONObject
 import kotlin.properties.Delegates
 import org.osmdroid.api.IMapController
+import java.io.IOException
+import java.io.InputStream
+import kotlin.math.atan2
+import kotlin.math.cos
+import kotlin.math.sin
+import kotlin.math.sqrt
 
 class MainActivity : AppCompatActivity(), LocationListener {
     private lateinit var map: MapView
@@ -37,9 +45,8 @@ class MainActivity : AppCompatActivity(), LocationListener {
     private lateinit var locationManager: LocationManager
     private lateinit var googleSignInClient: GoogleSignInClient
     private var isFirstLocation = true
-    private lateinit var locationListener: LocationListener
     private lateinit var mapController: IMapController
-    private lateinit var marcador: Marker
+    private lateinit var marcadores: MutableList<Marker>
 
     private var id by Delegates.notNull<Int>()
     private lateinit var nombre: String
@@ -64,7 +71,21 @@ class MainActivity : AppCompatActivity(), LocationListener {
             fotoUrl = bundle.getString("fotoUrl")?: ""
             fechaNacimiento = bundle.getString("fechaNacimiento")!!
         }
+        else{
+            val user = getLastRegisteredUser()
+            if(user != null){
+                id = 0
+                username = user.getString("username")
+                nombre = user.getString("name")
+                contrasena = user.getString("password")
+                correo = user.getString("email")
+                fechaNacimiento = user.getString("fechaNacimiento")
+                val sessionType = user.getString("signInType")
+                fotoUrl = if (user.has("photoUrl") && !user.isNull("photoUrl")) user.getString("photoUrl") else ""
+            }
 
+        }
+        marcadores = mutableListOf()
         setupGoogleSignInClient()
         checkSession()
         setupMap()
@@ -77,6 +98,27 @@ class MainActivity : AppCompatActivity(), LocationListener {
         setupCrearDesafioButton()
         setupRankingButton()
         setupAmigosButton()
+    }
+
+    private fun getLastRegisteredUser(): JSONObject? {
+        try {
+            val inputStream: InputStream = openFileInput("user_data.json")
+            val size: Int = inputStream.available()
+            val buffer = ByteArray(size)
+            inputStream.read(buffer)
+            inputStream.close()
+            val json = String(buffer, Charsets.UTF_8)
+            val jsonArray = JSONArray(json)
+            if (jsonArray.length() > 0) {
+                // Devuelve el último usuario registrado
+                return jsonArray.getJSONObject(jsonArray.length() - 1)
+            }
+        } catch (e: IOException) {
+            e.printStackTrace()
+        } catch (e: JSONException) {
+            e.printStackTrace()
+        }
+        return null
     }
 
     private fun setupAmigosButton() {
@@ -142,6 +184,7 @@ class MainActivity : AppCompatActivity(), LocationListener {
             1f,
             object: LocationListener {
                 override fun onLocationChanged(location: Location) {
+                    Log.d("Marcadores", "Marcadores ${map.overlays.size}")
                     setPoint(location.latitude, location.longitude)
                 }
             }
@@ -197,27 +240,95 @@ class MainActivity : AppCompatActivity(), LocationListener {
         map = findViewById(R.id.map)
         map.setMultiTouchControls(true)
         mapController = map.controller
-        mapController.setZoom(17.0)
-        marcador = Marker(map)
+        mapController.setZoom(15.0)
+        val marcador = Marker(map)
         marcador.position = GeoPoint(0.0, 0.0)
         marcador.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
         marcador.title = "Posición actual"
-        map.overlays.add(marcador)
+        marcadores.add(marcador)
     }
 
     private fun setPoint(lalitud: Double, longitud: Double){
         //Obtener el GeoPoint
         val newPoint = GeoPoint(lalitud, longitud)
 
-        //Crear el marcador
-        marcador.position = newPoint
+        //Crear los marcadores
+        eliminarDesafiosAnteriores()
+        marcadores[0].position = newPoint
+        setDesafiosCercanos(lalitud, longitud)
+        agregarMarcadores()
 
         //Mover el mapa
         map.controller.animateTo(newPoint)
 
         //Refrescar cambios en el mapa
         map.invalidate()
+    }
 
+    private fun eliminarDesafiosAnteriores(){
+        map.overlays.clear()
+        val marcadorPosicion = marcadores[0]
+        marcadores.clear()
+        marcadores.add(marcadorPosicion)
+    }
+
+    private fun agregarMarcadores(){
+        map.overlays.addAll(marcadores)
+        Log.d("Marcadores", "Marcadores ${map.overlays.size}")
+    }
+
+    private fun setDesafiosCercanos(lalitud: Double, longitud: Double){
+        val desafios = getDesafios()
+        if (desafios != null) {
+            for (i in 0 until desafios.length()){
+                val desafio = desafios.getJSONObject(i)
+                val puntoInicial = desafio.getJSONObject("puntoInicial")
+                val latitudPunto = puntoInicial.getDouble("latitud")
+                val longitudPunto = puntoInicial.getDouble("longitud")
+                val distancia = calcularDistancia(lalitud, longitud, latitudPunto, longitudPunto)
+                if(distancia <= 10000.0){
+                    val marcadorDesafio = Marker(map)
+                    //marcadorDesafio.icon = map.context.getDrawable(R.drawable.ic_location)
+                    marcadorDesafio.position = GeoPoint(latitudPunto, longitudPunto)
+                    marcadorDesafio.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
+                    marcadorDesafio.title = desafio.getString("nombre")
+                    marcadores.add(marcadorDesafio)
+                }
+            }
+        }
+    }
+
+    fun calcularDistancia(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Double {
+        val radioTierra = 6371000.0  // Radio de la Tierra en metros
+        val dLat = Math.toRadians(lat2 - lat1)
+        val dLon = Math.toRadians(lon2 - lon1)
+
+        val a = sin(dLat / 2) * sin(dLat / 2) +
+                cos(Math.toRadians(lat1)) * cos(Math.toRadians(lat2)) *
+                sin(dLon / 2) * sin(dLon / 2)
+
+        val c = 2 * atan2(sqrt(a), sqrt(1 - a))
+
+        return radioTierra * c  // Distancia en metros
+    }
+
+    private fun getDesafios(): JSONArray? {
+        try {
+            val inputStream: InputStream = assets.open("desafios.json")
+            val size: Int = inputStream.available()
+            val buffer = ByteArray(size)
+            inputStream.read(buffer)
+            inputStream.close()
+            val json = String(buffer, Charsets.UTF_8)
+            val desafios = JSONObject(json)
+            val jsonArray = desafios.getJSONArray("desafios")
+            return jsonArray
+        } catch (e: IOException) {
+            e.printStackTrace()
+        } catch (e: JSONException) {
+            e.printStackTrace()
+        }
+        return null
     }
 
     private fun setupLocationManager() {
