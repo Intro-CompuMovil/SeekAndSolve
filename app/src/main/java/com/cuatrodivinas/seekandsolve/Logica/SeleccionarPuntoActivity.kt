@@ -11,6 +11,7 @@ import android.location.LocationListener
 import android.location.LocationManager
 import android.os.Bundle
 import android.util.Log
+import android.view.GestureDetector
 import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.View
@@ -48,6 +49,7 @@ class SeleccionarPuntoActivity : AppCompatActivity(), LocationListener {
     private lateinit var tipoPunto: String
     private lateinit var marcador: Marker
     private var retrofitUrls: RetrofitUrls
+    private lateinit var gestureDetector: GestureDetector
 
     init{
         val retrofit = RetrofitOsmClient.conectarBackURL()
@@ -106,28 +108,20 @@ class SeleccionarPuntoActivity : AppCompatActivity(), LocationListener {
         eventoMapa()
     }
 
-    @SuppressLint("ClickableViewAccessibility")
+    // Configurar eventos del mapa (long click)
     private fun eventoMapa(){
-        /*val eventosOverlay = MapEventsOverlay(object : MapEventsReceiver {
-            override fun singleTapConfirmedHelper(punto: GeoPoint): Boolean {
-                // Actualizar la posición del marcador
-                setPoint(punto)
+        val mapEventsReceiver = object : MapEventsReceiver {
+            override fun singleTapConfirmedHelper(p: GeoPoint?) = false
+            override fun longPressHelper(p: GeoPoint?): Boolean {
+                p?.let {
+                    setPoint(p)
+                    actualizarDireccionPunto()
+                }
                 return true
             }
-
-            override fun longPressHelper(punto: GeoPoint): Boolean {
-                return false
-            }
-        })
-        map.overlays.add(eventosOverlay)*/
-        map.setOnTouchListener{ _, event ->
-            if (event.action == android.view.MotionEvent.ACTION_UP) {
-                val geoPoint = map.projection.fromPixels(event.x.toInt(), event.y.toInt()) as GeoPoint
-                setPoint(geoPoint)
-                actualizarDireccionPunto()
-            }
-            true
         }
+        val eventsOverlay = org.osmdroid.views.overlay.MapEventsOverlay(mapEventsReceiver)
+        map.overlays.add(eventsOverlay)
     }
 
     private fun setPoint(lalitud: Double, longitud: Double){

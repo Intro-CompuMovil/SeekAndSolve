@@ -58,7 +58,8 @@
         app:layout_constraintStart_toStartOf="parent"
         android:background="@drawable/border"
         app:layout_constraintTop_toBottomOf="@+id/header_select_point"
-        android:imeOptions="actionSend"/>
+        android:imeOptions="actionSend"
+        android:inputType="text"/>
 
     <org.osmdroid.views.MapView
         android:id="@+id/map"
