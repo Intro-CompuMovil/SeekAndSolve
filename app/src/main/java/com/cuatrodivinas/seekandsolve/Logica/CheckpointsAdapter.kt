@@ -1,27 +1,27 @@
 package com.cuatrodivinas.seekandsolve.Logica
 
 import android.content.Context
-import android.database.Cursor
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.CursorAdapter
-import android.widget.ImageView
+import android.widget.BaseAdapter
 import android.widget.TextView
+import com.cuatrodivinas.seekandsolve.Datos.Punto
 import com.cuatrodivinas.seekandsolve.R
 
-class CheckpointsAdapter(context: Context?, c: Cursor?, flags: Int ): CursorAdapter(context, c, flags) {
-    private val TXTCHECKPOINT = 1
+class CheckpointsAdapter(private val context: Context, private val checkpoints: MutableList<Punto>) : BaseAdapter() {
 
-    override fun newView(context: Context?, cursor: Cursor?, parent: ViewGroup?): View {
-        return LayoutInflater.from(context)
-            .inflate(R.layout.adapter_checkpoints, parent, false)
-    }
+    override fun getCount(): Int = checkpoints.size
 
-    override fun bindView(view: View?, context: Context?, cursor: Cursor?) {
-        val txtCheckpoint = view?.findViewById<TextView>(R.id.txtCheckpoint)
-        val texto = cursor?.getString(TXTCHECKPOINT)
-        txtCheckpoint!!.text = texto
+    override fun getItem(position: Int): Punto = checkpoints[position]
+
+    override fun getItemId(position: Int): Long = position.toLong()
+
+    override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {
+        val view = convertView ?: LayoutInflater.from(context).inflate(R.layout.adapter_checkpoints, parent, false)
+        val checkpoint = getItem(position)
+        val txtCheckpoint = view.findViewById<TextView>(R.id.txtCheckpoint)
+        txtCheckpoint.text = "Lat: ${checkpoint.latitud}, Lng: ${checkpoint.longitud}"
+        return view
     }
 }
