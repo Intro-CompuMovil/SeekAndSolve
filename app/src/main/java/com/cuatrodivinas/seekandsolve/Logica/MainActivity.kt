@@ -397,36 +397,14 @@ class MainActivity : AppCompatActivity(), LocationListener {
             ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
 
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0L, 0f, this)
-            //locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0L, 0f, this)
+            locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0L, 0f, this)
         } else {
             println("Permisos de ubicación no concedidos")
         }
     }
 
     override fun onLocationChanged(location: Location) {
-        /*if (::map.isInitialized && map.handler != null && map.controller != null) {
-            val currentLocation = GeoPoint(location.latitude, location.longitude)
-            if (isFirstLocation) {
-                map.controller.setCenter(currentLocation)
-                isFirstLocation = false
-            }
-            // Crea un marcador solo si el mapa está listo
-            try {
-                val marker = Marker(map)
-                marker.position = currentLocation
-                marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
-                val icon: Drawable = ContextCompat.getDrawable(this, R.drawable.ic_location)!!
-                marker.icon = icon
-                map.overlays.clear()
-                map.overlays.add(marker)
-                map.invalidate()
-            } catch (e: Exception) {
-                e.printStackTrace()
-                println("Error al crear el marcador: ${e.message}")
-            }
-        } else {
-            println("El mapa no está listo aún")
-        }*/
+        setPoint(location.latitude, location.longitude)
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {

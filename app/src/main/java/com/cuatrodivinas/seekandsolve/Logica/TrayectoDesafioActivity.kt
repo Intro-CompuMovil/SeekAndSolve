@@ -174,7 +174,7 @@ class TrayectoDesafioActivity : AppCompatActivity(), LocationListener {
             ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
 
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0L, 0f, this)
-            //locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0L, 0f, this)
+            locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0L, 0f, this)
         } else {
             println("Permisos de ubicación no concedidos")
         }
