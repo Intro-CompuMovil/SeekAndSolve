@@ -1,18 +1,25 @@
 package com.cuatrodivinas.seekandsolve.Logica
 
+import android.graphics.BitmapFactory
 import android.os.Bundle
+import android.util.Base64
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.view.animation.AnimationUtils
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.cuatrodivinas.seekandsolve.R
+import org.json.JSONArray
 import org.json.JSONObject
+import java.io.File
+import java.io.FileInputStream
 import java.io.IOException
 import java.io.InputStream
 
@@ -32,19 +39,23 @@ class RankingActivity : AppCompatActivity() {
     }
 
     private fun setupRankingList() {
-        val json = cargarJson()?.let { JSONObject(it) }
-        val ranking = json?.getJSONArray("users")
+        val usersArray = readUserDataFromJson()
         rankingItems = mutableListOf()
-        if (ranking != null) {
-            for (i in 0 until ranking.length()) {
-                val jsonObject = ranking.getJSONObject(i)
-                val username = jsonObject.getString("username")
-                val rewards = jsonObject.getInt("recompensas")
-                val profileImageUrl = jsonObject.getString("photoUrl")
-                rankingItems.add(RankingItem(username, rewards, profileImageUrl))
+        for (i in 0 until usersArray!!.length()) {
+            val user = usersArray.getJSONObject(i)
+            val username = user.getString("username")
+            val recomepensas = if (user.has("recompensas")) {
+                user.getJSONArray("recompensas")
+            } else {
+                JSONArray()
             }
+            val foto: String = if (user.has("photoUrl")) {
+                user.getString("photoUrl")
+            } else {
+                ""
+            }
+            rankingItems.add(RankingItem(username, recomepensas.length(), foto))
         }
-
         val rankingList = findViewById<RecyclerView>(R.id.rankingList)
         val sortedRankingItems = rankingItems.sortedByDescending { it.rewards }
 
@@ -60,11 +71,27 @@ class RankingActivity : AppCompatActivity() {
                 val profileImageView: ImageView = holder.itemView.findViewById(R.id.profileImageView)
                 val usernameTextView: TextView = holder.itemView.findViewById(R.id.usernameTextView)
                 val rewardsTextView: TextView = holder.itemView.findViewById(R.id.scoreTextView)
-
-                Glide.with(profileImageView.context)
-                    .load(rankingItem.profileImageUrl)
-                    .apply(RequestOptions.circleCropTransform())
-                    .into(profileImageView)
+                if (rankingItem.profileImageUrl.isNotEmpty()) {
+                    if (rankingItem.profileImageUrl.startsWith("/")) {
+                        // Cargar imagen desde el archivo
+                        val file = File(rankingItem.profileImageUrl)
+                        if (file.exists()) {
+                            Glide.with(profileImageView.context)
+                                .load(file)
+                                .circleCrop() // Hacer la imagen circular
+                                .into(profileImageView) // Establecer la imagen en el ImageView
+                        } else {
+                            // Caso: archivo no existe, cargar imagen por defecto
+                            profileImageView.imageTintList = ContextCompat.getColorStateList(profileImageView.context, R.color.primaryColor)
+                        }
+                    } else {
+                        // Caso: cargar imagen por defecto si la fotoUrl no es un archivo válido
+                        profileImageView.imageTintList = ContextCompat.getColorStateList(profileImageView.context, R.color.primaryColor)
+                    }
+                } else {
+                    // Caso: fotoUrl está vacía, cargar imagen por defecto
+                    profileImageView.imageTintList = ContextCompat.getColorStateList(profileImageView.context, R.color.primaryColor)
+                }
 
                 usernameTextView.text = rankingItem.username
                 rewardsTextView.text = getString(R.string.rewards_text, rankingItem.rewards)
@@ -72,23 +99,28 @@ class RankingActivity : AppCompatActivity() {
 
             override fun getItemCount() = sortedRankingItems.size
         }
+
     }
 
-    private fun cargarJson(): String? {
-        val json: String?
-        try {
-            // TODO: Leer carrerasUsuarios.json y hacer un count de quienes tengan más recompensas
-            val isStream: InputStream = assets.open("carrerasUsuarios.json")
-            val size: Int = isStream.available()
-            val buffer = ByteArray(size)
-            isStream.read(buffer)
-            isStream.close()
-            json = String(buffer, Charsets.UTF_8)
-        } catch (ex: IOException) {
-            ex.printStackTrace()
-            return null
+    fun isBase64(string: String): Boolean {
+        return try {
+            Base64.decode(string, Base64.DEFAULT)
+            true
+        } catch (e: IllegalArgumentException) {
+            false
         }
-        return json
+    }
+
+    private fun readUserDataFromJson(): JSONArray? {
+        return try {
+            val fileInputStream: FileInputStream = openFileInput("user_data.json")
+            val bytes = fileInputStream.readBytes()
+            fileInputStream.close()
+            JSONArray(String(bytes))
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
     }
 
 }

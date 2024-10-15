@@ -19,11 +19,14 @@ import com.google.firebase.auth.GoogleAuthProvider
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.FileInputStream
+import java.io.IOException
+import java.io.InputStream
 import java.security.KeyStore
 import java.util.UUID
 import javax.crypto.Cipher
 import javax.crypto.SecretKey
 import javax.crypto.spec.GCMParameterSpec
+import kotlin.properties.Delegates
 
 class LoginActivity : AppCompatActivity() {
 
@@ -32,6 +35,8 @@ class LoginActivity : AppCompatActivity() {
     }
     private lateinit var auth: FirebaseAuth
     private var signInType: String? = null
+
+    private var externo by Delegates.notNull<Boolean>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -94,6 +99,18 @@ class LoginActivity : AppCompatActivity() {
             val storedUsername = user.getString("username")
             val storedEmail = user.getString("email")
             if (usernameOrEmail == storedUsername || usernameOrEmail == storedEmail) {
+                externo = true
+                return user
+            }
+        }
+        val json = JSONObject(loadJSONFromAsset("usuarios.json"))
+        val usuariosJson = json.getJSONArray("usuarios")
+        for (i in 0 until usuariosJson.length()) {
+            val user = usuariosJson.getJSONObject(i)
+            val storedUsername = user.getString("username")
+            val storedEmail = user.getString("correo")
+            if (usernameOrEmail == storedUsername || usernameOrEmail == storedEmail) {
+                externo = false
                 return user
             }
         }
@@ -112,10 +129,42 @@ class LoginActivity : AppCompatActivity() {
                 return true
             }
         }
+        val json = JSONObject(loadJSONFromAsset("usuarios.json"))
+        val usuariosJson = json.getJSONArray("usuarios")
+        for (i in 0 until usuariosJson.length()) {
+            val user = usuariosJson.getJSONObject(i)
+            val storedUsername = user.getString("username")
+            val storedEmail = user.getString("correo")
+            val storedPasswordHash = user.getString("contrasena")
+            if ((usernameOrEmail == storedUsername || usernameOrEmail == storedEmail) && verifyPassword(password, storedPasswordHash)) {
+                signInType = user.getString("signInType")
+                return true
+            }
+        }
+
         return false
     }
 
+    private fun loadJSONFromAsset(filename: String): String? {
+        var json: String? = null
+        try {
+            val isStream: InputStream = assets.open(filename)
+            val size:Int = isStream.available()
+            val buffer = ByteArray(size)
+            isStream.read(buffer)
+            isStream.close()
+            json = String(buffer, Charsets.UTF_8)
+        } catch (ex: IOException) {
+            ex.printStackTrace()
+            return null
+        }
+        return json
+    }
+
     private fun verifyPassword(password: String, storedPasswordHash: String): Boolean {
+        if(password == storedPasswordHash){
+            return true
+        }
         val keyStore = KeyStore.getInstance("AndroidKeyStore")
         keyStore.load(null)
         val secretKey = keyStore.getKey("MyKeyAlias", null) as SecretKey
@@ -145,14 +194,25 @@ class LoginActivity : AppCompatActivity() {
     private fun navigateToMain(user: JSONObject? = null) {
         val intent = Intent(this, MainActivity::class.java)
         val bundle = Bundle()
-        bundle.putInt("id", user?.getInt("id") ?: -1)
-        bundle.putString("nombre", user?.getString("nombre") ?: "")
-        bundle.putString("username", user?.getString("username") ?: "")
-        bundle.putString("correo", user?.getString("correo") ?: "")
-        bundle.putString("contrasena", user?.getString("contrasena") ?: "")
-        bundle.putString("fotoUrl", user?.getString("fotoUrl") ?: "")
-        bundle.putString("fechaNacimiento", user?.getString("fechaNacimiento") ?: "")
-        intent.putExtras(bundle)
+        if(externo) {
+            bundle.putInt("id", user?.getInt("id") ?: -1)
+            bundle.putString("nombre", user?.getString("name") ?: "")
+            bundle.putString("username", user?.getString("username") ?: "")
+            bundle.putString("correo", user?.getString("email") ?: "")
+            bundle.putString("contrasena", user?.getString("password") ?: "")
+            bundle.putString("fotoUrl", user?.getString("photoUrl") ?: "")
+            bundle.putString("fechaNacimiento", user?.getString("fechaNacimiento") ?: "")
+            intent.putExtras(bundle)
+        }else{
+            bundle.putInt("id", user?.getInt("id") ?: -1)
+            bundle.putString("nombre", user?.getString("nombre") ?: "")
+            bundle.putString("username", user?.getString("username") ?: "")
+            bundle.putString("correo", user?.getString("correo") ?: "")
+            bundle.putString("contrasena", user?.getString("contrasena") ?: "")
+            bundle.putString("fotoUrl", user?.getString("fotoUrl") ?: "")
+            bundle.putString("fechaNacimiento", user?.getString("fechaNacimiento") ?: "")
+            intent.putExtras(bundle)
+        }
         startActivity(intent)
         finish()
     }

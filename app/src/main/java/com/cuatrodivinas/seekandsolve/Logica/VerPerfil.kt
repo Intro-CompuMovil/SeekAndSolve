@@ -2,12 +2,15 @@ package com.cuatrodivinas.seekandsolve.Logica
 
 import android.content.Context
 import android.content.Intent
+import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import com.cuatrodivinas.seekandsolve.R
 import com.cuatrodivinas.seekandsolve.databinding.ActivityVerPerfilBinding
 import android.graphics.drawable.Drawable
+import android.util.Base64
+import android.widget.Toast
 import androidx.core.content.ContextCompat
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
@@ -16,6 +19,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import org.json.JSONArray
 import org.json.JSONObject
+import java.io.File
 import java.io.FileInputStream
 import kotlin.properties.Delegates
 
@@ -61,13 +65,26 @@ class VerPerfil : AppCompatActivity() {
 
     private fun quemarDatos(){
         binding.nombreUsuarioTxt.text = username
-        if (fotoUrl != "") {
-            Glide.with(this)
-                .load(fotoUrl)
-                .override(24, 24) // Establecer el tamaño de la imagen en 24x24 px
-                .circleCrop() // Para hacer la imagen circular
-                .into(binding.imagenPerfil) // Establecer la imagen en el ImageView
+        if (fotoUrl.isNotEmpty()) {
+            if (fotoUrl.startsWith("/")) {
+                // Cargar imagen desde el archivo
+                val file = File(fotoUrl)
+                if (file.exists()) {
+                    Glide.with(this)
+                        .load(file)
+                        .circleCrop() // Hacer la imagen circular
+                        .into(binding.imagenPerfil) // Establecer la imagen en el ImageView
+                } else {
+                    // Caso: archivo no existe, cargar imagen por defecto
+                    binding.imagenPerfil.imageTintList = ContextCompat.getColorStateList(this, R.color.primaryColor)
+                }
+            } else {
+                // Caso: cargar imagen por defecto si la fotoUrl no es un archivo válido
+                binding.imagenPerfil.imageTintList = ContextCompat.getColorStateList(this, R.color.primaryColor)
+                Toast.makeText(this, "Error al cargar la imagen", Toast.LENGTH_SHORT).show()
+            }
         } else {
+            // Caso: fotoUrl está vacía, cargar imagen por defecto
             binding.imagenPerfil.imageTintList = ContextCompat.getColorStateList(this, R.color.primaryColor)
         }
         binding.nombreETxt.setText(nombre)
@@ -89,6 +106,17 @@ class VerPerfil : AppCompatActivity() {
 
     private fun eventoVolver() {
         binding.backButtonUser.setOnClickListener {
+            val intent = Intent(this, MainActivity::class.java)
+            val bundle = Bundle()
+            bundle.putInt("id", id)
+            bundle.putString("nombre", nombre)
+            bundle.putString("username", username)
+            bundle.putString("correo", correo)
+            bundle.putString("contrasena", contrasena)
+            bundle.putString("fotoUrl", fotoUrl)
+            bundle.putString("fechaNacimiento", fechaNacimiento)
+            intent.putExtras(bundle)
+            startActivity(intent)
             finish()
         }
     }

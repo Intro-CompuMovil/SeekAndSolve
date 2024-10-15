@@ -4,16 +4,19 @@ import android.Manifest
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.BitmapFactory
 import android.graphics.drawable.Drawable
 import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
 import android.os.Bundle
+import android.util.Base64
 import android.util.Log
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -32,6 +35,7 @@ import org.json.JSONException
 import org.json.JSONObject
 import kotlin.properties.Delegates
 import org.osmdroid.api.IMapController
+import java.io.File
 import java.io.IOException
 import java.io.InputStream
 import kotlin.math.atan2
@@ -61,29 +65,33 @@ class MainActivity : AppCompatActivity(), LocationListener {
         super.onCreate(savedInstanceState)
         setTheme(R.style.Base_Theme_SeekAndSolve)
         setContentView(R.layout.activity_main)
+        val user = getLastRegisteredUser()
         val bundle = intent.extras
-        if (bundle != null) {
+        if(bundle != null){
             id = bundle.getInt("id")
-            nombre = bundle.getString("nombre")!!
-            username = bundle.getString("username")!!
-            correo = bundle.getString("correo")!!
-            contrasena = bundle.getString("contrasena")!!
-            fotoUrl = bundle.getString("fotoUrl")?: ""
-            fechaNacimiento = bundle.getString("fechaNacimiento")!!
-        }
-        else{
-            val user = getLastRegisteredUser()
-            if(user != null){
-                id = 0
-                username = user.getString("username")
-                nombre = user.getString("name")
-                contrasena = user.getString("password")
-                correo = user.getString("email")
-                fechaNacimiento = user.getString("fechaNacimiento")
-                val sessionType = user.getString("signInType")
-                fotoUrl = if (user.has("photoUrl") && !user.isNull("photoUrl")) user.getString("photoUrl") else ""
-            }
+            nombre = bundle.getString("nombre") ?: ""
+            username = bundle.getString("username") ?: ""
+            correo = bundle.getString("correo") ?: ""
+            contrasena = bundle.getString("contrasena") ?: ""
+            fotoUrl = bundle.getString("fotoUrl") ?: ""
+            fechaNacimiento = bundle.getString("fechaNacimiento") ?: ""
 
+        }else if(user != null){
+            id = user.getInt("id")
+            username = user.getString("username")
+            nombre = user.getString("name")
+            contrasena = user.getString("password")
+            correo = user.getString("email")
+            fechaNacimiento = user.getString("fechaNacimiento")
+            fotoUrl = if (user.has("photoUrl") && !user.isNull("photoUrl")) user.getString("photoUrl") else ""
+        }else{
+            id = -1
+            username = "null"
+            nombre = "null"
+            contrasena = "null"
+            correo = "null"
+            fechaNacimiento = "null"
+            fotoUrl = "null"
         }
         marcadores = mutableListOf()
         setupGoogleSignInClient()
@@ -345,15 +353,36 @@ class MainActivity : AppCompatActivity(), LocationListener {
         val usernameText: TextView = findViewById(R.id.usernameText)
         val profileImage: ImageView = findViewById(R.id.profileImage)
         usernameText.text = username
-        if (fotoUrl != "") {
-            Glide.with(this)
-                .load(fotoUrl)
-                .override(24, 24) // Establecer el tamaño de la imagen en 24x24 px
-                .circleCrop() // Para hacer la imagen circular
-                .into(profileImage) // Establecer la imagen en el ImageView
-            profileImage.background = null
+        if (fotoUrl.isNotEmpty()) {
+            if (fotoUrl.startsWith("/")) {
+                // Cargar imagen desde el archivo
+                val file = File(fotoUrl)
+                if (file.exists()) {
+                    Glide.with(this)
+                        .load(file)
+                        .circleCrop() // Hacer la imagen circular
+                        .into(profileImage) // Establecer la imagen en el ImageView
+                } else {
+                    // Caso: archivo no existe, cargar imagen por defecto
+                    profileImage.imageTintList = ContextCompat.getColorStateList(this, R.color.primaryColor)
+                }
+            } else {
+                // Caso: cargar imagen por defecto si la fotoUrl no es un archivo válido
+                profileImage.imageTintList = ContextCompat.getColorStateList(this, R.color.primaryColor)
+                Toast.makeText(this, "Error al cargar la imagen", Toast.LENGTH_SHORT).show()
+            }
         } else {
+            // Caso: fotoUrl está vacía, cargar imagen por defecto
             profileImage.imageTintList = ContextCompat.getColorStateList(this, R.color.primaryColor)
+        }
+    }
+
+    fun isBase64(string: String): Boolean {
+        return try {
+            Base64.decode(string, Base64.DEFAULT)
+            true
+        } catch (e: IllegalArgumentException) {
+            false
         }
     }
 
