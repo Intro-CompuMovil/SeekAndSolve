@@ -10,6 +10,7 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.drawable.BitmapDrawable
+import android.graphics.drawable.Drawable
 import android.graphics.drawable.VectorDrawable
 import android.net.Uri
 import android.os.Build
@@ -70,6 +71,8 @@ class EditarPerfil : AppCompatActivity() {
     private lateinit var fotoUrl: String
     private lateinit var fechaNacimiento: String
 
+    private lateinit var localizacionFoto : File
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityEditarPerfilBinding.inflate(layoutInflater)
@@ -93,20 +96,23 @@ class EditarPerfil : AppCompatActivity() {
     private fun quemarDatos() {
         binding.nombreETxt.setText(nombre)
         if (fotoUrl.isNotEmpty()) {
-            if (fotoUrl.startsWith("http")) {
-                Glide.with(this)
-                    .load(fotoUrl)
-                    .override(24, 24) // Establecer el tamaño de la imagen en 24x24 px
-                    .circleCrop() // Hacer la imagen circular
-                    .into(binding.imagenPerfil) // Establecer la imagen en el ImageView
-            } else if (fotoUrl.startsWith("data:image") || isBase64(fotoUrl)) {
-                // Caso: la fotoUrl es una cadena Base64 (puede comenzar con "data:image")
-                val imageByteArray = Base64.decode(fotoUrl, Base64.DEFAULT)
-                val bitmap = BitmapFactory.decodeByteArray(imageByteArray, 0, imageByteArray.size)
-                binding.imagenPerfil.setImageBitmap(bitmap) // Establecer el Bitmap en el ImageView
+            if (fotoUrl.startsWith("/")) {
+                // Cargar imagen desde el archivo
+                val file = File(fotoUrl)
+                if (file.exists()) {
+                    Glide.with(this)
+                        .load(file)
+                        .override(24, 24) // Establecer el tamaño de la imagen en 24x24 px
+                        .circleCrop() // Hacer la imagen circular
+                        .into(binding.imagenPerfil) // Establecer la imagen en el ImageView
+                } else {
+                    // Caso: archivo no existe, cargar imagen por defecto
+                    binding.imagenPerfil.imageTintList = ContextCompat.getColorStateList(this, R.color.primaryColor)
+                }
             } else {
-                // Caso: la fotoUrl no es válida (no es http ni Base64), cargar imagen por defecto
+                // Caso: cargar imagen por defecto si la fotoUrl no es un archivo válido
                 binding.imagenPerfil.imageTintList = ContextCompat.getColorStateList(this, R.color.primaryColor)
+                Toast.makeText(this, "Error al cargar la imagen", Toast.LENGTH_SHORT).show()
             }
         } else {
             // Caso: fotoUrl está vacía, cargar imagen por defecto
@@ -275,7 +281,7 @@ class EditarPerfil : AppCompatActivity() {
     private fun takePicture() {
         val takePictureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
         try {
-            val photoFile: File = createImageFile()
+            localizacionFoto = createImageFile()
             takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri)
             startActivityForResult(takePictureIntent, PERMISO_CAMARA)
         } catch (e: ActivityNotFoundException) {
@@ -302,26 +308,41 @@ class EditarPerfil : AppCompatActivity() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        when(requestCode) {
+        when (requestCode) {
             PERMISO_CAMARA -> {
                 if (resultCode == RESULT_OK) {
                     binding.imagenPerfil.setImageURI(photoUri)
+                    binding.imagenPerfil.imageTintList = null
+                    // Guardar la ruta de la imagen en la variable
+                    localizacionFoto = File(photoUri.path!!)
                 }
             }
             PERMISO_GALERIA -> {
                 if (resultCode == RESULT_OK) {
-                    try {
-                        val imageUri = data?.data
-                        val imageStream: InputStream? = contentResolver.openInputStream(imageUri!!)
-                        val selectedImage = BitmapFactory.decodeStream(imageStream)
-                        binding.imagenPerfil.setImageBitmap(selectedImage)
-                    } catch (e: Exception) {
-                        e.message?. let{ Log.e("PERMISSION_APP",it) }
-                        Toast.makeText(this, "No fue posible seleccionar la imagen (exc.)", Toast.LENGTH_SHORT).show()
+                    data?.data?.let { imageUri ->
+                        binding.imagenPerfil.setImageURI(imageUri)
+                        binding.imagenPerfil.imageTintList = null
+                        // Guardar la ruta de la imagen seleccionada
+                        localizacionFoto = saveImageToFile(imageUri)
                     }
                 }
             }
         }
+    }
+
+    private fun saveImageToFile(imageUri: Uri): File {
+        // Crear un archivo temporal para almacenar la imagen
+        val timestamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
+        val storageDir: File = getExternalFilesDir(Environment.DIRECTORY_PICTURES)!!
+        val tempFile = File.createTempFile("IMG_${timestamp}_", ".jpg", storageDir)
+
+        // Copiar los datos de la imagen desde el InputStream hacia el archivo
+        val inputStream: InputStream? = contentResolver.openInputStream(imageUri)
+        val outputStream = FileOutputStream(tempFile)
+        inputStream?.copyTo(outputStream)
+        outputStream.close()
+        inputStream?.close()
+        return tempFile // Devolver el archivo
     }
 
     private fun eventoVolver() {
@@ -332,9 +353,55 @@ class EditarPerfil : AppCompatActivity() {
 
     fun eventoAplicarCambios() {
         binding.aplicarCambiosBtn.setOnClickListener {
-            actualizarInfo(id, binding.nombreETxt.text.toString(), binding.nombreUsuarioETxt.text.toString(), binding.corrreoETxt.text.toString(), binding.contraETxt.text.toString(), binding.imagenPerfil)
+            if (localizacionFoto != null){
+                actualizarInfo(id, binding.nombreETxt.text.toString(), binding.nombreUsuarioETxt.text.toString(), binding.corrreoETxt.text.toString(),
+                    binding.contraETxt.text.toString(), localizacionFoto.absolutePath)
+            }else{
+                actualizarInfo(id, binding.nombreETxt.text.toString(), binding.nombreUsuarioETxt.text.toString(), binding.corrreoETxt.text.toString(),
+                    binding.contraETxt.text.toString(), saveDrawableToFileAsJPG(R.drawable.profile_user_svgrepo_com).absolutePath)
+            }
+
         }
     }
+
+    private fun saveDrawableToFileAsJPG(drawableResId: Int): File {
+        // Cargar el recurso de la imagen desde drawable
+        val drawable = ContextCompat.getDrawable(this, drawableResId)
+
+        // Crear un bitmap a partir del drawable
+        val bitmap = drawableToBitmap(drawable!!)
+
+        // Crear un archivo temporal para almacenar la imagen
+        val timestamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
+        val storageDir: File = getExternalFilesDir(Environment.DIRECTORY_PICTURES)!!
+        val tempFile = File.createTempFile("IMG_${timestamp}_", ".jpg", storageDir)
+
+        // Guardar el bitmap en el archivo como JPEG
+        val outputStream = FileOutputStream(tempFile)
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
+        outputStream.flush()
+        outputStream.close()
+
+        return tempFile // Devolver el archivo
+    }
+
+    private fun drawableToBitmap(drawable: Drawable): Bitmap {
+        if (drawable is BitmapDrawable) {
+            return drawable.bitmap
+        }
+
+        // Si el drawable no es un BitmapDrawable, creamos un Bitmap
+        val bitmap = Bitmap.createBitmap(
+            drawable.intrinsicWidth,
+            drawable.intrinsicHeight,
+            Bitmap.Config.ARGB_8888
+        )
+        val canvas = Canvas(bitmap)
+        drawable.setBounds(0, 0, canvas.width, canvas.height)
+        drawable.draw(canvas)
+        return bitmap
+    }
+
     private fun hashPassword(password: String): String {
         val keyGenerator = KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES, "AndroidKeyStore")
         val keyGenParameterSpec = KeyGenParameterSpec.Builder(
@@ -353,15 +420,14 @@ class EditarPerfil : AppCompatActivity() {
         return Base64.encodeToString(iv + encryption, Base64.DEFAULT)
     }
 
-    private fun actualizarInfo(id: Int, nombre: String, username: String, correo: String, contrasena: String, imagenPerfil: ImageView) {
+    private fun actualizarInfo(id: Int, nombre: String, username: String, correo: String, contrasena: String, imagenPerfil: String) {
         val userData = JSONObject()
         userData.put("name", nombre)
         userData.put("username", username)
         userData.put("email", correo)
         val hashPassword = hashPassword(contrasena)
         userData.put("password", hashPassword)
-        val img = imageViewToBase64(imagenPerfil)
-        userData.put("fotoUrl", img)
+        userData.put("fotoUrl", imagenPerfil)
         userData.put("fechaNacimiento", fechaNacimiento)
         userData.put("signInType", "Normal")
 
@@ -381,7 +447,7 @@ class EditarPerfil : AppCompatActivity() {
         bundle.putString("username", username)
         bundle.putString("correo", correo)
         bundle.putString("contrasena", hashPassword)
-        bundle.putString("fotoUrl", imageViewToBase64(binding.imagenPerfil))
+        bundle.putString("fotoUrl", imagenPerfil)
         bundle.putString("fechaNacimiento", fechaNacimiento)
         intent.putExtras(bundle)
         startActivity(intent)
@@ -407,31 +473,5 @@ class EditarPerfil : AppCompatActivity() {
         } catch (e: Exception) {
             e.printStackTrace()
         }
-    }
-
-    private fun imageViewToBase64(imagenPerfil: ImageView): String {
-        val drawable = imagenPerfil.drawable
-        val bitmap: Bitmap = when (drawable) {
-            is BitmapDrawable -> drawable.bitmap // Si es BitmapDrawable, obtén el bitmap directamente
-            is VectorDrawable -> {
-                // Si es VectorDrawable, conviértelo a Bitmap
-                val bitmap = Bitmap.createBitmap(drawable.intrinsicWidth, drawable.intrinsicHeight, Bitmap.Config.ARGB_8888)
-                val canvas = Canvas(bitmap)
-                drawable.setBounds(0, 0, canvas.width, canvas.height)
-                drawable.draw(canvas)
-                bitmap
-            }
-            else -> {
-                throw IllegalArgumentException("Unsupported drawable type")
-            }
-        }
-
-        // Convertir el Bitmap a un arreglo de bytes
-        val byteArrayOutputStream = ByteArrayOutputStream()
-        bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream)
-        val byteArray = byteArrayOutputStream.toByteArray()
-
-        // Codificar el arreglo de bytes a Base64
-        return Base64.encodeToString(byteArray, Base64.DEFAULT)
     }
 }

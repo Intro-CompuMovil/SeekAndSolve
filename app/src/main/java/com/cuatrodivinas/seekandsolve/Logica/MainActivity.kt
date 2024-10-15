@@ -16,6 +16,7 @@ import android.widget.Button
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -34,6 +35,7 @@ import org.json.JSONException
 import org.json.JSONObject
 import kotlin.properties.Delegates
 import org.osmdroid.api.IMapController
+import java.io.File
 import java.io.IOException
 import java.io.InputStream
 import kotlin.math.atan2
@@ -64,15 +66,32 @@ class MainActivity : AppCompatActivity(), LocationListener {
         setTheme(R.style.Base_Theme_SeekAndSolve)
         setContentView(R.layout.activity_main)
         val user = getLastRegisteredUser()
-        if(user != null){
+        val bundle = intent.extras
+        if(bundle != null){
+            id = bundle.getInt("id")
+            nombre = bundle.getString("nombre") ?: ""
+            username = bundle.getString("username") ?: ""
+            correo = bundle.getString("correo") ?: ""
+            contrasena = bundle.getString("contrasena") ?: ""
+            fotoUrl = bundle.getString("fotoUrl") ?: ""
+            fechaNacimiento = bundle.getString("fechaNacimiento") ?: ""
+
+        }else if(user != null){
             id = 0
             username = user.getString("username")
             nombre = user.getString("name")
             contrasena = user.getString("password")
             correo = user.getString("email")
             fechaNacimiento = user.getString("fechaNacimiento")
-            val sessionType = user.getString("signInType")
             fotoUrl = if (user.has("photoUrl") && !user.isNull("photoUrl")) user.getString("photoUrl") else ""
+        }else{
+            id = -1
+            username = "null"
+            nombre = "null"
+            contrasena = "null"
+            correo = "null"
+            fechaNacimiento = "null"
+            fotoUrl = "null"
         }
         marcadores = mutableListOf()
         setupGoogleSignInClient()
@@ -335,20 +354,23 @@ class MainActivity : AppCompatActivity(), LocationListener {
         val profileImage: ImageView = findViewById(R.id.profileImage)
         usernameText.text = username
         if (fotoUrl.isNotEmpty()) {
-            if (fotoUrl.startsWith("http")) {
-                Glide.with(this)
-                    .load(fotoUrl)
-                    .override(24, 24) // Establecer el tamaño de la imagen en 24x24 px
-                    .circleCrop() // Hacer la imagen circular
-                    .into(profileImage) // Establecer la imagen en el ImageView
-            } else if (fotoUrl.startsWith("data:image") || isBase64(fotoUrl)) {
-                // Caso: la fotoUrl es una cadena Base64 (puede comenzar con "data:image")
-                val imageByteArray = Base64.decode(fotoUrl, Base64.DEFAULT)
-                val bitmap = BitmapFactory.decodeByteArray(imageByteArray, 0, imageByteArray.size)
-                profileImage.setImageBitmap(bitmap) // Establecer el Bitmap en el ImageView
+            if (fotoUrl.startsWith("/")) {
+                // Cargar imagen desde el archivo
+                val file = File(fotoUrl)
+                if (file.exists()) {
+                    Glide.with(this)
+                        .load(file)
+                        .override(24, 24) // Establecer el tamaño de la imagen en 24x24 px
+                        .circleCrop() // Hacer la imagen circular
+                        .into(profileImage) // Establecer la imagen en el ImageView
+                } else {
+                    // Caso: archivo no existe, cargar imagen por defecto
+                    profileImage.imageTintList = ContextCompat.getColorStateList(this, R.color.primaryColor)
+                }
             } else {
-                // Caso: la fotoUrl no es válida (no es http ni Base64), cargar imagen por defecto
+                // Caso: cargar imagen por defecto si la fotoUrl no es un archivo válido
                 profileImage.imageTintList = ContextCompat.getColorStateList(this, R.color.primaryColor)
+                Toast.makeText(this, "Error al cargar la imagen", Toast.LENGTH_SHORT).show()
             }
         } else {
             // Caso: fotoUrl está vacía, cargar imagen por defecto
