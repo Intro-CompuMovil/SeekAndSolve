@@ -7,34 +7,60 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.Canvas
+import android.graphics.drawable.BitmapDrawable
+import android.graphics.drawable.VectorDrawable
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.os.Environment
 import android.provider.MediaStore
+import android.security.keystore.KeyGenParameterSpec
+import android.security.keystore.KeyProperties
 import android.text.InputType
+import android.util.Base64
 import android.util.Log
 import android.view.MotionEvent
 import android.view.View
+import android.widget.ImageView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.PERMISO_CAMARA
+import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.PERMISO_GALERIA
 //import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.SELECCIONAR_IMAGEN
 import com.cuatrodivinas.seekandsolve.R
 import com.cuatrodivinas.seekandsolve.databinding.ActivityEditarPerfilBinding
+import com.google.firebase.crashlytics.buildtools.reloc.org.apache.commons.io.output.ByteArrayOutputStream
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
+import java.io.File
+import java.io.FileOutputStream
 import java.io.IOException
 import java.io.InputStream
+import java.security.KeyStore
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+import javax.crypto.Cipher
+import javax.crypto.KeyGenerator
+import javax.crypto.SecretKey
+import javax.crypto.spec.GCMParameterSpec
 import kotlin.properties.Delegates
 
 class EditarPerfil : AppCompatActivity() {
     private lateinit var binding: ActivityEditarPerfilBinding
     private var contraseniaVisible = false
+    private lateinit var photoUri: Uri
 
     private var id by Delegates.notNull<Int>()
     private lateinit var nombre: String
@@ -66,18 +92,31 @@ class EditarPerfil : AppCompatActivity() {
 
     private fun quemarDatos() {
         binding.nombreETxt.setText(nombre)
-        if (fotoUrl != "") {
-            Glide.with(this)
-                .load(fotoUrl)
-                .override(24, 24) // Establecer el tamaño de la imagen en 24x24 px
-                .circleCrop() // Para hacer la imagen circular
-                .into(binding.imagenPerfil) // Establecer la imagen en el ImageView
+        if (fotoUrl.isNotEmpty()) {
+            if (fotoUrl.startsWith("http")) {
+                Glide.with(this)
+                    .load(fotoUrl)
+                    .override(24, 24) // Establecer el tamaño de la imagen en 24x24 px
+                    .circleCrop() // Hacer la imagen circular
+                    .into(binding.imagenPerfil) // Establecer la imagen en el ImageView
+            } else if (fotoUrl.startsWith("data:image") || isBase64(fotoUrl)) {
+                // Caso: la fotoUrl es una cadena Base64 (puede comenzar con "data:image")
+                val imageByteArray = Base64.decode(fotoUrl, Base64.DEFAULT)
+                val bitmap = BitmapFactory.decodeByteArray(imageByteArray, 0, imageByteArray.size)
+                binding.imagenPerfil.setImageBitmap(bitmap) // Establecer el Bitmap en el ImageView
+            } else {
+                // Caso: la fotoUrl no es válida (no es http ni Base64), cargar imagen por defecto
+                binding.imagenPerfil.imageTintList = ContextCompat.getColorStateList(this, R.color.primaryColor)
+            }
         } else {
+            // Caso: fotoUrl está vacía, cargar imagen por defecto
             binding.imagenPerfil.imageTintList = ContextCompat.getColorStateList(this, R.color.primaryColor)
         }
         binding.nombreETxt.setText(nombre)
         binding.corrreoETxt.setText(correo)
         binding.FechaETxt.setText(fechaNacimiento)
+        binding.nombreUsuarioETxt.setText(username)
+        binding.contraETxt.setText(descifrarPassword(contrasena))
         /*if (sessionType == "Google") {
             binding.nombreUsuarioETxtLayout.visibility = View.GONE
             binding.contraETxtLayout.visibility = View.GONE
@@ -85,6 +124,29 @@ class EditarPerfil : AppCompatActivity() {
             binding.nombreUsuarioETxt.isEnabled = true
             binding.contraETxt.isEnabled = true
         } */
+    }
+
+    fun isBase64(string: String): Boolean {
+        return try {
+            Base64.decode(string, Base64.DEFAULT)
+            true
+        } catch (e: IllegalArgumentException) {
+            false
+        }
+    }
+
+    private fun descifrarPassword(storedPasswordHash: String): String {
+        val keyStore = KeyStore.getInstance("AndroidKeyStore")
+        keyStore.load(null)
+        val secretKey = keyStore.getKey("MyKeyAlias", null) as SecretKey
+
+        val cipher = Cipher.getInstance("AES/GCM/NoPadding")
+        val ivAndCipherText = Base64.decode(storedPasswordHash, Base64.DEFAULT)
+        val iv = ivAndCipherText.copyOfRange(0, 12)
+        val cipherText = ivAndCipherText.copyOfRange(12, ivAndCipherText.size)
+        val spec = GCMParameterSpec(128, iv)
+        cipher.init(Cipher.DECRYPT_MODE, secretKey, spec)
+        return String(cipher.doFinal(cipherText), Charsets.UTF_8)
     }
 
     private fun eventoCambiarFoto(){
@@ -100,8 +162,7 @@ class EditarPerfil : AppCompatActivity() {
                             "Necesitamos el permiso de cámara para cambiar tu foto de perfil", PERMISO_CAMARA)
                     }
                     1 -> {
-                        // Opción para seleccionar desde la galería
-                        seleccionarDeGaleria()
+                        pedirPermisosGaleria("Necesitamos acceder a la galería para seleccionar y mostrar una imagen en la app")
                     }
                 }
             }
@@ -109,10 +170,72 @@ class EditarPerfil : AppCompatActivity() {
         }
     }
 
+    private val requestGalleryPermissions = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
+        when {
+            permissions.all { it.value } -> {
+                // Todos los permisos concedidos -> seleccionar una imagen de la galería
+                seleccionarDeGaleria()
+            }
+            permissions.any { !it.value } -> {
+                // Algún permiso fue denegado
+                Toast.makeText(this, "Permisos de Galería denegados", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private fun pedirPermisosGaleria(justificacion: String) {
+        // Array de permisos a solicitar basado en la versión de Android del dispositivo
+        val permisos = when {
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE -> arrayOf(
+                android.Manifest.permission.READ_MEDIA_IMAGES,
+                android.Manifest.permission.READ_MEDIA_VIDEO,
+                android.Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED
+            )
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU -> arrayOf(
+                android.Manifest.permission.READ_MEDIA_IMAGES,
+                android.Manifest.permission.READ_MEDIA_VIDEO
+            )
+            else -> arrayOf(android.Manifest.permission.READ_EXTERNAL_STORAGE)
+        }
+
+        // Verificar si se debe mostrar una justificación para cualquiera de los permisos
+        if (permisos.any { shouldShowRequestPermissionRationale(it) }) {
+            mostrarJustificacion(
+                justificacion
+            ) {
+                // Lanzar la solicitud de permisos después de la justificación
+                requestGalleryPermissions.launch(permisos)
+            }
+        } else {
+            // Lanzar la solicitud de permisos sin justificación
+            requestGalleryPermissions.launch(permisos)
+        }
+    }
+
+    private fun mostrarJustificacion(mensaje: String, onAccept: () -> Unit) {
+        androidx.appcompat.app.AlertDialog.Builder(this)
+            .setTitle("Justificación de permisos")
+            .setMessage(mensaje)
+            .setPositiveButton("Aceptar") { dialog, _ ->
+                onAccept()
+                dialog.dismiss()
+            }
+            .setNegativeButton("Cancelar") { dialog, _ ->
+                dialog.dismiss()
+            }
+            .create()
+            .show()
+    }
+
+
     private fun seleccionarDeGaleria() {
         val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
-        intent.type = "image/*"
-        //startActivityForResult(intent, SELECCIONAR_IMAGEN)
+        try {
+            startActivityForResult(intent, PERMISO_GALERIA)
+        } catch (e: ActivityNotFoundException) {
+            e.message?. let{ Log.e("PERMISSION_APP",it) }
+            Toast.makeText(this, "No es posible abrir la galería", Toast.LENGTH_SHORT).show()
+        }
     }
 
     private fun pedirPermiso(context: Context, permiso: String, justificacion: String,
@@ -121,12 +244,15 @@ class EditarPerfil : AppCompatActivity() {
             PackageManager.PERMISSION_GRANTED){
             if (shouldShowRequestPermissionRationale(permiso)) {
                 // Explicar al usuario por qué necesitamos el permiso
-                Toast.makeText(context, justificacion, Toast.LENGTH_SHORT).show()
+                mostrarJustificacion(justificacion) {
+                    requestPermissions(arrayOf(permiso), idCode)
+                }
+            } else {
+                requestPermissions(arrayOf(permiso), idCode)
             }
-            requestPermissions(arrayOf(permiso), idCode)
         }
         else{
-            Toast.makeText(context, "Permiso otorgado", Toast.LENGTH_SHORT).show()
+            // Permiso ya concedido, tomar la foto
             takePicture()
         }
     }
@@ -135,17 +261,13 @@ class EditarPerfil : AppCompatActivity() {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         when (requestCode) {
             PERMISO_CAMARA -> {
-                // If request is cancelled, the result arrays are empty.
                 if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
-                    Toast.makeText(this, "Permiso otorgado", Toast.LENGTH_SHORT).show()
+                    // Permiso concedido, tomar la foto
                     takePicture()
                 } else {
-                    Toast.makeText(this, "FUNCIONALIDADES REDUCIDAS", Toast.LENGTH_LONG).show()
+                    Toast.makeText(this, "Funcionalidades reducidas", Toast.LENGTH_LONG).show()
                 }
                 return
-            }
-            else -> {
-                // Ignore all other requests.
             }
         }
     }
@@ -153,41 +275,54 @@ class EditarPerfil : AppCompatActivity() {
     private fun takePicture() {
         val takePictureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
         try {
+            val photoFile: File = createImageFile()
+            takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri)
             startActivityForResult(takePictureIntent, PERMISO_CAMARA)
         } catch (e: ActivityNotFoundException) {
             e.message?. let{ Log.e("PERMISSION_APP",it) }
-            Toast.makeText(this, "No se puede abrir la cámara", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "No es posible abrir la cámara", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun createImageFile(): File {
+        // El timestamp se usa para que el nombre del archivo sea único
+        val timestamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
+        // El directorio donde se guardará la imagen
+        val storageDir: File = getExternalFilesDir(Environment.DIRECTORY_PICTURES)!!
+        // Crear el archivo con el nombre "JPEG_YYYYMMDD_HHMMSS.jpg" en el directorio storageDir
+        return File.createTempFile(
+            "JPEG_${timestamp}_", /* prefix */
+            ".jpg", /* suffix */
+            storageDir /* directory */
+        ).apply {
+            // Guardar la URI del archivo para usarla en el Intent de la cámara
+            photoUri = FileProvider.getUriForFile(this@EditarPerfil, "com.cuatrodivinas.seekandsolve.fileprovider", this)
         }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-
-        if (requestCode == PERMISO_CAMARA && resultCode == RESULT_OK) {
-            if (data?.extras == null) {
-                Toast.makeText(this, "Me corrol", Toast.LENGTH_SHORT).show()
-            } else {
-                val imageBitmap = data.extras?.get("data") as? Bitmap
-                if (imageBitmap == null) {
-                    Toast.makeText(this, "No se pudo obtener la foto de perfil", Toast.LENGTH_SHORT).show()
-                } else {
-                    Toast.makeText(this, "Foto de perfil actualizada", Toast.LENGTH_SHORT).show()
-                    binding.imagenPerfil.setImageBitmap(imageBitmap)
+        when(requestCode) {
+            PERMISO_CAMARA -> {
+                if (resultCode == RESULT_OK) {
+                    binding.imagenPerfil.setImageURI(photoUri)
+                }
+            }
+            PERMISO_GALERIA -> {
+                if (resultCode == RESULT_OK) {
+                    try {
+                        val imageUri = data?.data
+                        val imageStream: InputStream? = contentResolver.openInputStream(imageUri!!)
+                        val selectedImage = BitmapFactory.decodeStream(imageStream)
+                        binding.imagenPerfil.setImageBitmap(selectedImage)
+                    } catch (e: Exception) {
+                        e.message?. let{ Log.e("PERMISSION_APP",it) }
+                        Toast.makeText(this, "No fue posible seleccionar la imagen (exc.)", Toast.LENGTH_SHORT).show()
+                    }
                 }
             }
         }
-
-        /*else if (requestCode == SELECCIONAR_IMAGEN && resultCode == RESULT_OK) {
-            val imageUri = data?.data
-            if (imageUri != null) {
-                binding.imagenPerfil.setImageURI(imageUri)
-                Toast.makeText(this, "Imagen seleccionada de la galería", Toast.LENGTH_SHORT).show()
-            } else {
-                Toast.makeText(this, "No se pudo seleccionar la imagen", Toast.LENGTH_SHORT).show()
-            }
-        }*/
     }
-
 
     private fun eventoVolver() {
         binding.backButtonEditarPerfil.setOnClickListener {
@@ -197,8 +332,106 @@ class EditarPerfil : AppCompatActivity() {
 
     fun eventoAplicarCambios() {
         binding.aplicarCambiosBtn.setOnClickListener {
-            //actualizarInfo(id, binding.nombreETxt.text.toString(), binding.nombreUsuarioETxt.text.toString(), binding.corrreoETxt.toString(), binding.contraETxt.text.toString())
-            finish()
+            actualizarInfo(id, binding.nombreETxt.text.toString(), binding.nombreUsuarioETxt.text.toString(), binding.corrreoETxt.text.toString(), binding.contraETxt.text.toString(), binding.imagenPerfil)
         }
+    }
+    private fun hashPassword(password: String): String {
+        val keyGenerator = KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES, "AndroidKeyStore")
+        val keyGenParameterSpec = KeyGenParameterSpec.Builder(
+            "MyKeyAlias",
+            KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT
+        ).setBlockModes(KeyProperties.BLOCK_MODE_GCM)
+            .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
+            .build()
+        keyGenerator.init(keyGenParameterSpec)
+        val secretKey = keyGenerator.generateKey()
+
+        val cipher = Cipher.getInstance("AES/GCM/NoPadding")
+        cipher.init(Cipher.ENCRYPT_MODE, secretKey)
+        val iv = cipher.iv
+        val encryption = cipher.doFinal(password.toByteArray(Charsets.UTF_8))
+        return Base64.encodeToString(iv + encryption, Base64.DEFAULT)
+    }
+
+    private fun actualizarInfo(id: Int, nombre: String, username: String, correo: String, contrasena: String, imagenPerfil: ImageView) {
+        val userData = JSONObject()
+        userData.put("name", nombre)
+        userData.put("username", username)
+        userData.put("email", correo)
+        val hashPassword = hashPassword(contrasena)
+        userData.put("password", hashPassword)
+        val img = imageViewToBase64(imagenPerfil)
+        userData.put("fotoUrl", img)
+        userData.put("fechaNacimiento", fechaNacimiento)
+        userData.put("signInType", "Normal")
+
+        deleteFile("user_data.json")
+
+        val usersArray = JSONArray()
+        usersArray.put(userData)
+        saveJsonToFile(usersArray)
+        println(userData)
+        // Generate and save session_id
+        val sessionId = generateSessionId()
+        saveSessionId(sessionId)
+        val intent = Intent(this, VerPerfil::class.java)
+        val bundle = Bundle()
+        bundle.putInt("id", id)
+        bundle.putString("nombre", nombre)
+        bundle.putString("username", username)
+        bundle.putString("correo", correo)
+        bundle.putString("contrasena", hashPassword)
+        bundle.putString("fotoUrl", imageViewToBase64(binding.imagenPerfil))
+        bundle.putString("fechaNacimiento", fechaNacimiento)
+        intent.putExtras(bundle)
+        startActivity(intent)
+    }
+
+    private fun generateSessionId(): String {
+        return java.util.UUID.randomUUID().toString()
+    }
+
+    private fun saveSessionId(sessionId: String) {
+        val sharedPreferences = getSharedPreferences("user_session", Context.MODE_PRIVATE)
+        val editor = sharedPreferences.edit()
+        editor.putString("session_id", sessionId)
+        editor.apply()
+    }
+
+    private fun saveJsonToFile(usersArray: JSONArray) {
+        val fileName = "user_data.json"
+        try {
+            val fileOutputStream: FileOutputStream = openFileOutput(fileName, Context.MODE_PRIVATE)
+            fileOutputStream.write(usersArray.toString().toByteArray())
+            fileOutputStream.close()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    private fun imageViewToBase64(imagenPerfil: ImageView): String {
+        val drawable = imagenPerfil.drawable
+        val bitmap: Bitmap = when (drawable) {
+            is BitmapDrawable -> drawable.bitmap // Si es BitmapDrawable, obtén el bitmap directamente
+            is VectorDrawable -> {
+                // Si es VectorDrawable, conviértelo a Bitmap
+                val bitmap = Bitmap.createBitmap(drawable.intrinsicWidth, drawable.intrinsicHeight, Bitmap.Config.ARGB_8888)
+                val canvas = Canvas(bitmap)
+                drawable.setBounds(0, 0, canvas.width, canvas.height)
+                drawable.draw(canvas)
+                bitmap
+            }
+            else -> {
+                throw IllegalArgumentException("Unsupported drawable type")
+            }
+        }
+
+        // Convertir el Bitmap a un arreglo de bytes
+        val byteArrayOutputStream = ByteArrayOutputStream()
+        bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream)
+        val byteArray = byteArrayOutputStream.toByteArray()
+
+        // Codificar el arreglo de bytes a Base64
+        return Base64.encodeToString(byteArray, Base64.DEFAULT)
     }
 }

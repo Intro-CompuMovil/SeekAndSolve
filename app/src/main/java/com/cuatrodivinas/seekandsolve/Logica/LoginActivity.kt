@@ -145,14 +145,14 @@ class LoginActivity : AppCompatActivity() {
     private fun navigateToMain(user: JSONObject? = null) {
         val intent = Intent(this, MainActivity::class.java)
         val bundle = Bundle()
-        bundle.putInt("id", user?.getInt("id") ?: -1)
+        /*bundle.putInt("id", user?.getInt("id") ?: -1)
         bundle.putString("nombre", user?.getString("nombre") ?: "")
         bundle.putString("username", user?.getString("username") ?: "")
         bundle.putString("correo", user?.getString("correo") ?: "")
         bundle.putString("contrasena", user?.getString("contrasena") ?: "")
         bundle.putString("fotoUrl", user?.getString("fotoUrl") ?: "")
         bundle.putString("fechaNacimiento", user?.getString("fechaNacimiento") ?: "")
-        intent.putExtras(bundle)
+        intent.putExtras(bundle) */
         startActivity(intent)
         finish()
     }

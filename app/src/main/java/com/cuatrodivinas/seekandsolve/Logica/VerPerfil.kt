@@ -2,12 +2,14 @@ package com.cuatrodivinas.seekandsolve.Logica
 
 import android.content.Context
 import android.content.Intent
+import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import com.cuatrodivinas.seekandsolve.R
 import com.cuatrodivinas.seekandsolve.databinding.ActivityVerPerfilBinding
 import android.graphics.drawable.Drawable
+import android.util.Base64
 import androidx.core.content.ContextCompat
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
@@ -61,18 +63,38 @@ class VerPerfil : AppCompatActivity() {
 
     private fun quemarDatos(){
         binding.nombreUsuarioTxt.text = username
-        if (fotoUrl != "") {
-            Glide.with(this)
-                .load(fotoUrl)
-                .override(24, 24) // Establecer el tamaño de la imagen en 24x24 px
-                .circleCrop() // Para hacer la imagen circular
-                .into(binding.imagenPerfil) // Establecer la imagen en el ImageView
+        if (fotoUrl.isNotEmpty()) {
+            if (fotoUrl.startsWith("http")) {
+                Glide.with(this)
+                    .load(fotoUrl)
+                    .override(24, 24) // Establecer el tamaño de la imagen en 24x24 px
+                    .circleCrop() // Hacer la imagen circular
+                    .into(binding.imagenPerfil) // Establecer la imagen en el ImageView
+            } else if (fotoUrl.startsWith("data:image") || isBase64(fotoUrl)) {
+                // Caso: la fotoUrl es una cadena Base64 (puede comenzar con "data:image")
+                val imageByteArray = Base64.decode(fotoUrl, Base64.DEFAULT)
+                val bitmap = BitmapFactory.decodeByteArray(imageByteArray, 0, imageByteArray.size)
+                binding.imagenPerfil.setImageBitmap(bitmap) // Establecer el Bitmap en el ImageView
+            } else {
+                // Caso: la fotoUrl no es válida (no es http ni Base64), cargar imagen por defecto
+                binding.imagenPerfil.imageTintList = ContextCompat.getColorStateList(this, R.color.primaryColor)
+            }
         } else {
+            // Caso: fotoUrl está vacía, cargar imagen por defecto
             binding.imagenPerfil.imageTintList = ContextCompat.getColorStateList(this, R.color.primaryColor)
         }
         binding.nombreETxt.setText(nombre)
         binding.corrreoETxt.setText(correo)
         binding.FechaETxt.setText(fechaNacimiento)
+    }
+
+    fun isBase64(string: String): Boolean {
+        return try {
+            Base64.decode(string, Base64.DEFAULT)
+            true
+        } catch (e: IllegalArgumentException) {
+            false
+        }
     }
 
     private fun eventoRecompensas() {

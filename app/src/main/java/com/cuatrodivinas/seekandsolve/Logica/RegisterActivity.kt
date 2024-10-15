@@ -288,11 +288,13 @@ class RegisterActivity : AppCompatActivity() {
                     userData.put("fechaNacimiento", fechaNacimiento)
                     userData.put("signInType", "Normal")
 
+                    val userDataJson = readJsonFromFile("user_data.json")
+                    var usersArray = JSONArray()
+                    if (userDataJson != null) {
+                        usersArray = JSONArray(userDataJson)
+                    }
                     // Eliminar el archivo JSON existente
                     deleteFile("user_data.json")
-
-                    // Crear un nuevo JSONArray y agregar el nuevo usuario
-                    val usersArray = JSONArray()
                     usersArray.put(userData)
 
                     saveJsonToFile(usersArray)
