@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import android.view.animation.AnimationUtils
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -17,6 +18,7 @@ import com.bumptech.glide.request.RequestOptions
 import com.cuatrodivinas.seekandsolve.R
 import org.json.JSONArray
 import org.json.JSONObject
+import java.io.File
 import java.io.FileInputStream
 import java.io.IOException
 import java.io.InputStream
@@ -69,22 +71,21 @@ class RankingActivity : AppCompatActivity() {
                 val profileImageView: ImageView = holder.itemView.findViewById(R.id.profileImageView)
                 val usernameTextView: TextView = holder.itemView.findViewById(R.id.usernameTextView)
                 val rewardsTextView: TextView = holder.itemView.findViewById(R.id.scoreTextView)
-
-
                 if (rankingItem.profileImageUrl.isNotEmpty()) {
-                    if (rankingItem.profileImageUrl.startsWith("http")) {
-                        Glide.with(profileImageView.context)
-                            .load(rankingItem.profileImageUrl)
-                            .override(24, 24) // Establecer el tamaño de la imagen en 24x24 px
-                            .circleCrop() // Hacer la imagen circular
-                            .into(profileImageView) // Establecer la imagen en el ImageView
-                    } else if (rankingItem.profileImageUrl.startsWith("data:image") || isBase64(rankingItem.profileImageUrl)) {
-                        // Caso: la fotoUrl es una cadena Base64 (puede comenzar con "data:image")
-                        val imageByteArray = Base64.decode(rankingItem.profileImageUrl, Base64.DEFAULT)
-                        val bitmap = BitmapFactory.decodeByteArray(imageByteArray, 0, imageByteArray.size)
-                        profileImageView.setImageBitmap(bitmap) // Establecer el Bitmap en el ImageView
+                    if (rankingItem.profileImageUrl.startsWith("/")) {
+                        // Cargar imagen desde el archivo
+                        val file = File(rankingItem.profileImageUrl)
+                        if (file.exists()) {
+                            Glide.with(profileImageView.context)
+                                .load(file)
+                                .circleCrop() // Hacer la imagen circular
+                                .into(profileImageView) // Establecer la imagen en el ImageView
+                        } else {
+                            // Caso: archivo no existe, cargar imagen por defecto
+                            profileImageView.imageTintList = ContextCompat.getColorStateList(profileImageView.context, R.color.primaryColor)
+                        }
                     } else {
-                        // Caso: la fotoUrl no es válida (no es http ni Base64), cargar imagen por defecto
+                        // Caso: cargar imagen por defecto si la fotoUrl no es un archivo válido
                         profileImageView.imageTintList = ContextCompat.getColorStateList(profileImageView.context, R.color.primaryColor)
                     }
                 } else {

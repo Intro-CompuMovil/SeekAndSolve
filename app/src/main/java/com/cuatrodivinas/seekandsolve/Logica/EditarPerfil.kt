@@ -45,6 +45,7 @@ import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
 import java.io.File
+import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.io.IOException
 import java.io.InputStream
@@ -440,9 +441,14 @@ class EditarPerfil : AppCompatActivity() {
         userData.put("fechaNacimiento", fechaNacimiento)
         userData.put("signInType", "Normal")
 
-        deleteFile("user_data.json")
+        val userDataJson = readJsonFromFile("user_data.json")
+        var usersArray = JSONArray()
+        if (userDataJson != null) {
+            usersArray = JSONArray(userDataJson)
+        }
 
-        val usersArray = JSONArray()
+        deleteFile("user_data.json")
+        
         usersArray.put(userData)
         saveJsonToFile(usersArray)
         println(userData)
@@ -460,6 +466,18 @@ class EditarPerfil : AppCompatActivity() {
         bundle.putString("fechaNacimiento", fechaNacimiento)
         intent.putExtras(bundle)
         startActivity(intent)
+    }
+
+    private fun readJsonFromFile(fileName: String): String? {
+        return try {
+            val fileInputStream: FileInputStream = openFileInput(fileName)
+            val bytes = fileInputStream.readBytes()
+            fileInputStream.close()
+            String(bytes)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
     }
 
     private fun generateSessionId(): String {
