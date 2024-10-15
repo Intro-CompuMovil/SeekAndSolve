@@ -62,7 +62,7 @@
             android:layout_height="wrap_content"
             android:text="Selecciona los amigos a invitar"
             style="@style/TitleStyle"
-            android:layout_marginBottom="16dp"/>
+            android:layout_marginBottom="32dp"/>
 
         <ListView
             android:id="@+id/listaAmigos"

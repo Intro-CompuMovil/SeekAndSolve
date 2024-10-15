@@ -4,8 +4,6 @@ import android.Manifest
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.BitmapFactory
-import android.graphics.drawable.Drawable
 import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
@@ -36,6 +34,8 @@ import org.json.JSONObject
 import kotlin.properties.Delegates
 import org.osmdroid.api.IMapController
 import java.io.File
+import java.io.FileInputStream
+import java.io.FileOutputStream
 import java.io.IOException
 import java.io.InputStream
 import kotlin.math.atan2
@@ -85,7 +85,9 @@ class MainActivity : AppCompatActivity(), LocationListener {
             correo = user.getString("email")
             fechaNacimiento = user.getString("fechaNacimiento")
             fotoUrl = if (user.has("photoUrl") && !user.isNull("photoUrl")) user.getString("photoUrl") else ""
-        }else{
+
+            cargarInformacionMundoExterior()
+        } else {
             id = -1
             username = "null"
             nombre = "null"
@@ -109,6 +111,160 @@ class MainActivity : AppCompatActivity(), LocationListener {
         setupAmigosButton()
     }
 
+    // =============================================================================================
+    // Sharly y la Creación/Actualización de mi Mundo Interior con el Mundo Exterior
+    private fun cargarInformacionMundoExterior() {
+        cargarMisAmigos()
+        cargarMisCarreras()
+    }
+
+    private fun cargarMisAmigos() {
+        val userFriendsJson = readJsonFromMyWorldFile("user_friends.json")
+        var usersFriendsArray = JSONArray()
+        if (userFriendsJson != null) {
+            usersFriendsArray = JSONArray(userFriendsJson)
+        }
+        // Eliminar el archivo JSON existente
+        deleteFile("user_friends.json")
+        // Volvemos a cargar el archivo JSON de mi mundo con los amigos actualizados del mundo exterior
+        actualizarMisAmigos(usersFriendsArray)
+    }
+
+    private fun actualizarMisAmigos(usersFriendsArray: JSONArray) {
+        var json = JSONObject(loadJSONFromAssetExternalWorld("amigos.json"))
+        val idsAmigosJson = json.getJSONArray("amigos")
+        json = JSONObject(loadJSONFromAssetExternalWorld("usuarios.json"))
+        val usuariosJson = json.getJSONArray("usuarios")
+
+        for (i in 0 until idsAmigosJson.length()) {
+            val amigo = idsAmigosJson.getJSONObject(i)
+            var idAmigo = -1
+            val amigo1 = amigo.getInt("idUsuario1")
+            val amigo2 = amigo.getInt("idUsuario2")
+            var miAmigo: JSONObject? = null
+            if (amigo1 == id) {
+                idAmigo = amigo2
+                miAmigo = usuariosJson!!.getJSONObject(amigo2 - 1)
+            } else if (amigo2 == id) {
+                idAmigo = amigo1
+                miAmigo = usuariosJson!!.getJSONObject(amigo1 - 1)
+            }
+            if (miAmigo != null) {
+                // Verificar que idAmigo no esté en usersFriendsArray
+                var isFriend = false
+                for (j in 0 until usersFriendsArray.length()) {
+                    val userFriend = usersFriendsArray.getJSONObject(j)
+                    if (userFriend.getInt("id") == idAmigo) {
+                        // Actualizo el userFriend con la información más reciente
+                        userFriend.put("username", miAmigo.getString("username"))
+                        userFriend.put("fotoUrl", miAmigo.getString("fotoUrl"))
+                        isFriend = true
+                        break
+                    }
+                }
+                if (!isFriend) {
+                    val imagenAmigo = miAmigo.getString("fotoUrl")
+                    val usernameAmigo = miAmigo.getString("username")
+                    val userFriend = JSONObject()
+                    userFriend.put("id", idAmigo)
+                    userFriend.put("username", usernameAmigo)
+                    userFriend.put("fotoUrl", imagenAmigo)
+                    usersFriendsArray.put(userFriend)
+                }
+            }
+        }
+        // Guardar el archivo JSON actualizado
+        saveJsonToMyWorldFile(usersFriendsArray, "user_friends.json")
+    }
+
+    private fun cargarMisCarreras() {
+        val userRacesJson = readJsonFromMyWorldFile("user_races.json")
+        var usersRacesArray = JSONArray()
+        if (userRacesJson != null) {
+            usersRacesArray = JSONArray(userRacesJson)
+        }
+        // Eliminar el archivo JSON existente
+        deleteFile("user_races.json")
+        // Volvemos a cargar el archivo JSON de mi mundo con las carreras actualizadas del mundo exterior
+        actualizarMisCarreras(usersRacesArray)
+    }
+
+    private fun actualizarMisCarreras(usersRacesArray: JSONArray) {
+        var json = JSONObject(loadJSONFromAssetExternalWorld("carrerasUsuarios.json"))
+        val idsRacesJson = json.getJSONArray("carrerasUsuarios")
+        json = JSONObject(loadJSONFromAssetExternalWorld("carreras.json"))
+        val carrerasJson = json.getJSONArray("carreras")
+
+        for(i in 0 until idsRacesJson.length()){
+            val carreraUsuario = idsRacesJson.getJSONObject(i)
+            val idCarrera = carreraUsuario.getInt("idCarrera")
+            val idUsuario = carreraUsuario.getInt("idUsuario")
+            val idRecompensa = carreraUsuario.getInt("idRecompensa")
+            if(idUsuario == id){
+                // Verificar que idCarrera no esté en usersRacesArray y si está, actualizarlo
+                val carrera = carrerasJson.getJSONObject(idCarrera - 1)
+                var isRace = false
+                for(j in 0 until usersRacesArray.length()){
+                    var userRace = usersRacesArray.getJSONObject(j)
+                    if(userRace.getInt("id") == idCarrera){
+                        // Actualizo el userRace con la información más reciente
+                        carrera.put("idRecompensa", idRecompensa)
+                        userRace = carrera
+                        isRace = true
+                        break
+                    }
+                }
+                if (!isRace) {
+                    carrera.put("idRecompensa", idRecompensa)
+                    usersRacesArray.put(carrera)
+                }
+            }
+        }
+        // Guardar el archivo JSON actualizado
+        saveJsonToMyWorldFile(usersRacesArray, "user_races.json")
+    }
+
+    // =============================================================================================
+    // Sharly y el Mundo Exterior
+    private fun loadJSONFromAssetExternalWorld(filename: String): String? {
+        var json: String? = null
+        try {
+            val isStream: InputStream = assets.open(filename)
+            val size:Int = isStream.available()
+            val buffer = ByteArray(size)
+            isStream.read(buffer)
+            isStream.close()
+            json = String(buffer, Charsets.UTF_8)
+        } catch (ex: IOException) {
+            ex.printStackTrace()
+            return null
+        }
+        return json
+    }
+    // =============================================================================================
+    // Sharly y el Mundo Interior
+    private fun readJsonFromMyWorldFile(fileName: String): String? {
+        return try {
+            val fileInputStream: FileInputStream = openFileInput(fileName)
+            val bytes = fileInputStream.readBytes()
+            fileInputStream.close()
+            String(bytes)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
+    }
+
+    private fun saveJsonToMyWorldFile(usersArray: JSONArray, fileName: String) {
+        try {
+            val fileOutputStream: FileOutputStream = openFileOutput(fileName, Context.MODE_PRIVATE)
+            fileOutputStream.write(usersArray.toString().toByteArray())
+            fileOutputStream.close()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
     private fun getLastRegisteredUser(): JSONObject? {
         try {
             val inputStream: InputStream = openFileInput("user_data.json")
@@ -129,6 +285,7 @@ class MainActivity : AppCompatActivity(), LocationListener {
         }
         return null
     }
+    // =============================================================================================
 
     private fun setupAmigosButton() {
         val amigosButton: Button = findViewById(R.id.amigosButton)

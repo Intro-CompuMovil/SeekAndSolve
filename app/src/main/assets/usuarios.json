@@ -9,6 +9,96 @@
       "fotoUrl": "https://avatars.githubusercontent.com/u/155045111?v=4",
       "fechaNacimiento": "1999-01-01",
       "signInType": "Normal"
+    },
+    {
+      "id": 2,
+      "nombre": "María",
+      "username": "maria-flor",
+      "correo": "mariaflor@gmail.com",
+      "contrasena": "abcdef",
+      "fotoUrl": "https://avatars.githubusercontent.com/u/155045112?v=4",
+      "fechaNacimiento": "1995-03-22",
+      "signInType": "Normal"
+    },
+    {
+      "id": 3,
+      "nombre": "Carlos",
+      "username": "carlos-garcia",
+      "correo": "carlosg@gmail.com",
+      "contrasena": "garcia123",
+      "fotoUrl": "https://avatars.githubusercontent.com/u/155045113?v=4",
+      "fechaNacimiento": "1992-07-15",
+      "signInType": "Normal"
+    },
+    {
+      "id": 4,
+      "nombre": "Ana",
+      "username": "ana-estrella",
+      "correo": "anaestrella@gmail.com",
+      "contrasena": "estrella456",
+      "fotoUrl": "https://avatars.githubusercontent.com/u/155045114?v=4",
+      "fechaNacimiento": "1998-09-30",
+      "signInType": "Normal"
+    },
+    {
+      "id": 5,
+      "nombre": "Luis",
+      "username": "luis-amigo",
+      "correo": "luisamigo@gmail.com",
+      "contrasena": "amigo789",
+      "fotoUrl": "https://avatars.githubusercontent.com/u/155045115?v=4",
+      "fechaNacimiento": "1990-02-18",
+      "signInType": "Normal"
+    },
+    {
+      "id": 6,
+      "nombre": "Sofía",
+      "username": "sofia-dulce",
+      "correo": "sofiadulce@gmail.com",
+      "contrasena": "dulce101",
+      "fotoUrl": "https://avatars.githubusercontent.com/u/155045116?v=4",
+      "fechaNacimiento": "2001-05-12",
+      "signInType": "Normal"
+    },
+    {
+      "id": 7,
+      "nombre": "Pedro",
+      "username": "pedro-salinas",
+      "correo": "pedrosalinas@gmail.com",
+      "contrasena": "salinas007",
+      "fotoUrl": "https://avatars.githubusercontent.com/u/155045117?v=4",
+      "fechaNacimiento": "1989-12-05",
+      "signInType": "Normal"
+    },
+    {
+      "id": 8,
+      "nombre": "Lucía",
+      "username": "lucia-perla",
+      "correo": "luciap@gmail.com",
+      "contrasena": "perla963",
+      "fotoUrl": "https://avatars.githubusercontent.com/u/155045118?v=4",
+      "fechaNacimiento": "2000-08-20",
+      "signInType": "Normal"
+    },
+    {
+      "id": 9,
+      "nombre": "Fernando",
+      "username": "fernando-leon",
+      "correo": "fernandoleon@gmail.com",
+      "contrasena": "leonking",
+      "fotoUrl": "https://avatars.githubusercontent.com/u/155045119?v=4",
+      "fechaNacimiento": "1993-06-10",
+      "signInType": "Normal"
+    },
+    {
+      "id": 10,
+      "nombre": "Valeria",
+      "username": "valeria-sol",
+      "correo": "valeriasol@gmail.com",
+      "contrasena": "solshine",
+      "fotoUrl": "https://avatars.githubusercontent.com/u/155045120?v=4",
+      "fechaNacimiento": "1997-04-25",
+      "signInType": "Normal"
     }
   ]
 }

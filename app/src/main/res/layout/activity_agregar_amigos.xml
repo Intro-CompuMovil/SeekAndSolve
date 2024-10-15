@@ -48,21 +48,40 @@
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
+    <!-- TextView bonito diciéndole que agregue sus nuevos amigos -->
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="40dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        style="@style/SubtitleStyle"
+        android:text="@string/addFriendsPlease"
+        android:textAlignment="center"
+        app:layout_constraintTop_toBottomOf="@+id/header_add_friends"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+
     <LinearLayout
         android:id="@+id/layoutBusqueda"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="54dp"
+        android:layout_marginTop="40dp"
         android:layout_marginStart="42dp"
         android:layout_marginEnd="42dp"
-        app:layout_constraintTop_toBottomOf="@+id/header_add_friends"
+        app:layout_constraintTop_toBottomOf="@+id/textView"
         >
         <EditText
+            android:id="@+id/busquedaEt"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="0.90"
             android:background="@drawable/edit_text_border"
             android:hint="@string/usuario_correo"
+            android:inputType="text"
+            android:imeOptions="actionSend"
             />
         <Button
             android:layout_width="0dp"
@@ -73,26 +92,13 @@
             />
     </LinearLayout>
 
-
     <ListView
         android:id="@+id/amigosLv"
         android:layout_width="match_parent"
-        android:layout_height="310dp"
-        android:layout_marginTop="54dp"
+        android:layout_height="400dp"
+        android:layout_marginTop="40dp"
         android:layout_marginStart="4dp"
         android:layout_marginEnd="4dp"
         app:layout_constraintTop_toBottomOf="@+id/layoutBusqueda" />
 
-    <Button
-        android:id="@+id/volverBtn"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:backgroundTint="@color/buttonGrayBackground"
-        android:text="@string/volver"
-        android:layout_marginTop="85dp"
-        android:layout_marginStart="116dp"
-        android:layout_marginEnd="116dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/amigosLv" />
 </androidx.constraintlayout.widget.ConstraintLayout>

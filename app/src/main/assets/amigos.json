@@ -3,6 +3,46 @@
     {
       "idUsuario1": 1,
       "idUsuario2": 2
+    },
+    {
+      "idUsuario1": 1,
+      "idUsuario2": 3
+    },
+    {
+      "idUsuario1": 1,
+      "idUsuario2": 10
+    },
+    {
+      "idUsuario1": 2,
+      "idUsuario2": 4
+    },
+    {
+      "idUsuario1": 3,
+      "idUsuario2": 5
+    },
+    {
+      "idUsuario1": 4,
+      "idUsuario2": 6
+    },
+    {
+      "idUsuario1": 5,
+      "idUsuario2": 7
+    },
+    {
+      "idUsuario1": 6,
+      "idUsuario2": 8
+    },
+    {
+      "idUsuario1": 7,
+      "idUsuario2": 9
+    },
+    {
+      "idUsuario1": 8,
+      "idUsuario2": 10
+    },
+    {
+      "idUsuario1": 9,
+      "idUsuario2": 10
     }
   ]
 }
