@@ -72,7 +72,6 @@ class VerPerfil : AppCompatActivity() {
                 if (file.exists()) {
                     Glide.with(this)
                         .load(file)
-                        .override(24, 24) // Establecer el tamaño de la imagen en 24x24 px
                         .circleCrop() // Hacer la imagen circular
                         .into(binding.imagenPerfil) // Establecer la imagen en el ImageView
                 } else {

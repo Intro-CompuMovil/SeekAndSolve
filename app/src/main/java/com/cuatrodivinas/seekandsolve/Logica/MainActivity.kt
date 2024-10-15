@@ -360,7 +360,6 @@ class MainActivity : AppCompatActivity(), LocationListener {
                 if (file.exists()) {
                     Glide.with(this)
                         .load(file)
-                        .override(24, 24) // Establecer el tamaño de la imagen en 24x24 px
                         .circleCrop() // Hacer la imagen circular
                         .into(profileImage) // Establecer la imagen en el ImageView
                 } else {

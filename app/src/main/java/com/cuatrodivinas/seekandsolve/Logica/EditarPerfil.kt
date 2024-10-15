@@ -102,7 +102,6 @@ class EditarPerfil : AppCompatActivity() {
                 if (file.exists()) {
                     Glide.with(this)
                         .load(file)
-                        .override(24, 24) // Establecer el tamaño de la imagen en 24x24 px
                         .circleCrop() // Hacer la imagen circular
                         .into(binding.imagenPerfil) // Establecer la imagen en el ImageView
                 } else {
@@ -314,7 +313,7 @@ class EditarPerfil : AppCompatActivity() {
                     binding.imagenPerfil.setImageURI(photoUri)
                     binding.imagenPerfil.imageTintList = null
                     // Guardar la ruta de la imagen en la variable
-                    localizacionFoto = File(photoUri.path!!)
+                    localizacionFoto = saveImageToFile(photoUri)
                 }
             }
             PERMISO_GALERIA -> {
@@ -351,17 +350,27 @@ class EditarPerfil : AppCompatActivity() {
         }
     }
 
-    fun eventoAplicarCambios() {
+    private fun eventoAplicarCambios() {
         binding.aplicarCambiosBtn.setOnClickListener {
-            if (localizacionFoto != null){
+            if (::localizacionFoto.isInitialized) {
+                // Actualizar información con la ruta de la imagen
                 actualizarInfo(id, binding.nombreETxt.text.toString(), binding.nombreUsuarioETxt.text.toString(), binding.corrreoETxt.text.toString(),
                     binding.contraETxt.text.toString(), localizacionFoto.absolutePath)
-            }else{
-                actualizarInfo(id, binding.nombreETxt.text.toString(), binding.nombreUsuarioETxt.text.toString(), binding.corrreoETxt.text.toString(),
-                    binding.contraETxt.text.toString(), saveDrawableToFileAsJPG(R.drawable.profile_user_svgrepo_com).absolutePath)
-            }
 
+                // Guardar la ruta de la imagen en SharedPreferences o en tu JSON aquí
+                saveImagePathToPreferences(localizacionFoto.absolutePath)
+            } else {
+                // Caso de usar imagen por defecto
+                val defaultImagePath = saveDrawableToFileAsJPG(R.drawable.profile_user_svgrepo_com).absolutePath
+                actualizarInfo(id, binding.nombreETxt.text.toString(), binding.nombreUsuarioETxt.text.toString(), binding.corrreoETxt.text.toString(),
+                    binding.contraETxt.text.toString(), defaultImagePath)
+            }
         }
+    }
+
+    private fun saveImagePathToPreferences(path: String) {
+        val sharedPreferences = getSharedPreferences("user_preferences", Context.MODE_PRIVATE)
+        sharedPreferences.edit().putString("image_path", path).apply()
     }
 
     private fun saveDrawableToFileAsJPG(drawableResId: Int): File {
@@ -427,7 +436,7 @@ class EditarPerfil : AppCompatActivity() {
         userData.put("email", correo)
         val hashPassword = hashPassword(contrasena)
         userData.put("password", hashPassword)
-        userData.put("fotoUrl", imagenPerfil)
+        userData.put("photoUrl", imagenPerfil)
         userData.put("fechaNacimiento", fechaNacimiento)
         userData.put("signInType", "Normal")
 
