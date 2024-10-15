@@ -56,6 +56,7 @@ class RankingActivity : AppCompatActivity() {
             }
             rankingItems.add(RankingItem(username, recomepensas.length(), foto))
         }
+        agregarRankingItemsDeMundoExterno(rankingItems)
         val rankingList = findViewById<RecyclerView>(R.id.rankingList)
         val sortedRankingItems = rankingItems.sortedByDescending { it.rewards }
 
@@ -84,8 +85,14 @@ class RankingActivity : AppCompatActivity() {
                             // Caso: archivo no existe, cargar imagen por defecto
                             profileImageView.imageTintList = ContextCompat.getColorStateList(profileImageView.context, R.color.primaryColor)
                         }
+                    } else if (rankingItem.profileImageUrl.startsWith("http://") || rankingItem.profileImageUrl.startsWith("https://")) {
+                        // Cargar imagen desde una URL
+                        Glide.with(profileImageView.context)
+                            .load(rankingItem.profileImageUrl)
+                            .circleCrop() // Hacer la imagen circular
+                            .into(profileImageView) // Establecer la imagen en el ImageView
                     } else {
-                        // Caso: cargar imagen por defecto si la fotoUrl no es un archivo válido
+                        // Caso: cargar imagen por defecto si la fotoUrl no es válida
                         profileImageView.imageTintList = ContextCompat.getColorStateList(profileImageView.context, R.color.primaryColor)
                     }
                 } else {
@@ -100,6 +107,14 @@ class RankingActivity : AppCompatActivity() {
             override fun getItemCount() = sortedRankingItems.size
         }
 
+    }
+
+    private fun agregarRankingItemsDeMundoExterno(rankingItems: MutableList<RankingItem>) {
+        // Agregar rankingItems de un mundo externo
+        rankingItems.add(RankingItem("valeria-sol", 10, "https://avatars.githubusercontent.com/u/155045120?v=4"))
+        rankingItems.add(RankingItem("fernando-leon", 5, "https://avatars.githubusercontent.com/u/155045119?v=4"))
+        rankingItems.add(RankingItem("lucia-perla", 3, "https://avatars.githubusercontent.com/u/155045118?v=4"))
+        rankingItems.add(RankingItem("pedro-salinas", 1, "https://avatars.githubusercontent.com/u/155045117?v=4"))
     }
 
     fun isBase64(string: String): Boolean {
