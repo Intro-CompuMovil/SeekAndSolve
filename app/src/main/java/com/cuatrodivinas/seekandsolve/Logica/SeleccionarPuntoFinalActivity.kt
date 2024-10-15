@@ -340,6 +340,13 @@ class SeleccionarPuntoFinalActivity : AppCompatActivity(), LocationListener {
         }
     }
 
+    override fun onStop() {
+        super.onStop()
+        if (::map.isInitialized) {
+            map.onDetach()
+        }
+    }
+
     override fun onDestroy() {
         super.onDestroy()
         if (::map.isInitialized) {

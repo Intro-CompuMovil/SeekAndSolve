@@ -85,6 +85,7 @@ class MainActivity : AppCompatActivity(), LocationListener {
             correo = user.getString("email")
             fechaNacimiento = user.getString("fechaNacimiento")
             fotoUrl = if (user.has("photoUrl") && !user.isNull("photoUrl")) user.getString("photoUrl") else ""
+            externo = "false"
 
             cargarInformacionMundoExterior()
         } else {
@@ -95,6 +96,7 @@ class MainActivity : AppCompatActivity(), LocationListener {
             correo = "null"
             fechaNacimiento = "null"
             fotoUrl = "null"
+            externo = "false"
         }
         marcadores = mutableListOf()
         setupGoogleSignInClient()
@@ -336,7 +338,7 @@ class MainActivity : AppCompatActivity(), LocationListener {
             intent.putExtras(bundle)
             startActivity(intent)
         }
-        startLocationUpdates()
+//        startLocationUpdates()
     }
 
     private fun startLocationUpdates() {
@@ -377,7 +379,11 @@ class MainActivity : AppCompatActivity(), LocationListener {
             bundle.putString("contrasena", contrasena)
             bundle.putString("fotoUrl", fotoUrl)
             bundle.putString("fechaNacimiento", fechaNacimiento)
-            bundle.putString("externo", externo)
+            if (externo != null) {
+                bundle.putString("externo", externo)
+            } else {
+                bundle.putString("externo", "false")
+            }
             intent.putExtras(bundle)
             startActivity(intent)
         }
@@ -423,7 +429,7 @@ class MainActivity : AppCompatActivity(), LocationListener {
         //Crear los marcadores
         eliminarDesafiosAnteriores()
         marcadores[0].position = newPoint
-        setDesafiosCercanos(lalitud, longitud)
+//        setDesafiosCercanos(lalitud, longitud)
         agregarMarcadores()
 
         //Mover el mapa
@@ -586,6 +592,13 @@ class MainActivity : AppCompatActivity(), LocationListener {
         super.onPause()
         if (::map.isInitialized) {
             map.onPause()
+        }
+    }
+
+    override fun onStop() {
+        super.onStop()
+        if (::map.isInitialized) {
+            map.onDetach()
         }
     }
 

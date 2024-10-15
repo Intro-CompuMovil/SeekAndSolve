@@ -8,6 +8,8 @@ import android.location.LocationListener
 import android.location.LocationManager
 import android.os.Bundle
 import android.util.Log
+import android.view.KeyEvent
+import android.view.inputmethod.EditorInfo
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -18,6 +20,7 @@ import com.cuatrodivinas.seekandsolve.Datos.RetrofitOsmClient
 import com.cuatrodivinas.seekandsolve.Datos.RetrofitUrls
 import com.cuatrodivinas.seekandsolve.databinding.ActivitySeleccionarPuntoBinding
 import okhttp3.ResponseBody
+import org.json.JSONArray
 import org.json.JSONObject
 import org.osmdroid.config.Configuration
 import org.osmdroid.util.GeoPoint
@@ -36,10 +39,13 @@ class SeleccionarPuntoActivity : AppCompatActivity(), LocationListener {
     private lateinit var tipoPunto: String
     private lateinit var marcador: Marker
     private var retrofitUrls: RetrofitUrls
+    private var retrofitUrls2: RetrofitUrls
 
     init {
         val retrofit = RetrofitOsmClient.conectarBackURL()
+        val retrofit2 = RetrofitOsmClient.urlRuta()
         retrofitUrls = retrofit.create(RetrofitUrls::class.java)
+        retrofitUrls2 = retrofit2.create(RetrofitUrls::class.java)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -55,6 +61,7 @@ class SeleccionarPuntoActivity : AppCompatActivity(), LocationListener {
         setupMap()
         setupLocationManager()
         startLocationUpdates()
+        eventoEnviarTexto()
 
         binding.agregarCheckpoint.setOnClickListener {
             val punto = Punto(marcador.position.latitude, marcador.position.longitude)
@@ -178,6 +185,47 @@ class SeleccionarPuntoActivity : AppCompatActivity(), LocationListener {
         setPoint(location.latitude, location.longitude)
     }
 
+    private fun eventoEnviarTexto(){
+        binding.buscar.setOnEditorActionListener { _, actionId, event ->
+            // Verifica si se ha presionado el botón "Send"
+            if (actionId == EditorInfo.IME_ACTION_SEND ||
+                (event != null && event.keyCode == KeyEvent.KEYCODE_ENTER && event.action == KeyEvent.ACTION_DOWN)) {
+                val mensaje = binding.buscar.text.toString()
+                obtenerPuntoPorDireccion(mensaje)
+                true // Indica que el evento ha sido manejado
+            } else {
+                false // No se maneja otro evento
+            }
+        }
+    }
+
+    private fun obtenerPuntoPorDireccion(direccion: String){
+        val geocode = retrofitUrls.geocode(direccion)
+
+        geocode.enqueue(object: Callback<ResponseBody> {
+            override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
+                if (response.isSuccessful && response.body() != null) {
+                    val direction = response.body()!!.string()
+                    val jsonDirections = JSONArray(direction)
+                    if(jsonDirections.length() > 0){
+                        val jsonObject = jsonDirections.getJSONObject(0) // Obtener el primer objeto
+                        val latitude = jsonObject.getString("lat").toDouble() // Obtener latitud
+                        val longitude = jsonObject.getString("lon").toDouble()  // Obtener longitud
+                        setPoint(latitude, longitude)
+                        binding.direccion.text = direccion
+                    }
+                } else {
+                    println("Error en la respuesta: ${response.errorBody()}")
+                }
+            }
+
+            override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
+                println("Error en la llamada: ${t.message}")
+            }
+        })
+    }
+
+
     private fun actualizarDireccionPunto(latitud: Double, longitud: Double) {
         val reverseGeocode = retrofitUrls.reverseGeocode(latitud, longitud)
         reverseGeocode.enqueue(object : Callback<ResponseBody> {
@@ -222,8 +270,8 @@ class SeleccionarPuntoActivity : AppCompatActivity(), LocationListener {
         }
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
+    override fun onStop() {
+        super.onStop()
         if (::map.isInitialized) {
             map.onDetach()
         }

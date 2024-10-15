@@ -151,7 +151,7 @@ class VerDesafiosActivity : AppCompatActivity(), LocationListener {
         //Crear los marcadores
         eliminarDesafiosAnteriores()
         marcadores[0].position = newPoint
-        setDesafiosCercanos(lalitud, longitud)
+//        setDesafiosCercanos(lalitud, longitud)
         agregarMarcadores()
 
         //Mover el mapa
@@ -267,6 +267,13 @@ class VerDesafiosActivity : AppCompatActivity(), LocationListener {
         super.onPause()
         if (::map.isInitialized) {
             map.onPause()
+        }
+    }
+
+    override fun onStop() {
+        super.onStop()
+        if (::map.isInitialized) {
+            map.onDetach()
         }
     }
 
