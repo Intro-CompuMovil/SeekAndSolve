@@ -281,6 +281,7 @@ class RegisterActivity : AppCompatActivity() {
                     navigateToLogin()
                 } else {
                     val userData = JSONObject()
+                    userData.put("id", userData.length() + 1)
                     userData.put("name", name)
                     userData.put("username", username)
                     userData.put("email", email)

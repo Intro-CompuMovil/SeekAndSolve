@@ -432,6 +432,7 @@ class EditarPerfil : AppCompatActivity() {
 
     private fun actualizarInfo(id: Int, nombre: String, username: String, correo: String, contrasena: String, imagenPerfil: String) {
         val userData = JSONObject()
+        userData.put("id", id)
         userData.put("name", nombre)
         userData.put("username", username)
         userData.put("email", correo)
@@ -442,13 +443,18 @@ class EditarPerfil : AppCompatActivity() {
         userData.put("signInType", "Normal")
 
         val userDataJson = readJsonFromFile("user_data.json")
-        var usersArray = JSONArray()
-        if (userDataJson != null) {
-            usersArray = JSONArray(userDataJson)
+        var usersArray = JSONArray(userDataJson)
+        for (i in 0 until usersArray.length()) {
+            val user = usersArray.getJSONObject(i)
+            val userId = user.getInt("id")
+            if (userId == id) {
+                usersArray.remove(i)
+                break
+            }
         }
 
         deleteFile("user_data.json")
-        
+
         usersArray.put(userData)
         saveJsonToFile(usersArray)
         println(userData)

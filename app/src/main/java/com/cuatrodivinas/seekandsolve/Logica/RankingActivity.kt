@@ -49,8 +49,8 @@ class RankingActivity : AppCompatActivity() {
             } else {
                 JSONArray()
             }
-            val foto: String = if (user.has("fotoUrl")) {
-                user.getString("fotoUrl")
+            val foto: String = if (user.has("photoUrl")) {
+                user.getString("photoUrl")
             } else {
                 ""
             }

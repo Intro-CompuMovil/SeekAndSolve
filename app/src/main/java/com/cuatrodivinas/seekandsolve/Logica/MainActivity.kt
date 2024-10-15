@@ -77,7 +77,7 @@ class MainActivity : AppCompatActivity(), LocationListener {
             fechaNacimiento = bundle.getString("fechaNacimiento") ?: ""
 
         }else if(user != null){
-            id = 0
+            id = user.getInt("id")
             username = user.getString("username")
             nombre = user.getString("name")
             contrasena = user.getString("password")
