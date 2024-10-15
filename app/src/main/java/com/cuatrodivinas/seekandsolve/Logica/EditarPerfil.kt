@@ -112,7 +112,6 @@ class EditarPerfil : AppCompatActivity() {
             } else {
                 // Caso: cargar imagen por defecto si la fotoUrl no es un archivo válido
                 binding.imagenPerfil.imageTintList = ContextCompat.getColorStateList(this, R.color.primaryColor)
-                Toast.makeText(this, "Error al cargar la imagen", Toast.LENGTH_SHORT).show()
             }
         } else {
             // Caso: fotoUrl está vacía, cargar imagen por defecto

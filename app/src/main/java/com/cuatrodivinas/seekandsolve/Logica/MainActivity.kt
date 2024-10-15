@@ -59,6 +59,7 @@ class MainActivity : AppCompatActivity(), LocationListener {
     private lateinit var contrasena: String
     private lateinit var fotoUrl: String
     private lateinit var fechaNacimiento: String
+    private lateinit var externo: String
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -75,7 +76,7 @@ class MainActivity : AppCompatActivity(), LocationListener {
             contrasena = bundle.getString("contrasena") ?: ""
             fotoUrl = bundle.getString("fotoUrl") ?: ""
             fechaNacimiento = bundle.getString("fechaNacimiento") ?: ""
-
+            externo = bundle.getString("externo") ?: ""
         }else if(user != null){
             id = user.getInt("id")
             username = user.getString("username")
@@ -219,6 +220,7 @@ class MainActivity : AppCompatActivity(), LocationListener {
             bundle.putString("contrasena", contrasena)
             bundle.putString("fotoUrl", fotoUrl)
             bundle.putString("fechaNacimiento", fechaNacimiento)
+            bundle.putString("externo", externo)
             intent.putExtras(bundle)
             startActivity(intent)
         }
@@ -369,20 +371,10 @@ class MainActivity : AppCompatActivity(), LocationListener {
             } else {
                 // Caso: cargar imagen por defecto si la fotoUrl no es un archivo válido
                 profileImage.imageTintList = ContextCompat.getColorStateList(this, R.color.primaryColor)
-                Toast.makeText(this, "Error al cargar la imagen", Toast.LENGTH_SHORT).show()
             }
         } else {
             // Caso: fotoUrl está vacía, cargar imagen por defecto
             profileImage.imageTintList = ContextCompat.getColorStateList(this, R.color.primaryColor)
-        }
-    }
-
-    fun isBase64(string: String): Boolean {
-        return try {
-            Base64.decode(string, Base64.DEFAULT)
-            true
-        } catch (e: IllegalArgumentException) {
-            false
         }
     }
 

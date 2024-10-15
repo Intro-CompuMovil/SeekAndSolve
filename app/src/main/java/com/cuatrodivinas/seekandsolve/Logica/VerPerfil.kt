@@ -33,6 +33,7 @@ class VerPerfil : AppCompatActivity() {
     private lateinit var contrasena: String
     private lateinit var fotoUrl: String
     private lateinit var fechaNacimiento: String
+    private lateinit var externo: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -47,6 +48,10 @@ class VerPerfil : AppCompatActivity() {
             contrasena = bundle.getString("contrasena") ?: ""
             fotoUrl = bundle.getString("fotoUrl") ?: ""
             fechaNacimiento = bundle.getString("fechaNacimiento") ?: ""
+            externo = bundle.getString("externo") ?: ""
+        }
+        if(externo == "true"){
+            binding.editarPerfilBtn.visibility = android.view.View.GONE
         }
         inicializarComponentes()
         quemarDatos()
@@ -81,7 +86,6 @@ class VerPerfil : AppCompatActivity() {
             } else {
                 // Caso: cargar imagen por defecto si la fotoUrl no es un archivo válido
                 binding.imagenPerfil.imageTintList = ContextCompat.getColorStateList(this, R.color.primaryColor)
-                Toast.makeText(this, "Error al cargar la imagen", Toast.LENGTH_SHORT).show()
             }
         } else {
             // Caso: fotoUrl está vacía, cargar imagen por defecto

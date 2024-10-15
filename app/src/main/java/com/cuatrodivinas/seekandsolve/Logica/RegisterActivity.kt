@@ -34,6 +34,8 @@ import org.json.JSONArray
 import org.json.JSONObject
 import java.io.FileInputStream
 import java.io.FileOutputStream
+import java.io.IOException
+import java.io.InputStream
 import javax.crypto.Cipher
 import javax.crypto.KeyGenerator
 
@@ -214,7 +216,31 @@ class RegisterActivity : AppCompatActivity() {
                 }
             }
         }
+        val json = JSONObject(loadJSONFromAsset("usuarios.json"))
+        val usuariosJson = json.getJSONArray("usuarios")
+        for (i in 0 until usuariosJson.length()) {
+            val user = usuariosJson.getJSONObject(i)
+            if(user.getString("correo") == email){
+                return true
+            }
+        }
         return false
+    }
+
+    private fun loadJSONFromAsset(filename: String): String? {
+        var json: String? = null
+        try {
+            val isStream: InputStream = assets.open(filename)
+            val size:Int = isStream.available()
+            val buffer = ByteArray(size)
+            isStream.read(buffer)
+            isStream.close()
+            json = String(buffer, Charsets.UTF_8)
+        } catch (ex: IOException) {
+            ex.printStackTrace()
+            return null
+        }
+        return json
     }
 
     private fun readJsonFromFile(fileName: String): String? {
