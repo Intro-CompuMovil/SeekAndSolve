@@ -50,8 +50,6 @@ dependencies {
     implementation(libs.googleid)
     implementation (libs.play.services.auth)
     implementation (libs.firebase.auth.ktx)
-    implementation(platform(libs.firebase.bom))
-    implementation(libs.google.firebase.auth)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
@@ -64,4 +62,16 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+
+    // Firebase BoM
+    implementation(platform(libs.firebase.bom))
+
+    // Firebase Auth
+    implementation(libs.google.firebase.auth)
+
+    // Firebase Realtime Database
+    implementation(libs.firebase.database)
+
+    // Firebase Storage
+    implementation(libs.firebase.storage)
 }
