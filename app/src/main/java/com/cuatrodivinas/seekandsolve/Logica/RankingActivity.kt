@@ -1,11 +1,13 @@
 package com.cuatrodivinas.seekandsolve.Logica
 
+import android.content.Intent
 import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.util.Base64
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.view.animation.AnimationUtils
+import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
@@ -72,6 +74,8 @@ class RankingActivity : AppCompatActivity() {
                 val profileImageView: ImageView = holder.itemView.findViewById(R.id.profileImageView)
                 val usernameTextView: TextView = holder.itemView.findViewById(R.id.usernameTextView)
                 val rewardsTextView: TextView = holder.itemView.findViewById(R.id.scoreTextView)
+                val verRecompensas: Button = holder.itemView.findViewById(R.id.btnRecompensas)
+
                 if (rankingItem.profileImageUrl.isNotEmpty()) {
                     if (rankingItem.profileImageUrl.startsWith("/")) {
                         // Cargar imagen desde el archivo
@@ -102,6 +106,12 @@ class RankingActivity : AppCompatActivity() {
 
                 usernameTextView.text = rankingItem.username
                 rewardsTextView.text = getString(R.string.rewards_text, rankingItem.rewards)
+
+                verRecompensas.setOnClickListener {
+                    val intent = Intent(holder.itemView.context, RecompensasCarrera::class.java)
+                    intent.putExtra("username", rankingItem.username) // Pasar datos al perfil
+                    holder.itemView.context.startActivity(intent)
+                }
             }
 
             override fun getItemCount() = sortedRankingItems.size

@@ -9,9 +9,9 @@
               <option name="connection">
                 <ConnectionSetting>
                   <option name="appId" value="com.cuatrodivinas.seekandsolve" />
-                  <option name="mobileSdkAppId" value="1:669449036916:android:bf1ee798f3be45f3f35d21" />
-                  <option name="projectId" value="seekandsolve-3a862" />
-                  <option name="projectNumber" value="669449036916" />
+                  <option name="mobileSdkAppId" value="1:1084106490554:android:d5b9a5f025e49ddaa1b883" />
+                  <option name="projectId" value="intro-movil" />
+                  <option name="projectNumber" value="1084106490554" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />
