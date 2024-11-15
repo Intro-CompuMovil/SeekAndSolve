@@ -11,6 +11,7 @@ import android.os.Bundle
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
 import android.text.InputType
+import android.text.TextUtils
 import android.util.Base64
 import android.util.Log
 import android.widget.Button
@@ -21,6 +22,8 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import com.cuatrodivinas.seekandsolve.Datos.Data
+import com.cuatrodivinas.seekandsolve.Datos.Data.Companion
 import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.PATH_USERS
 import com.cuatrodivinas.seekandsolve.Datos.Usuario
 import com.cuatrodivinas.seekandsolve.R
@@ -115,6 +118,14 @@ class RegisterActivity : AppCompatActivity() {
 
 
     private fun registerUser() {
+        if(binding.contrasenia.text.toString().length < 6){
+            showToast("La contraseña debe ser mínimo de 6 dígitos")
+            return
+        }
+        if(!isEmailValid(binding.correoEditText.text.toString())){
+            showToast("El correo no es válido")
+            return
+        }
         if (binding.nombreEditText.text.toString().isNotEmpty() &&
             binding.nombreUsuarioEditText.text.toString().isNotEmpty() &&
             binding.correoEditText.text.toString().isNotEmpty() &&
@@ -123,7 +134,6 @@ class RegisterActivity : AppCompatActivity() {
             binding.fechaNacimiento.text.toString().isNotEmpty()) {
             if (binding.contrasenia.text.toString().equals(binding.confirmarContrasenia.text.toString())) {
                 crearUsuario()
-                navigateToMain()
             } else {
                 Log.e("registerActivity", "Las contraseñas no coinciden")
                 showToast("Las contraseñas no coinciden")
@@ -131,6 +141,14 @@ class RegisterActivity : AppCompatActivity() {
         } else {
             showToast("Todos los campos deben estar llenos")
         }
+    }
+
+    private fun isEmailValid(email: String): Boolean {
+        if (!email.contains("@") ||
+            !email.contains(".") ||
+            email.length < 5)
+            return false
+        return true
     }
 
     private fun crearUsuario(){
@@ -165,70 +183,25 @@ class RegisterActivity : AppCompatActivity() {
             this@RegisterActivity, "usuario creado con éxito!",
             Toast.LENGTH_SHORT
         ).show()
-        saveUserDataToJson(usuario.nombreUsuario, usuario.correo, usuario.password,usuario.imagenUrl, usuario.imagenUrl, "normal", usuario.fechaNacimiento)
+        iniciarSesion()
+        navigateToMain()
     }
 
-    private fun saveUserDataToJson(name: String?, email: String?, contrasena: String, username: String?, photoUrl: String, signInType: String, birthDate: String) {
-        // Eliminar el archivo JSON existente
-        deleteFile("user_data.json")
-        // Crear un nuevo JSONArray y agregar el nuevo usuario
-        val userDataJson = readJsonFromFile("user_data.json")
-        var usersArray = JSONArray()
-        if (userDataJson != null && userDataJson.isNotEmpty()) {
-            usersArray = JSONArray(userDataJson)
-        }
-        val userData = JSONObject()
-        userData.put("id", userData.length() + 1)
-        userData.put("name", name)
-        userData.put("email", email)
-        userData.put("password", contrasena)
-        userData.put("username", username)
-        userData.put("photoUrl", photoUrl)
-        userData.put("fechaNacimiento", birthDate)
-        userData.put("signInType", signInType)
-        usersArray.put(userData)
-        // Eliminar el archivo JSON existente
-        deleteFile("user_data.json")
-        usersArray.put(userData)
-        saveJsonToFile(usersArray)
-        println(userData)
-        // Generate and save session_id
-        val sessionId = generateSessionId()
-        saveSessionId(sessionId)
-        saveJsonToFile(usersArray)
-    }
-    private fun generateSessionId(): String {
-        return java.util.UUID.randomUUID().toString()
-    }
-
-    private fun saveSessionId(sessionId: String) {
-        val sharedPreferences = getSharedPreferences("user_session", Context.MODE_PRIVATE)
-        val editor = sharedPreferences.edit()
-        editor.putString("session_id", sessionId)
-        editor.apply()
-    }
-
-    private fun readJsonFromFile(fileName: String): String? {
-        return try {
-            val fileInputStream: FileInputStream = openFileInput(fileName)
-            val bytes = fileInputStream.readBytes()
-            fileInputStream.close()
-            String(bytes)
-        } catch (e: Exception) {
-            e.printStackTrace()
-            ""
-        }
-    }
-
-    private fun saveJsonToFile(usersArray: JSONArray) {
-        val fileName = "user_data.json"
-        try {
-            val fileOutputStream: FileOutputStream = openFileOutput(fileName, Context.MODE_PRIVATE)
-            fileOutputStream.write(usersArray.toString().toByteArray())
-            fileOutputStream.close()
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
+    private fun iniciarSesion(){
+        Data.auth.signInWithEmailAndPassword(binding.nombreUsuario.toString(),binding.contraseniaLayout.toString())
+            .addOnCompleteListener(this) { task ->
+                if (task.isSuccessful) {
+                    Log.d(TAG, "signInWithEmail:success:")
+                    val intentMain = Intent(this, MainActivity::class.java)
+                    val usuario = Data.auth.currentUser
+                    intentMain.putExtra("usuario", usuario)
+                    startActivity(intentMain)
+                } else {
+                    Log.w(TAG, "signInWithEmail:failure", task.exception)
+                    Toast.makeText(this, "Authentication failed.",
+                        Toast.LENGTH_SHORT).show()
+                }
+            }
     }
 
     private fun showToast(message: String) {

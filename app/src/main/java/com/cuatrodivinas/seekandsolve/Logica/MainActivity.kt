@@ -19,6 +19,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.bumptech.glide.Glide
+import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.auth
+import com.cuatrodivinas.seekandsolve.Datos.Usuario
 import com.cuatrodivinas.seekandsolve.R
 import org.json.JSONArray
 import org.osmdroid.config.Configuration
@@ -29,6 +31,12 @@ import org.osmdroid.views.overlay.Marker
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.firebase.Firebase
+import com.google.firebase.auth.auth
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 import org.json.JSONException
 import org.json.JSONObject
 import kotlin.properties.Delegates
@@ -47,345 +55,94 @@ class MainActivity : AppCompatActivity(), LocationListener {
     private lateinit var map: MapView
     private val REQUEST_PERMISSIONS_REQUEST_CODE = 1
     private lateinit var locationManager: LocationManager
-    private lateinit var googleSignInClient: GoogleSignInClient
-    private var isFirstLocation = true
     private lateinit var mapController: IMapController
     private lateinit var marcadores: MutableList<Marker>
-
-    private var id by Delegates.notNull<Int>()
     private lateinit var nombre: String
     private lateinit var username: String
     private lateinit var correo: String
     private lateinit var contrasena: String
     private lateinit var fotoUrl: String
     private lateinit var fechaNacimiento: String
-    private lateinit var externo: String
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setTheme(R.style.Base_Theme_SeekAndSolve)
         setContentView(R.layout.activity_main)
-        val user = getLastRegisteredUser()
-        val bundle = intent.extras
-        if(bundle != null){
-            id = bundle.getInt("id")
-            nombre = bundle.getString("nombre") ?: ""
-            username = bundle.getString("username") ?: ""
-            correo = bundle.getString("correo") ?: ""
-            contrasena = bundle.getString("contrasena") ?: ""
-            fotoUrl = bundle.getString("fotoUrl") ?: ""
-            fechaNacimiento = bundle.getString("fechaNacimiento") ?: ""
-            externo = bundle.getString("externo") ?: ""
-        }else if(user != null){
-            id = user.getInt("id")
-            username = user.getString("username")
-            nombre = user.getString("name")
-            contrasena = user.getString("password")
-            correo = user.getString("email")
-            fechaNacimiento = user.getString("fechaNacimiento")
-            fotoUrl = if (user.has("photoUrl") && !user.isNull("photoUrl")) user.getString("photoUrl") else ""
-            externo = "false"
+        auth = Firebase.auth
+        checkUser()
 
-            cargarInformacionMundoExterior()
-        } else {
-            id = -1
-            username = "null"
-            nombre = "null"
-            contrasena = "null"
-            correo = "null"
-            fechaNacimiento = "null"
-            fotoUrl = "null"
-            externo = "false"
+    }
+
+    private fun checkUser() {
+        if(auth.currentUser == null){
+            startActivity(Intent(this, LandingActivity::class.java))
+            finish()
+            return
         }
         marcadores = mutableListOf()
-        setupGoogleSignInClient()
-        checkSession()
-        setupMap()
-        setupLocationManager()
-
-        setUsernameText()
-        setupProfileLayout()
-
-        setupVerDesafiosButton()
-        setupCrearDesafioButton()
-        setupRankingButton()
-        setupAmigosButton()
+        getUser()
     }
 
-    // =============================================================================================
-    // Sharly y la Creación/Actualización de mi Mundo Interior con el Mundo Exterior
-    private fun cargarInformacionMundoExterior() {
-        /*cargarMisAmigos()
-        cargarMisCarreras()*/
-    }
+    private fun getUser(){
+        val database = FirebaseDatabase.getInstance()
+        val userRef = database.getReference("usuarios").child(auth.currentUser!!.uid)
 
-    private fun cargarMisAmigos() {
-        val userFriendsJson = readJsonFromMyWorldFile("user_friends.json")
-        var usersFriendsArray = JSONArray()
-        if (userFriendsJson != null) {
-            usersFriendsArray = JSONArray(userFriendsJson)
-        }
-        // Eliminar el archivo JSON existente
-        deleteFile("user_friends.json")
-        // Volvemos a cargar el archivo JSON de mi mundo con los amigos actualizados del mundo exterior
-        actualizarMisAmigos(usersFriendsArray)
-    }
+        userRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                // Convierte el snapshot a la clase User
+                val usuario = snapshot.getValue(Usuario::class.java)
+                nombre = usuario!!.nombre
+                username = usuario.nombreUsuario
+                correo = usuario.correo
+                contrasena = usuario.password
+                fotoUrl = usuario.imagenUrl
+                fechaNacimiento = usuario.fechaNacimiento
 
-    private fun actualizarMisAmigos(usersFriendsArray: JSONArray) {
-        /*var json = JSONObject(loadJSONFromAssetExternalWorld("amigos.json"))
-        val idsAmigosJson = json.getJSONArray("amigos")
-        json = JSONObject(loadJSONFromAssetExternalWorld("usuarios.json"))
-        val usuariosJson = json.getJSONArray("usuarios")
+                setupMap()
+                setupLocationManager()
 
-        for (i in 0 until idsAmigosJson.length()) {
-            val amigo = idsAmigosJson.getJSONObject(i)
-            var idAmigo = ""
-            val amigo1 = amigo.getString("idUsuario1")
-            val amigo2 = amigo.getString("idUsuario2")
-            var miAmigo: JSONObject? = null
-            if (amigo1.equals(id)) {
-                idAmigo = amigo2
-                miAmigo = usuariosJson!!.getJSONObject(amigo2 - 1)
-            } else if (amigo2.equals(id)) {
-                idAmigo = amigo1
-                miAmigo = usuariosJson!!.getJSONObject(amigo1 - 1)
+                setUsernameText()
+                setupProfileLayout()
+
+                setupVerDesafiosButton()
+                setupCrearDesafioButton()
+                setupRankingButton()
+                setupAmigosButton()
+
             }
-            if (miAmigo != null) {
-                // Verificar que idAmigo no esté en usersFriendsArray
-                var isFriend = false
-                for (j in 0 until usersFriendsArray.length()) {
-                    val userFriend = usersFriendsArray.getJSONObject(j)
-                    if (userFriend.getInt("id") == idAmigo) {
-                        // Actualizo el userFriend con la información más reciente
-                        userFriend.put("username", miAmigo.getString("username"))
-                        userFriend.put("fotoUrl", miAmigo.getString("fotoUrl"))
-                        isFriend = true
-                        break
-                    }
-                }
-                if (!isFriend) {
-                    val imagenAmigo = miAmigo.getString("fotoUrl")
-                    val usernameAmigo = miAmigo.getString("username")
-                    val userFriend = JSONObject()
-                    userFriend.put("id", idAmigo)
-                    userFriend.put("username", usernameAmigo)
-                    userFriend.put("fotoUrl", imagenAmigo)
-                    usersFriendsArray.put(userFriend)
-                }
+            override fun onCancelled(error: DatabaseError) {
+                //showToast("No se pudo obtener los datos del usuario")
             }
-        }
-        // Guardar el archivo JSON actualizado
-        saveJsonToMyWorldFile(usersFriendsArray, "user_friends.json")*/
+        })
     }
-
-    private fun cargarMisCarreras() {
-        val userRacesJson = readJsonFromMyWorldFile("user_races.json")
-        var usersRacesArray = JSONArray()
-        if (userRacesJson != null) {
-            usersRacesArray = JSONArray(userRacesJson)
-        }
-        // Eliminar el archivo JSON existente
-        deleteFile("user_races.json")
-        // Volvemos a cargar el archivo JSON de mi mundo con las carreras actualizadas del mundo exterior
-        actualizarMisCarreras(usersRacesArray)
-    }
-
-    private fun actualizarMisCarreras(usersRacesArray: JSONArray) {
-        /*var json = JSONObject(loadJSONFromAssetExternalWorld("carrerasUsuarios.json"))
-        val idsRacesJson = json.getJSONArray("carrerasUsuarios")
-        json = JSONObject(loadJSONFromAssetExternalWorld("carreras.json"))
-        val carrerasJson = json.getJSONArray("carreras")
-
-        for(i in 0 until idsRacesJson.length()){
-            val carreraUsuario = idsRacesJson.getJSONObject(i)
-            val idCarrera = carreraUsuario.getInt("idCarrera")
-            val idUsuario = carreraUsuario.getInt("idUsuario")
-            val idRecompensa = carreraUsuario.getInt("idRecompensa")
-            if(idUsuario == id){
-                // Verificar que idCarrera no esté en usersRacesArray y si está, actualizarlo
-                val carrera = carrerasJson.getJSONObject(idCarrera - 1)
-                var isRace = false
-                for(j in 0 until usersRacesArray.length()){
-                    var userRace = usersRacesArray.getJSONObject(j)
-                    if(userRace.getInt("id") == idCarrera){
-                        // Actualizo el userRace con la información más reciente
-                        carrera.put("idRecompensa", idRecompensa)
-                        userRace = carrera
-                        isRace = true
-                        break
-                    }
-                }
-                if (!isRace) {
-                    carrera.put("idRecompensa", idRecompensa)
-                    usersRacesArray.put(carrera)
-                }
-            }
-        }
-        // Guardar el archivo JSON actualizado
-        saveJsonToMyWorldFile(usersRacesArray, "user_races.json")*/
-    }
-
-    // =============================================================================================
-    // Sharly y el Mundo Exterior
-    private fun loadJSONFromAssetExternalWorld(filename: String): String? {
-        var json: String? = null
-        try {
-            val isStream: InputStream = assets.open(filename)
-            val size:Int = isStream.available()
-            val buffer = ByteArray(size)
-            isStream.read(buffer)
-            isStream.close()
-            json = String(buffer, Charsets.UTF_8)
-        } catch (ex: IOException) {
-            ex.printStackTrace()
-            return null
-        }
-        return json
-    }
-    // =============================================================================================
-    // Sharly y el Mundo Interior
-    private fun readJsonFromMyWorldFile(fileName: String): String? {
-        return try {
-            val fileInputStream: FileInputStream = openFileInput(fileName)
-            val bytes = fileInputStream.readBytes()
-            fileInputStream.close()
-            String(bytes)
-        } catch (e: Exception) {
-            e.printStackTrace()
-            null
-        }
-    }
-
-    private fun saveJsonToMyWorldFile(usersArray: JSONArray, fileName: String) {
-        try {
-            val fileOutputStream: FileOutputStream = openFileOutput(fileName, Context.MODE_PRIVATE)
-            fileOutputStream.write(usersArray.toString().toByteArray())
-            fileOutputStream.close()
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-    }
-
-    private fun getLastRegisteredUser(): JSONObject? {
-        try {
-            val inputStream: InputStream = openFileInput("user_data.json")
-            val size: Int = inputStream.available()
-            val buffer = ByteArray(size)
-            inputStream.read(buffer)
-            inputStream.close()
-            val json = String(buffer, Charsets.UTF_8)
-            val jsonArray = JSONArray(json)
-            if (jsonArray.length() > 0) {
-                // Devuelve el último usuario registrado
-                return jsonArray.getJSONObject(jsonArray.length() - 1)
-            }
-        } catch (e: IOException) {
-            e.printStackTrace()
-        } catch (e: JSONException) {
-            e.printStackTrace()
-        }
-        return null
-    }
-    // =============================================================================================
 
     private fun setupAmigosButton() {
         val amigosButton: Button = findViewById(R.id.amigosButton)
         amigosButton.setOnClickListener {
-            val intent = Intent(this, Amigos::class.java)
-            val bundle = Bundle()
-            bundle.putInt("id", id)
-            bundle.putString("nombre", nombre)
-            bundle.putString("username", username)
-            bundle.putString("correo", correo)
-            bundle.putString("contrasena", contrasena)
-            bundle.putString("fotoUrl", fotoUrl)
-            bundle.putString("fechaNacimiento", fechaNacimiento)
-            intent.putExtras(bundle)
-            startActivity(intent)
+            startActivity(Intent(this, Amigos::class.java))
         }
     }
 
     private fun setupCrearDesafioButton() {
         val crearDesafioButton: Button = findViewById(R.id.crearDesafioButton)
         crearDesafioButton.setOnClickListener {
-            val intent = Intent(this, CrearDesafioActivity::class.java)
-            val bundle = Bundle()
-            bundle.putInt("id", id)
-            bundle.putString("nombre", nombre)
-            bundle.putString("username", username)
-            bundle.putString("correo", correo)
-            bundle.putString("contrasena", contrasena)
-            bundle.putString("fotoUrl", fotoUrl)
-            bundle.putString("fechaNacimiento", fechaNacimiento)
-            intent.putExtras(bundle)
-            startActivity(intent)
+            startActivity(Intent(this, CrearDesafioActivity::class.java))
         }
     }
 
     private fun setupVerDesafiosButton() {
         val verDesafiosButton: Button = findViewById(R.id.desafiosButton)
         verDesafiosButton.setOnClickListener {
-            val intent = Intent(this, VerDesafiosActivity::class.java)
-            val bundle = Bundle()
-            bundle.putInt("id", id)
-            bundle.putString("nombre", nombre)
-            bundle.putString("username", username)
-            bundle.putString("correo", correo)
-            bundle.putString("contrasena", contrasena)
-            bundle.putString("fotoUrl", fotoUrl)
-            bundle.putString("fechaNacimiento", fechaNacimiento)
-            intent.putExtras(bundle)
-            startActivity(intent)
+            startActivity(Intent(this, VerDesafiosActivity::class.java))
         }
 //        startLocationUpdates()
-    }
-
-    private fun startLocationUpdates() {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), 1)
-            return
-        }
-        locationManager.requestLocationUpdates(
-            LocationManager.GPS_PROVIDER,
-            1000L,
-            1f,
-            object: LocationListener {
-                override fun onLocationChanged(location: Location) {
-                    Log.d("Marcadores", "Marcadores ${map.overlays.size}")
-                    setPoint(location.latitude, location.longitude)
-                }
-            }
-        )
-    }
-
-    private fun setupGoogleSignInClient() {
-        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestIdToken(getString(R.string.default_web_client_id))
-            .requestEmail()
-            .build()
-        googleSignInClient = GoogleSignIn.getClient(this, gso)
     }
 
     private fun setupProfileLayout() {
         val profileLayout: LinearLayout = findViewById(R.id.profileLayout)
         profileLayout.setOnClickListener {
-            val intent = Intent(this, VerPerfil::class.java)
-            val bundle = Bundle()
-            bundle.putInt("id", id)
-            bundle.putString("nombre", nombre)
-            bundle.putString("username", username)
-            bundle.putString("correo", correo)
-            bundle.putString("contrasena", contrasena)
-            bundle.putString("fotoUrl", fotoUrl)
-            bundle.putString("fechaNacimiento", fechaNacimiento)
-            if (externo != null) {
-                bundle.putString("externo", externo)
-            } else {
-                bundle.putString("externo", "false")
-            }
-            intent.putExtras(bundle)
-            startActivity(intent)
+            startActivity(Intent(this, VerPerfil::class.java))
         }
     }
 
@@ -397,15 +154,6 @@ class MainActivity : AppCompatActivity(), LocationListener {
         }
     }
 
-    private fun checkSession() {
-        val sharedPreferences = getSharedPreferences("user_session", Context.MODE_PRIVATE)
-        val sessionId = sharedPreferences.getString("session_id", null)
-        if (sessionId == null) {
-            val intent = Intent(this, LandingActivity::class.java)
-            startActivity(intent)
-            finish()
-        }
-    }
 
 
     private fun setupMap() {

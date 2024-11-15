@@ -7,14 +7,21 @@ import androidx.appcompat.app.AppCompatActivity
 import com.cuatrodivinas.seekandsolve.R
 import android.content.Intent
 import android.widget.Button
+import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.auth
+import com.google.firebase.Firebase
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.auth
 import java.io.File
 
 class LandingActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_landing)
-
         setupAnimation()
+    }
+
+    override fun onResume() {
+        super.onResume()
         setupButton()
     }
 
@@ -27,18 +34,8 @@ class LandingActivity : AppCompatActivity() {
     private fun setupButton() {
         val button: Button = findViewById(R.id.comienzaTuAventura)
         button.setOnClickListener {
-            checkJsonAndNavigate()
+            startActivity(Intent(this, RegisterActivity::class.java))
+            finish()
         }
-    }
-
-    private fun checkJsonAndNavigate() {
-        val file = File(filesDir, "user_data.json")
-        val intent = if (file.exists()) {
-            Intent(this, LoginActivity::class.java)
-        } else {
-            Intent(this, RegisterActivity::class.java)
-        }
-        startActivity(intent)
-        finish()
     }
 }

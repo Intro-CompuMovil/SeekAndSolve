@@ -55,8 +55,14 @@ class TrayectoDesafioActivity : AppCompatActivity(), LocationListener {
         setupMap()
         setupLocationManager()
         val puntoInicial = GeoPoint(desafio.puntoInicial.latitud, desafio.puntoInicial.longitud)
+        var puntoAnterior = puntoInicial
+        for(checkpoint in desafio.puntosIntermedios){
+            val puntoSiguiente = GeoPoint(checkpoint.latitud, checkpoint.longitud)
+            getRoute(puntoAnterior, puntoSiguiente)
+            puntoAnterior = puntoSiguiente
+        }
         val puntoFinal = GeoPoint(desafio.puntoFinal.latitud, desafio.puntoFinal.longitud)
-        getRoute(puntoInicial, puntoFinal)
+        getRoute(puntoAnterior, puntoFinal)
     }
 
     private fun setupMap() {

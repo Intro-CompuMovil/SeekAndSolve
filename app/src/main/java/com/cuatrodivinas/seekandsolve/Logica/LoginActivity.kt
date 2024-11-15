@@ -10,6 +10,7 @@ import android.util.Log
 import android.widget.Button
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.auth
 import com.cuatrodivinas.seekandsolve.Datos.Usuario
 import com.cuatrodivinas.seekandsolve.R
 import com.cuatrodivinas.seekandsolve.databinding.ActivityLoginBinding
@@ -40,19 +41,12 @@ import kotlin.properties.Delegates
 class LoginActivity : AppCompatActivity() {
     private lateinit var binding: ActivityLoginBinding
 
-    companion object {
-        private const val RC_SIGN_IN = 9001
-    }
-    private lateinit var auth: FirebaseAuth
-    private var signInType: String? = null
 
-    private var externo by Delegates.notNull<Boolean>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        auth = FirebaseAuth.getInstance()
         setupUI()
     }
 
@@ -104,11 +98,14 @@ class LoginActivity : AppCompatActivity() {
 
     private fun navigateToMain(user: FirebaseUser) {
         val intent = Intent(this, MainActivity::class.java)
-        val bundle = Bundle()
+        /*val bundle = Bundle()
         val database = FirebaseDatabase.getInstance()
-        val userRef = database.getReference("usuarios").child(user.uid)
+        val userRef = database.getReference("usuarios").child(user.uid)*/
 
-        userRef.addListenerForSingleValueEvent(object : ValueEventListener {
+        startActivity(intent)
+        finish()
+
+        /*userRef.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 // Convierte el snapshot a la clase User
                 val usuario = snapshot.getValue(Usuario::class.java)
@@ -122,13 +119,12 @@ class LoginActivity : AppCompatActivity() {
                 bundle.putString("fechaNacimiento", usuario?.fechaNacimiento)
                 bundle.putString("externo", "false")
                 intent.putExtras(bundle)
-                startActivity(intent)
-                finish()
+
             }
             override fun onCancelled(error: DatabaseError) {
                 showToast("No se pudo obtener los datos del usuario")
             }
-        })
+        })*/
 
     }
 
