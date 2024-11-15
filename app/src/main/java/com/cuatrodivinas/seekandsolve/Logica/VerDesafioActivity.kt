@@ -56,7 +56,7 @@ class VerDesafioActivity : AppCompatActivity() {
             }
             val desafioVar = Desafio(desafio.getString("id")!!.toInt(), desafio.getString("nombre")!!, desafio.getString("imagen")!!,
                 desafio.getString("descripcion")!!, puntoInicial,
-                puntosIntermedios, puntoFinal)
+                puntosIntermedios, puntoFinal, mutableListOf())
             intentIniciarDesafio.putExtra("desafio", desafioVar)
             startActivity(intentIniciarDesafio)
         }
@@ -73,7 +73,7 @@ class VerDesafioActivity : AppCompatActivity() {
             }
             val desafioVar = Desafio(desafio.getString("id")!!.toInt(), desafio.getString("nombre")!!, desafio.getString("imagen")!!,
                 desafio.getString("descripcion")!!, puntoInicial,
-                puntosIntermedios, puntoFinal)
+                puntosIntermedios, puntoFinal, mutableListOf())
             intentRevisarTrayecto.putExtra("desafio", desafioVar)
             startActivity(intentRevisarTrayecto)
         }
