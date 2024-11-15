@@ -2,6 +2,7 @@ package com.cuatrodivinas.seekandsolve.Logica
 
 import android.app.AlertDialog
 import android.app.DatePickerDialog
+import android.content.ContentValues.TAG
 import android.content.Context
 import android.content.Intent
 import android.graphics.Paint
@@ -20,7 +21,10 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.PATH_USERS
+import com.cuatrodivinas.seekandsolve.Datos.Usuario
 import com.cuatrodivinas.seekandsolve.R
+import com.cuatrodivinas.seekandsolve.databinding.ActivityRegisterBinding
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
@@ -30,16 +34,17 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
+import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.FirebaseDatabase
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.FileInputStream
 import java.io.FileOutputStream
-import java.io.IOException
-import java.io.InputStream
-import javax.crypto.Cipher
-import javax.crypto.KeyGenerator
 
 class RegisterActivity : AppCompatActivity() {
+    private lateinit var binding: ActivityRegisterBinding
+    private val database = FirebaseDatabase.getInstance()
+    private lateinit var myRef: DatabaseReference
 
     companion object {
         private const val RC_SIGN_IN = 9001
@@ -49,17 +54,13 @@ class RegisterActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_register)
+        binding = ActivityRegisterBinding.inflate(layoutInflater)
+        setContentView(binding.root)
         auth = Firebase.auth
-        val googleLoginButton: Button = findViewById(R.id.googleLoginButton)
-        val registerButton: Button = findViewById(R.id.registrarse)
         setupPasswordVisibility()
         setupFechaNacimiento()
         setupIniciaSesionButton()
-        googleLoginButton.setOnClickListener {
-            signIn()
-        }
-        registerButton.setOnClickListener {
+        binding.registrarse.setOnClickListener {
             registerUser()
         }
     }
@@ -112,135 +113,99 @@ class RegisterActivity : AppCompatActivity() {
         startActivity(intent)
     }
 
-    private fun signIn() {
-        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestIdToken(getString(R.string.default_web_client_id))
-            .requestEmail()
-            .build()
 
-        val googleSignInClient = GoogleSignIn.getClient(this, gso)
-        val account = GoogleSignIn.getLastSignedInAccount(this)
-
-        if (account != null) {
-            // El usuario ya ha iniciado sesión previamente, proceder con la autenticación
-            firebaseAuthWithGoogle(account.idToken!!)
-        } else {
-            // El usuario no ha iniciado sesión previamente, iniciar el flujo de inicio de sesión
-            val signInIntent = googleSignInClient.signInIntent
-            startActivityForResult(signInIntent, RC_SIGN_IN)
-        }
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-
-        if (requestCode == RC_SIGN_IN) {
-            val task = GoogleSignIn.getSignedInAccountFromIntent(data)
-            try {
-                val account = task.getResult(ApiException::class.java)
-                firebaseAuthWithGoogle(account.idToken!!)
-            } catch (e: ApiException) {
-                Log.w("registerActivity", "Google sign in failed", e)
+    private fun registerUser() {
+        if (binding.nombreEditText.text.toString().isNotEmpty() &&
+            binding.nombreUsuarioEditText.text.toString().isNotEmpty() &&
+            binding.correoEditText.text.toString().isNotEmpty() &&
+            binding.contrasenia.text.toString().isNotEmpty() &&
+            binding.confirmarContrasenia.text.toString().isNotEmpty() &&
+            binding.fechaNacimiento.text.toString().isNotEmpty()) {
+            if (binding.contrasenia.text.toString().equals(binding.confirmarContrasenia.text.toString())) {
+                crearUsuario()
+                navigateToMain()
+            } else {
+                Log.e("registerActivity", "Las contraseñas no coinciden")
+                showToast("Las contraseñas no coinciden")
             }
+        } else {
+            showToast("Todos los campos deben estar llenos")
         }
     }
 
-    private fun firebaseAuthWithGoogle(idToken: String) {
-        val credential = GoogleAuthProvider.getCredential(idToken, null)
-        auth.signInWithCredential(credential)
+    private fun crearUsuario(){
+        auth.createUserWithEmailAndPassword(binding.correoEditText.text.toString(), binding.contrasenia.text.toString())
             .addOnCompleteListener(this) { task ->
                 if (task.isSuccessful) {
+                    Log.d(TAG, "createUserWithEmail:onComplete:" + task.isSuccessful)
                     val user = auth.currentUser
-                    val username = user?.displayName
-                    val email = user?.email
-                    val photoUrl = user?.photoUrl.toString() // Obtener la URL de la foto de perfil
-
-                    if (isEmailRegistered(email)) {
-                        showToast("Correo ya registrado, por favor inicie sesión")
-                        navigateToLogin()
-                    } else {
-                        // Mostrar un cuadro de diálogo para editar el nombre y seleccionar la fecha de nacimiento
-                        val editText = EditText(this)
-                        editText.setText(username)
-                        val birthDateEditText = EditText(this)
-                        birthDateEditText.hint = "Fecha de nacimiento"
-                        birthDateEditText.isFocusable = false
-                        birthDateEditText.setOnClickListener {
-                            val calendar = Calendar.getInstance()
-                            val year = calendar.get(Calendar.YEAR)
-                            val month = calendar.get(Calendar.MONTH)
-                            val day = calendar.get(Calendar.DAY_OF_MONTH)
-                            val datePickerDialog = DatePickerDialog(this, { _, selectedYear, selectedMonth, selectedDay ->
-                                val selectedDate = "$selectedDay/${selectedMonth + 1}/$selectedYear"
-                                birthDateEditText.setText(selectedDate)
-                            }, year, month, day)
-                            datePickerDialog.show()
-                        }
-                        val layout = LinearLayout(this)
-                        layout.orientation = LinearLayout.VERTICAL
-                        layout.addView(editText)
-                        layout.addView(birthDateEditText)
-                        // Agregar un margen alrededor de los campos de texto
-                        val margin = 20
-                        layout.setPadding(margin, margin, margin, margin)
-                        AlertDialog.Builder(this)
-                            .setTitle("Confirmar nombre y fecha de nacimiento")
-                            .setView(layout)
-                            .setPositiveButton("Confirmar") { _, _ ->
-                                val editedName = editText.text.toString()
-                                val birthDate = birthDateEditText.text.toString()
-                                saveUserDataToJson(editedName, email, username, photoUrl, "Google", birthDate)
-                                // Generate and save session_id
-                                val sessionId = generateSessionId()
-                                saveSessionId(sessionId)
-                                // Redirigir a MainActivity
-                                navigateToMain()
-                            }
-                            .setNegativeButton("Cancelar", null)
-                            .show()
+                    if (user != null) {
+                        escribirUsuarioBD()
                     }
                 } else {
-                    Log.w("registerActivity", "signInWithCredential:failure", task.exception)
+                    Toast.makeText(this, "createUserWithEmail:Failure: " + task.exception.toString(),
+                        Toast.LENGTH_SHORT).show()
+                    task.exception?.message?.let { Log.e(TAG, it) }
                 }
             }
     }
 
-    private fun isEmailRegistered(email: String?): Boolean {
+    private fun escribirUsuarioBD() {
+        val usuario = Usuario(
+            binding.nombreEditText.text.toString(),
+            binding.nombreUsuarioEditText.text.toString(),
+            binding.correoEditText.text.toString(),
+            binding.contrasenia.text.toString(),
+            "",
+            binding.fechaNacimiento.text.toString()
+        )
+        myRef = database.getReference(PATH_USERS + auth.currentUser!!.uid)
+        myRef.setValue(usuario)
+        Toast.makeText(
+            this@RegisterActivity, "usuario creado con éxito!",
+            Toast.LENGTH_SHORT
+        ).show()
+        saveUserDataToJson(usuario.nombreUsuario, usuario.correo, usuario.password,usuario.imagenUrl, usuario.imagenUrl, "normal", usuario.fechaNacimiento)
+    }
+
+    private fun saveUserDataToJson(name: String?, email: String?, contrasena: String, username: String?, photoUrl: String, signInType: String, birthDate: String) {
+        // Eliminar el archivo JSON existente
+        deleteFile("user_data.json")
+        // Crear un nuevo JSONArray y agregar el nuevo usuario
         val userDataJson = readJsonFromFile("user_data.json")
-        if (userDataJson != null) {
-            val usersArray = JSONArray(userDataJson)
-            for (i in 0 until usersArray.length()) {
-                val user = usersArray.getJSONObject(i)
-                if (user.getString("email") == email) {
-                    return true
-                }
-            }
+        var usersArray = JSONArray()
+        if (userDataJson != null && userDataJson.isNotEmpty()) {
+            usersArray = JSONArray(userDataJson)
         }
-        val json = JSONObject(loadJSONFromAsset("usuarios.json"))
-        val usuariosJson = json.getJSONArray("usuarios")
-        for (i in 0 until usuariosJson.length()) {
-            val user = usuariosJson.getJSONObject(i)
-            if(user.getString("correo") == email){
-                return true
-            }
-        }
-        return false
+        val userData = JSONObject()
+        userData.put("id", userData.length() + 1)
+        userData.put("name", name)
+        userData.put("email", email)
+        userData.put("password", contrasena)
+        userData.put("username", username)
+        userData.put("photoUrl", photoUrl)
+        userData.put("fechaNacimiento", birthDate)
+        userData.put("signInType", signInType)
+        usersArray.put(userData)
+        // Eliminar el archivo JSON existente
+        deleteFile("user_data.json")
+        usersArray.put(userData)
+        saveJsonToFile(usersArray)
+        println(userData)
+        // Generate and save session_id
+        val sessionId = generateSessionId()
+        saveSessionId(sessionId)
+        saveJsonToFile(usersArray)
+    }
+    private fun generateSessionId(): String {
+        return java.util.UUID.randomUUID().toString()
     }
 
-    private fun loadJSONFromAsset(filename: String): String? {
-        var json: String? = null
-        try {
-            val isStream: InputStream = assets.open(filename)
-            val size:Int = isStream.available()
-            val buffer = ByteArray(size)
-            isStream.read(buffer)
-            isStream.close()
-            json = String(buffer, Charsets.UTF_8)
-        } catch (ex: IOException) {
-            ex.printStackTrace()
-            return null
-        }
-        return json
+    private fun saveSessionId(sessionId: String) {
+        val sharedPreferences = getSharedPreferences("user_session", Context.MODE_PRIVATE)
+        val editor = sharedPreferences.edit()
+        editor.putString("session_id", sessionId)
+        editor.apply()
     }
 
     private fun readJsonFromFile(fileName: String): String? {
@@ -251,118 +216,8 @@ class RegisterActivity : AppCompatActivity() {
             String(bytes)
         } catch (e: Exception) {
             e.printStackTrace()
-            null
+            ""
         }
-    }
-
-    private fun hashPassword(password: String): String {
-        val keyGenerator = KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES, "AndroidKeyStore")
-        val keyGenParameterSpec = KeyGenParameterSpec.Builder(
-            "MyKeyAlias",
-            KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT
-        ).setBlockModes(KeyProperties.BLOCK_MODE_GCM)
-            .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
-            .build()
-        keyGenerator.init(keyGenParameterSpec)
-        val secretKey = keyGenerator.generateKey()
-
-        val cipher = Cipher.getInstance("AES/GCM/NoPadding")
-        cipher.init(Cipher.ENCRYPT_MODE, secretKey)
-        val iv = cipher.iv
-        val encryption = cipher.doFinal(password.toByteArray(Charsets.UTF_8))
-        return Base64.encodeToString(iv + encryption, Base64.DEFAULT)
-    }
-
-    private fun saveSessionId(sessionId: String) {
-        val sharedPreferences = getSharedPreferences("user_session", Context.MODE_PRIVATE)
-        val editor = sharedPreferences.edit()
-        editor.putString("session_id", sessionId)
-        editor.apply()
-    }
-
-    private fun generateSessionId(): String {
-        return java.util.UUID.randomUUID().toString()
-    }
-
-    private fun registerUser() {
-        val nameEditText: TextInputEditText = findViewById(R.id.nombreEditText)
-        val usernameEditText: TextInputEditText = findViewById(R.id.nombreUsuarioEditText)
-        val emailEditText: TextInputEditText = findViewById(R.id.correoEditText)
-        val passwordEditText: TextInputEditText = findViewById(R.id.contrasenia)
-        val confirmPasswordEditText: TextInputEditText = findViewById(R.id.confirmarContrasenia)
-        val fechaNacimientoTextView: TextView = findViewById(R.id.fechaNacimiento)
-
-        val name = nameEditText.text.toString()
-        val username = usernameEditText.text.toString()
-        val email = emailEditText.text.toString()
-        val password = passwordEditText.text.toString()
-        val confirmPassword = confirmPasswordEditText.text.toString()
-        val fechaNacimiento = fechaNacimientoTextView.text.toString()
-
-        if (name.isNotEmpty() && username.isNotEmpty() && email.isNotEmpty() && password.isNotEmpty() && confirmPassword.isNotEmpty() && fechaNacimiento.isNotEmpty()) {
-            if (password == confirmPassword) {
-                val hashedPassword = hashPassword(password)
-                if (isEmailRegistered(email)) {
-                    showToast("Correo ya registrado, por favor inicie sesión")
-                    navigateToLogin()
-                } else {
-                    val userData = JSONObject()
-                    userData.put("id", userData.length() + 1)
-                    userData.put("name", name)
-                    userData.put("username", username)
-                    userData.put("email", email)
-                    userData.put("password", hashedPassword)
-                    userData.put("fechaNacimiento", fechaNacimiento)
-                    userData.put("signInType", "Normal")
-
-                    val userDataJson = readJsonFromFile("user_data.json")
-                    var usersArray = JSONArray()
-                    if (userDataJson != null) {
-                        usersArray = JSONArray(userDataJson)
-                    }
-                    // Eliminar el archivo JSON existente
-                    deleteFile("user_data.json")
-                    usersArray.put(userData)
-
-                    saveJsonToFile(usersArray)
-                    println(userData)
-                    // Generate and save session_id
-                    val sessionId = generateSessionId()
-                    saveSessionId(sessionId)
-                    // Redirigir a MainActivity
-                    navigateToMain()
-                }
-            } else {
-                Log.e("registerActivity", "Las contraseñas no coinciden")
-                showToast("Las contraseñas no coinciden")
-            }
-        } else {
-            showToast("Todos los campos deben estar llenos")
-        }
-    }
-
-    private fun showToast(message: String) {
-        val toast = Toast.makeText(this, message, Toast.LENGTH_SHORT)
-        val view = toast.view
-        view?.setBackgroundColor(ContextCompat.getColor(this, android.R.color.holo_red_dark))
-        toast.show()
-    }
-
-    private fun saveUserDataToJson(name: String?, email: String?, username: String?, photoUrl: String, signInType: String, birthDate: String) {
-        // Eliminar el archivo JSON existente
-        deleteFile("user_data.json")
-        // Crear un nuevo JSONArray y agregar el nuevo usuario
-        val usersArray = JSONArray()
-        val userData = JSONObject()
-        userData.put("name", name)
-        userData.put("email", email)
-        userData.put("username", username)
-        userData.put("photoUrl", photoUrl)
-        userData.put("fechaNacimiento", birthDate)
-        userData.put("signInType", signInType)
-        usersArray.put(userData)
-
-        saveJsonToFile(usersArray)
     }
 
     private fun saveJsonToFile(usersArray: JSONArray) {
@@ -374,6 +229,13 @@ class RegisterActivity : AppCompatActivity() {
         } catch (e: Exception) {
             e.printStackTrace()
         }
+    }
+
+    private fun showToast(message: String) {
+        val toast = Toast.makeText(this, message, Toast.LENGTH_SHORT)
+        val view = toast.view
+        view?.setBackgroundColor(ContextCompat.getColor(this, android.R.color.holo_red_dark))
+        toast.show()
     }
 
     private fun navigateToMain() {
