@@ -116,8 +116,8 @@ class MainActivity : AppCompatActivity(), LocationListener {
     // =============================================================================================
     // Sharly y la Creación/Actualización de mi Mundo Interior con el Mundo Exterior
     private fun cargarInformacionMundoExterior() {
-        cargarMisAmigos()
-        cargarMisCarreras()
+        /*cargarMisAmigos()
+        cargarMisCarreras()*/
     }
 
     private fun cargarMisAmigos() {
@@ -133,21 +133,21 @@ class MainActivity : AppCompatActivity(), LocationListener {
     }
 
     private fun actualizarMisAmigos(usersFriendsArray: JSONArray) {
-        var json = JSONObject(loadJSONFromAssetExternalWorld("amigos.json"))
+        /*var json = JSONObject(loadJSONFromAssetExternalWorld("amigos.json"))
         val idsAmigosJson = json.getJSONArray("amigos")
         json = JSONObject(loadJSONFromAssetExternalWorld("usuarios.json"))
         val usuariosJson = json.getJSONArray("usuarios")
 
         for (i in 0 until idsAmigosJson.length()) {
             val amigo = idsAmigosJson.getJSONObject(i)
-            var idAmigo = -1
-            val amigo1 = amigo.getInt("idUsuario1")
-            val amigo2 = amigo.getInt("idUsuario2")
+            var idAmigo = ""
+            val amigo1 = amigo.getString("idUsuario1")
+            val amigo2 = amigo.getString("idUsuario2")
             var miAmigo: JSONObject? = null
-            if (amigo1 == id) {
+            if (amigo1.equals(id)) {
                 idAmigo = amigo2
                 miAmigo = usuariosJson!!.getJSONObject(amigo2 - 1)
-            } else if (amigo2 == id) {
+            } else if (amigo2.equals(id)) {
                 idAmigo = amigo1
                 miAmigo = usuariosJson!!.getJSONObject(amigo1 - 1)
             }
@@ -176,7 +176,7 @@ class MainActivity : AppCompatActivity(), LocationListener {
             }
         }
         // Guardar el archivo JSON actualizado
-        saveJsonToMyWorldFile(usersFriendsArray, "user_friends.json")
+        saveJsonToMyWorldFile(usersFriendsArray, "user_friends.json")*/
     }
 
     private fun cargarMisCarreras() {
@@ -192,7 +192,7 @@ class MainActivity : AppCompatActivity(), LocationListener {
     }
 
     private fun actualizarMisCarreras(usersRacesArray: JSONArray) {
-        var json = JSONObject(loadJSONFromAssetExternalWorld("carrerasUsuarios.json"))
+        /*var json = JSONObject(loadJSONFromAssetExternalWorld("carrerasUsuarios.json"))
         val idsRacesJson = json.getJSONArray("carrerasUsuarios")
         json = JSONObject(loadJSONFromAssetExternalWorld("carreras.json"))
         val carrerasJson = json.getJSONArray("carreras")
@@ -223,7 +223,7 @@ class MainActivity : AppCompatActivity(), LocationListener {
             }
         }
         // Guardar el archivo JSON actualizado
-        saveJsonToMyWorldFile(usersRacesArray, "user_races.json")
+        saveJsonToMyWorldFile(usersRacesArray, "user_races.json")*/
     }
 
     // =============================================================================================
@@ -429,7 +429,7 @@ class MainActivity : AppCompatActivity(), LocationListener {
         //Crear los marcadores
         eliminarDesafiosAnteriores()
         marcadores[0].position = newPoint
-//        setDesafiosCercanos(lalitud, longitud)
+        setDesafiosCercanos(lalitud, longitud)
         agregarMarcadores()
 
         //Mover el mapa
@@ -454,8 +454,8 @@ class MainActivity : AppCompatActivity(), LocationListener {
     private fun setDesafiosCercanos(lalitud: Double, longitud: Double){
         val desafios = getDesafios()
         if (desafios != null) {
-            for (i in 0 until desafios.length()){
-                val desafio = desafios.getJSONObject(i)
+            val desafiosList = List(desafios.length()) { desafios.getJSONObject(it) }
+            for (desafio in desafiosList){
                 val puntoInicial = desafio.getJSONObject("puntoInicial")
                 val latitudPunto = puntoInicial.getDouble("latitud")
                 val longitudPunto = puntoInicial.getDouble("longitud")
@@ -560,7 +560,9 @@ class MainActivity : AppCompatActivity(), LocationListener {
             ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
 
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0L, 0f, this)
-            locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0L, 0f, this)
+            if (locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
+                locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0L, 0f, this)
+            }
         } else {
             println("Permisos de ubicación no concedidos")
         }
@@ -588,7 +590,7 @@ class MainActivity : AppCompatActivity(), LocationListener {
         }
     }
 
-    override fun onPause() {
+   /* override fun onPause() {
         super.onPause()
         if (::map.isInitialized) {
             map.onPause()
@@ -600,7 +602,7 @@ class MainActivity : AppCompatActivity(), LocationListener {
         if (::map.isInitialized) {
             map.onDetach()
         }
-    }
+    }*/
 
     override fun onDestroy() {
         super.onDestroy()

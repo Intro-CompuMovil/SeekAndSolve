@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
     alias(libs.plugins.google.gms.google.services)
+    alias(libs.plugins.google.android.libraries.mapsplatform.secrets.gradle.plugin)
 }
 
 android {
@@ -36,6 +37,7 @@ android {
     }
     buildFeatures{
         viewBinding = true
+        dataBinding = true
     }
 }
 
@@ -43,6 +45,7 @@ dependencies {
     implementation (libs.play.services.maps)
     implementation (libs.glide)
     implementation(libs.firebase.crashlytics.buildtools)
+    implementation(libs.firebase.database.ktx)
     annotationProcessor (libs.compiler)
     implementation (libs.osmdroid.android)
     implementation(libs.androidx.credentials)

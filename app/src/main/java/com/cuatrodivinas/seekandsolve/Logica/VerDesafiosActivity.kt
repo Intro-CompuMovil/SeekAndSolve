@@ -151,7 +151,7 @@ class VerDesafiosActivity : AppCompatActivity(), LocationListener {
         //Crear los marcadores
         eliminarDesafiosAnteriores()
         marcadores[0].position = newPoint
-//        setDesafiosCercanos(lalitud, longitud)
+        setDesafiosCercanos(lalitud, longitud)
         agregarMarcadores()
 
         //Mover el mapa
@@ -235,7 +235,9 @@ class VerDesafiosActivity : AppCompatActivity(), LocationListener {
             ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
 
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0L, 0f, this)
-            locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0L, 0f, this)
+            if (locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
+                locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0L, 0f, this)
+            }
         } else {
             println("Permisos de ubicación no concedidos")
         }
@@ -263,7 +265,7 @@ class VerDesafiosActivity : AppCompatActivity(), LocationListener {
         }
     }
 
-    override fun onPause() {
+    /*override fun onPause() {
         super.onPause()
         if (::map.isInitialized) {
             map.onPause()
@@ -275,7 +277,7 @@ class VerDesafiosActivity : AppCompatActivity(), LocationListener {
         if (::map.isInitialized) {
             map.onDetach()
         }
-    }
+    }*/
 
     override fun onDestroy() {
         super.onDestroy()
