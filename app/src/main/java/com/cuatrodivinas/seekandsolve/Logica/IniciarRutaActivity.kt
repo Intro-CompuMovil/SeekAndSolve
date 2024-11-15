@@ -1,27 +1,37 @@
 package com.cuatrodivinas.seekandsolve.Logica
 
 import android.Manifest
+import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.graphics.drawable.Drawable
+import android.health.connect.datatypes.units.Length
 import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
+import android.net.Uri
 import android.os.Bundle
+import android.os.Environment
+import android.provider.MediaStore
 import android.util.Log
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ListView
 import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.MY_PERMISSION_REQUEST_CAMERA
 import com.cuatrodivinas.seekandsolve.Datos.Desafio
+import com.cuatrodivinas.seekandsolve.Datos.Punto
 import com.cuatrodivinas.seekandsolve.Datos.RetrofitOsmClient
 import com.cuatrodivinas.seekandsolve.Datos.RetrofitUrls
 import com.cuatrodivinas.seekandsolve.R
@@ -37,6 +47,14 @@ import org.osmdroid.views.overlay.Polyline
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import java.io.File
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+import kotlin.math.atan2
+import kotlin.math.cos
+import kotlin.math.sin
+import kotlin.math.sqrt
 
 class IniciarRutaActivity : AppCompatActivity(), LocationListener {
     private lateinit var binding: ActivityIniciarRutaBinding
@@ -48,6 +66,7 @@ class IniciarRutaActivity : AppCompatActivity(), LocationListener {
     private var geocoderRetrofit: RetrofitUrls
     private lateinit var desafio: Desafio
     private lateinit var marcador: Marker
+    private lateinit var photoUri: Uri
 
     init{
         val retrofit = RetrofitOsmClient.urlRuta()
@@ -301,10 +320,131 @@ class IniciarRutaActivity : AppCompatActivity(), LocationListener {
             startActivity(Intent(this, VerDesafiosActivity::class.java))
             finish()
         }
-
+        var puntoFinal = false
         binding.resolverAcertijo.setOnClickListener {
-            startActivity(Intent(this, ResolverAcertijoActivity::class.java))
+            pedirPermiso(this, android.Manifest.permission.CAMERA,
+                "Necesitamos acceder a la cámara para tomar la foto y continuar con la experiencia", MY_PERMISSION_REQUEST_CAMERA
+            )
+            var intent = Intent(this, ResolverAcertijoActivity::class.java)
+            if (ActivityCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.ACCESS_FINE_LOCATION
+                ) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                ) == PackageManager.PERMISSION_GRANTED
+            ) {
+                locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER).let {
+                    var checkpointAnterior: Punto? = null
+                    for(checkpoint in desafio.puntosIntermedios){
+                        if(desafio.puntosCompletados.contains(checkpoint)){
+                            Toast.makeText(this, "Este checkpoint ya ha sido completado!", Toast.LENGTH_LONG).show()
+                            return@setOnClickListener
+                        }
+                        if(checkpointAnterior != null && !desafio.puntosCompletados.contains(checkpointAnterior)){
+                            Toast.makeText(this, "Completa el checkpoint anterior antes de jugar este!", Toast.LENGTH_LONG).show()
+                            return@setOnClickListener
+                        }
+                        if(calcularDistancia(checkpoint.latitud, checkpoint.longitud, it!!.latitude, it.longitude) <= 100.0){
+                            intent.putExtra("desafio", desafio)
+                            break
+                        }
+                        checkpointAnterior = checkpoint
+                    }
+                    if(intent.extras == null && calcularDistancia(desafio.puntoFinal.latitud, desafio.puntoFinal.longitud, it!!.latitude, it.longitude) <= 100.0){
+                        puntoFinal = true
+                    }
+                    if(puntoFinal && !desafio.puntosCompletados.contains(desafio.puntosIntermedios.last())){
+                        Toast.makeText(this, "Completa el checkpoint anterior antes de jugar el final!", Toast.LENGTH_LONG).show()
+                        return@setOnClickListener
+                    }
+                }
+            }
+            if(intent.extras == null){
+                Toast.makeText(this, "No te encuentras en un checkpoint", Toast.LENGTH_LONG).show()
+                return@setOnClickListener
+            }
+            intent.putExtra("desafio", desafio)
+            intent.putExtra("puntoFinal", puntoFinal)
+            startActivity(intent)
         }
+    }
+
+    private fun pedirPermiso(context: Context, permiso: String, justificacion: String,
+                             idCode: Int){
+        if(ContextCompat.checkSelfPermission(context, permiso) !=
+            PackageManager.PERMISSION_GRANTED){
+            if (shouldShowRequestPermissionRationale(permiso)) {
+                // Explicar al usuario por qué necesitamos el permiso
+                mostrarJustificacion(justificacion) {
+                    requestPermissions(arrayOf(permiso), idCode)
+                }
+            } else {
+                requestPermissions(arrayOf(permiso), idCode)
+            }
+        }
+        else{
+            // Permiso ya concedido, tomar la foto
+            takePicture()
+        }
+    }
+
+    // Función para mostrar la justificación con un diálogo y volver a solicitar el permiso
+    private fun mostrarJustificacion(mensaje: String, onAccept: () -> Unit) {
+        AlertDialog.Builder(this)
+            .setTitle("Justificación de permisos")
+            .setMessage(mensaje)
+            .setPositiveButton("Aceptar") { dialog, _ ->
+                onAccept()
+                dialog.dismiss()
+            }
+            .setNegativeButton("Cancelar") { dialog, _ ->
+                dialog.dismiss()
+            }
+            .create()
+            .show()
+    }
+
+    private fun takePicture() {
+        val takePictureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+        try {
+            val photoFile: File = createImageFile()
+            takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri)
+            startActivityForResult(takePictureIntent, MY_PERMISSION_REQUEST_CAMERA)
+        } catch (e: ActivityNotFoundException) {
+            e.message?. let{ Log.e("PERMISSION_APP",it) }
+            Toast.makeText(this, "No es posible abrir la cámara", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun createImageFile(): File {
+        // El timestamp se usa para que el nombre del archivo sea único
+        val timestamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
+        // El directorio donde se guardará la imagen
+        val storageDir: File = getExternalFilesDir(Environment.DIRECTORY_PICTURES)!!
+        // Crear el archivo con el nombre "JPEG_YYYYMMDD_HHMMSS.jpg" en el directorio storageDir
+        return File.createTempFile(
+            "JPEG_${timestamp}_", /* prefix */
+            ".jpg", /* suffix */
+            storageDir /* directory */
+        ).apply {
+            // Guardar la URI del archivo para usarla en el Intent de la cámara
+            photoUri = FileProvider.getUriForFile(this@IniciarRutaActivity, "com.cuatrodivinas.seekandsolve.fileprovider", this)
+        }
+    }
+
+    fun calcularDistancia(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Double {
+        val radioTierra = 6371000.0  // Radio de la Tierra en metros
+        val dLat = Math.toRadians(lat2 - lat1)
+        val dLon = Math.toRadians(lon2 - lon1)
+
+        val a = sin(dLat / 2) * sin(dLat / 2) +
+                cos(Math.toRadians(lat1)) * cos(Math.toRadians(lat2)) *
+                sin(dLon / 2) * sin(dLon / 2)
+
+        val c = 2 * atan2(sqrt(a), sqrt(1 - a))
+
+        return radioTierra * c  // Distancia en metros
     }
 
     override fun onPause() {

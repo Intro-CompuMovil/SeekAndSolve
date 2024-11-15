@@ -21,6 +21,7 @@ firebaseAuth = "23.0.0"
 osmbonuspack = "6.9"
 osmdroidAndroid = "6.1.10"
 firebaseCrashlyticsBuildtools = "3.0.2"
+picasso = "2.71828"
 playServicesAuth = "21.2.0"
 playServicesMaps = "19.0.0"
 retrofitVersion = "2.9.0"
@@ -53,6 +54,7 @@ firebase-auth = { group = "com.google.firebase", name = "firebase-auth", version
 osmbonuspack = { module = "org.osmdroid:osmbonuspack", version.ref = "osmbonuspack" }
 osmdroid-android = { module = "org.osmdroid:osmdroid-android", version.ref = "osmdroidAndroid" }
 firebase-crashlytics-buildtools = { group = "com.google.firebase", name = "firebase-crashlytics-buildtools", version.ref = "firebaseCrashlyticsBuildtools" }
+picasso-v271828 = { module = "com.squareup.picasso:picasso", version.ref = "picasso" }
 play-services-auth = { module = "com.google.android.gms:play-services-auth", version.ref = "playServicesAuth" }
 play-services-maps = { module = "com.google.android.gms:play-services-maps", version.ref = "playServicesMaps" }
 retrofit2-retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofitVersion" }

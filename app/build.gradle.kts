@@ -62,6 +62,7 @@ dependencies {
     implementation ("com.squareup.retrofit2:converter-gson:2.4.0")
     implementation(libs.androidx.constraintlayout)
     implementation(libs.squareup.picasso)
+    implementation(libs.picasso.v271828)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
