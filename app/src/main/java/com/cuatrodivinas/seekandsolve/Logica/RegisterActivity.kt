@@ -1,59 +1,30 @@
 package com.cuatrodivinas.seekandsolve.Logica
 
-import android.app.AlertDialog
 import android.app.DatePickerDialog
 import android.content.ContentValues.TAG
-import android.content.Context
 import android.content.Intent
 import android.graphics.Paint
 import android.icu.util.Calendar
 import android.os.Bundle
-import android.security.keystore.KeyGenParameterSpec
-import android.security.keystore.KeyProperties
 import android.text.InputType
-import android.text.TextUtils
-import android.util.Base64
 import android.util.Log
 import android.widget.Button
-import android.widget.DatePicker
-import android.widget.EditText
-import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import com.cuatrodivinas.seekandsolve.Datos.Data
-import com.cuatrodivinas.seekandsolve.Datos.Data.Companion
 import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.PATH_USERS
+import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.auth
+import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.database
 import com.cuatrodivinas.seekandsolve.Datos.Usuario
 import com.cuatrodivinas.seekandsolve.R
 import com.cuatrodivinas.seekandsolve.databinding.ActivityRegisterBinding
-import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions
-import com.google.android.gms.common.api.ApiException
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.GoogleAuthProvider
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.ktx.Firebase
-import com.google.firebase.database.DatabaseReference
-import com.google.firebase.database.FirebaseDatabase
-import org.json.JSONArray
-import org.json.JSONObject
-import java.io.FileInputStream
-import java.io.FileOutputStream
 
 class RegisterActivity : AppCompatActivity() {
     private lateinit var binding: ActivityRegisterBinding
-    private val database = FirebaseDatabase.getInstance()
-    private lateinit var myRef: DatabaseReference
-
-    companion object {
-        private const val RC_SIGN_IN = 9001
-    }
-
-    private lateinit var auth: FirebaseAuth
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

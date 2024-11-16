@@ -1,47 +1,20 @@
 package com.cuatrodivinas.seekandsolve.Logica
 
 import android.content.ContentValues.TAG
-import android.content.Context
 import android.content.Intent
 import android.graphics.Paint
 import android.os.Bundle
-import android.util.Base64
 import android.util.Log
 import android.widget.Button
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.auth
-import com.cuatrodivinas.seekandsolve.Datos.Usuario
 import com.cuatrodivinas.seekandsolve.R
 import com.cuatrodivinas.seekandsolve.databinding.ActivityLoginBinding
-import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions
-import com.google.android.gms.common.api.ApiException
-import com.google.android.material.textfield.TextInputEditText
-import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
-import com.google.firebase.auth.GoogleAuthProvider
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.DatabaseReference
-import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.database.ValueEventListener
-import org.json.JSONArray
-import org.json.JSONObject
-import java.io.FileInputStream
-import java.io.IOException
-import java.io.InputStream
-import java.security.KeyStore
-import java.util.UUID
-import javax.crypto.Cipher
-import javax.crypto.SecretKey
-import javax.crypto.spec.GCMParameterSpec
-import kotlin.properties.Delegates
 
 class LoginActivity : AppCompatActivity() {
     private lateinit var binding: ActivityLoginBinding
-
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

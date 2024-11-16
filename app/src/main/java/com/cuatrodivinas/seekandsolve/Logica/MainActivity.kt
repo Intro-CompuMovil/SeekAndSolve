@@ -8,44 +8,36 @@ import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
 import android.os.Bundle
-import android.util.Base64
 import android.util.Log
-import android.widget.Button
 import android.widget.ImageView
-import android.widget.LinearLayout
 import android.widget.TextView
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.bumptech.glide.Glide
+import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.PATH_DESAFIOS
+import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.PATH_USERS
 import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.auth
+import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.database
+import com.cuatrodivinas.seekandsolve.Datos.Desafio
+import com.cuatrodivinas.seekandsolve.Datos.Punto
 import com.cuatrodivinas.seekandsolve.Datos.Usuario
 import com.cuatrodivinas.seekandsolve.R
-import org.json.JSONArray
+import com.cuatrodivinas.seekandsolve.databinding.ActivityMainBinding
 import org.osmdroid.config.Configuration
 import org.osmdroid.library.BuildConfig
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.Marker
-import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.android.gms.auth.api.signin.GoogleSignInClient
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
-import org.json.JSONException
-import org.json.JSONObject
-import kotlin.properties.Delegates
 import org.osmdroid.api.IMapController
 import java.io.File
-import java.io.FileInputStream
-import java.io.FileOutputStream
-import java.io.IOException
-import java.io.InputStream
 import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.sin
@@ -57,13 +49,8 @@ class MainActivity : AppCompatActivity(), LocationListener {
     private lateinit var locationManager: LocationManager
     private lateinit var mapController: IMapController
     private lateinit var marcadores: MutableList<Marker>
-    private lateinit var nombre: String
     private lateinit var username: String
-    private lateinit var correo: String
-    private lateinit var contrasena: String
     private lateinit var fotoUrl: String
-    private lateinit var fechaNacimiento: String
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
