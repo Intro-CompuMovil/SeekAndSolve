@@ -146,7 +146,7 @@ class MainActivity : AppCompatActivity(), LocationListener {
 
     // Obtener los desafíos de la base de datos
     private fun getDesafios() {
-        val desafiosRef = database.getReference(PATH_DESAFIOS)
+        desafiosRef = database.getReference(PATH_DESAFIOS)
 
         // Crear e inicializar el listener a los cambios en los desafíos
         desafiosListener = object : ValueEventListener {
