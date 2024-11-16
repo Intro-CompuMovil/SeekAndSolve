@@ -8,20 +8,19 @@ import android.icu.util.Calendar
 import android.os.Bundle
 import android.text.InputType
 import android.util.Log
-import android.widget.Button
-import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat
-import com.cuatrodivinas.seekandsolve.Datos.Data
 import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.PATH_USERS
 import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.auth
 import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.database
 import com.cuatrodivinas.seekandsolve.Datos.Usuario
-import com.cuatrodivinas.seekandsolve.R
 import com.cuatrodivinas.seekandsolve.databinding.ActivityRegisterBinding
 import com.google.android.material.textfield.TextInputEditText
-import com.google.android.material.textfield.TextInputLayout
+import com.google.firebase.Firebase
+import com.google.firebase.auth.auth
+import com.google.firebase.database.FirebaseDatabase
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 class RegisterActivity : AppCompatActivity() {
     private lateinit var binding: ActivityRegisterBinding
@@ -30,115 +29,139 @@ class RegisterActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityRegisterBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        // Inicializar Firebase Auth y la database
         auth = Firebase.auth
-        setupPasswordVisibility()
-        setupFechaNacimiento()
-        setupIniciaSesionButton()
-        binding.registrarse.setOnClickListener {
-            registerUser()
-        }
+        database = FirebaseDatabase.getInstance()
     }
 
-    private fun setupPasswordVisibility() {
-        val passwordLayout: TextInputLayout = findViewById(R.id.contraseniaLayout)
-        val passwordEditText: TextInputEditText = findViewById(R.id.contrasenia)
-        val confirmPasswordEditText: TextInputEditText = findViewById(R.id.confirmarContrasenia)
+    override fun onResume() {
+        super.onResume()
+        setupUI()
+    }
 
-        passwordLayout.setEndIconOnClickListener {
-            val isPasswordVisible = passwordEditText.inputType == InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
-            val newInputType = if (isPasswordVisible) {
+    private fun setupUI() {
+        // Mostrar/ocultar la contraseña
+        binding.contraseniaLayout.setEndIconOnClickListener {
+            togglePasswordVisibility(binding.contrasenia, binding.confirmarContrasenia)
+        }
+        // DatePickerDialog para seleccionar la fecha de nacimiento
+        binding.fechaNacimiento.setOnClickListener {
+            showDatePickerDialog()
+        }
+        // Subrayar el texto de Iniciar sesión y llevar al usuario al Login cuando se haga clic
+        binding.iniciaSesionButtonText.apply {
+            paintFlags = paintFlags or Paint.UNDERLINE_TEXT_FLAG
+            setOnClickListener { navigateToLogin() }
+        }
+        // Registrar al usuario cuando haga clic en el botón de registro
+        binding.registrarse.setOnClickListener { validateAndRegisterUser() }
+    }
+
+    // Muestra/oculta la contraseña en los campos de contraseña y confirmar contraseña
+    // vararg permite recibir un número variable de argumentos
+    private fun togglePasswordVisibility(vararg fields: TextInputEditText) {
+        fields.forEach { field ->
+            val isPasswordVisible = field.inputType == InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+            // Cambiar el tipo de input para mostrar/ocultar la contraseña
+            field.inputType = if (isPasswordVisible) {
                 InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
             } else {
                 InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
             }
-            passwordEditText.inputType = newInputType
-            confirmPasswordEditText.inputType = newInputType
-            passwordEditText.setSelection(passwordEditText.text?.length ?: 0)
-            confirmPasswordEditText.setSelection(confirmPasswordEditText.text?.length ?: 0)
+            // Mueve el cursor al final del texto del input
+            field.setSelection(field.text?.length ?: 0)
         }
     }
 
-    private fun setupFechaNacimiento() {
-        val fechaNacimientoTextView: TextView = findViewById(R.id.fechaNacimiento)
-        fechaNacimientoTextView.setOnClickListener {
-            val calendar = Calendar.getInstance()
-            val year = calendar.get(Calendar.YEAR)
-            val month = calendar.get(Calendar.MONTH)
-            val day = calendar.get(Calendar.DAY_OF_MONTH)
-            val datePickerDialog = DatePickerDialog(this, { _, selectedYear, selectedMonth, selectedDay ->
-                val selectedDate = "$selectedDay/${selectedMonth + 1}/$selectedYear"
-                fechaNacimientoTextView.text = selectedDate
-            }, year, month, day)
-            datePickerDialog.show()
-        }
+    // Crea y muestra el selector de fecha
+    private fun showDatePickerDialog() {
+        val calendar = Calendar.getInstance()
+        val datePickerDialog = DatePickerDialog(
+            this,
+            { _, year, month, day ->
+                binding.fechaNacimiento.text = "$day/${month + 1}/$year"
+            },
+            calendar.get(Calendar.YEAR),
+            calendar.get(Calendar.MONTH),
+            calendar.get(Calendar.DAY_OF_MONTH)
+        )
+        datePickerDialog.show()
     }
 
-    private fun setupIniciaSesionButton() {
-        val iniciaSesionButton: Button = findViewById(R.id.iniciaSesionButtonText)
-        iniciaSesionButton.paintFlags = iniciaSesionButton.paintFlags or Paint.UNDERLINE_TEXT_FLAG
+    // Valida los campos y registra al usuario
+    private fun validateAndRegisterUser() {
+        if (!isFormValid()) return
 
-        iniciaSesionButton.setOnClickListener {
-            navigateToLogin()
-        }
-    }
-
-    private fun navigateToLogin() {
-        val intent = Intent(this, LoginActivity::class.java)
-        startActivity(intent)
-    }
-
-
-    private fun registerUser() {
-        if(binding.contrasenia.text.toString().length < 6){
-            showToast("La contraseña debe ser mínimo de 6 dígitos")
-            return
-        }
-        if(!isEmailValid(binding.correoEditText.text.toString())){
-            showToast("El correo no es válido")
-            return
-        }
-        if (binding.nombreEditText.text.toString().isNotEmpty() &&
-            binding.nombreUsuarioEditText.text.toString().isNotEmpty() &&
-            binding.correoEditText.text.toString().isNotEmpty() &&
-            binding.contrasenia.text.toString().isNotEmpty() &&
-            binding.confirmarContrasenia.text.toString().isNotEmpty() &&
-            binding.fechaNacimiento.text.toString().isNotEmpty()) {
-            if (binding.contrasenia.text.toString().equals(binding.confirmarContrasenia.text.toString())) {
-                crearUsuario()
-            } else {
-                Log.e("registerActivity", "Las contraseñas no coinciden")
-                showToast("Las contraseñas no coinciden")
-            }
+        if (binding.contrasenia.text.toString() == binding.confirmarContrasenia.text.toString()) {
+            crearUsuario()
         } else {
-            showToast("Todos los campos deben estar llenos")
+            showToast("Las contraseñas no coinciden")
         }
+    }
+
+    // Valida que los campos no estén vacíos y que el correo sea válido
+    private fun isFormValid(): Boolean {
+        return when {
+            binding.nombreEditText.text.isNullOrEmpty() -> {
+                showToast("El nombre no puede estar vacío")
+                false
+            }
+            binding.nombreUsuarioEditText.text.isNullOrEmpty() -> {
+                showToast("El nombre de usuario no puede estar vacío")
+                false
+            }
+            !isEmailValid(binding.correoEditText.text.toString()) -> {
+                showToast("El correo no es válido")
+                false
+            }
+            binding.contrasenia.text.isNullOrEmpty() || binding.contrasenia.text.toString().length < 6 -> {
+                showToast("La contraseña debe tener al menos 6 caracteres")
+                false
+            }
+            binding.fechaNacimiento.text.isNullOrEmpty() -> {
+                showToast("La fecha de nacimiento no puede estar vacía")
+                false
+            }
+            !isAgeValid(binding.fechaNacimiento.text.toString()) -> {
+                showToast("Debes tener al menos 10 años para usar SeekAndSolve")
+                false
+            }
+            else -> true
+        }
+    }
+
+    // Valida que el usuario tenga al menos 10 años
+    private fun isAgeValid(fechaNacimiento: String): Boolean {
+        val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+        val birthDate = dateFormat.parse(fechaNacimiento)
+        val calendar = Calendar.getInstance()
+        calendar.time = birthDate
+        val birthYear = calendar.get(Calendar.YEAR)
+        val currentYear = Calendar.getInstance().get(Calendar.YEAR)
+        val age = currentYear - birthYear
+        return age >= 10
     }
 
     private fun isEmailValid(email: String): Boolean {
-        if (!email.contains("@") ||
-            !email.contains(".") ||
-            email.length < 5)
-            return false
-        return true
+        return android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()
     }
 
+    // Crea un nuevo usuario en Firebase Authentication
     private fun crearUsuario(){
-        auth.createUserWithEmailAndPassword(binding.correoEditText.text.toString(), binding.contrasenia.text.toString())
-            .addOnCompleteListener(this) { task ->
-                if (task.isSuccessful) {
-                    Log.d(TAG, "createUserWithEmail:onComplete:" + task.isSuccessful)
-                    val user = auth.currentUser
-                    if (user != null) {
-                        escribirUsuarioBD()
-                    }
-                } else {
-                    Toast.makeText(this, "createUserWithEmail:Failure: " + task.exception.toString(),
-                        Toast.LENGTH_SHORT).show()
-                    task.exception?.message?.let { Log.e(TAG, it) }
-                }
+        auth.createUserWithEmailAndPassword(
+            binding.correoEditText.text.toString(),
+            binding.contrasenia.text.toString()
+        ).addOnCompleteListener(this) { task ->
+            if (task.isSuccessful) {
+                escribirUsuarioBD()
+            } else {
+                Log.e(TAG, "Error al crear usuario: ${task.exception?.message}")
+                showToast("Error al crear usuario: ${task.exception?.message}")
             }
+        }
     }
 
+    // Escribe el usuario en el Realtime Database
     private fun escribirUsuarioBD() {
         val usuario = Usuario(
             binding.nombreEditText.text.toString(),
@@ -148,43 +171,28 @@ class RegisterActivity : AppCompatActivity() {
             "",
             binding.fechaNacimiento.text.toString()
         )
-        myRef = database.getReference(PATH_USERS + auth.currentUser!!.uid)
-        myRef.setValue(usuario)
-        Toast.makeText(
-            this@RegisterActivity, "usuario creado con éxito!",
-            Toast.LENGTH_SHORT
-        ).show()
-        iniciarSesion()
-        navigateToMain()
-    }
-
-    private fun iniciarSesion(){
-        Data.auth.signInWithEmailAndPassword(binding.nombreUsuario.toString(),binding.contraseniaLayout.toString())
-            .addOnCompleteListener(this) { task ->
-                if (task.isSuccessful) {
-                    Log.d(TAG, "signInWithEmail:success:")
-                    val intentMain = Intent(this, MainActivity::class.java)
-                    val usuario = Data.auth.currentUser
-                    intentMain.putExtra("usuario", usuario)
-                    startActivity(intentMain)
-                } else {
-                    Log.w(TAG, "signInWithEmail:failure", task.exception)
-                    Toast.makeText(this, "Authentication failed.",
-                        Toast.LENGTH_SHORT).show()
-                }
+        val myRef = database.getReference("$PATH_USERS/${auth.currentUser!!.uid}")
+        myRef.setValue(usuario).addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                showToast("Usuario registrado con éxito")
+                navigateToMain()
+            } else {
+                Log.e(TAG, "Error al escribir usuario en BD: ${task.exception?.message}")
+                showToast("Error al escribir usuario en BD: ${task.exception?.message}")
             }
+        }
     }
 
-    private fun showToast(message: String) {
-        val toast = Toast.makeText(this, message, Toast.LENGTH_SHORT)
-        val view = toast.view
-        view?.setBackgroundColor(ContextCompat.getColor(this, android.R.color.holo_red_dark))
-        toast.show()
+    private fun navigateToLogin() {
+        startActivity(Intent(this, LoginActivity::class.java))
     }
 
     private fun navigateToMain() {
-        val intent = Intent(this, MainActivity::class.java)
-        startActivity(intent)
+        startActivity(Intent(this, MainActivity::class.java))
         finish()
+    }
+
+    private fun showToast(message: String) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
 }
