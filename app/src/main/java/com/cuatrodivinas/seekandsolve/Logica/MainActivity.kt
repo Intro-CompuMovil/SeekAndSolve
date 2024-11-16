@@ -62,8 +62,9 @@ class MainActivity : AppCompatActivity(), LocationListener {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Inicializar Firebase Auth
+        // Inicializar Firebase Auth y la database
         auth = Firebase.auth
+        database = FirebaseDatabase.getInstance()
     }
 
     override fun onStart() {
@@ -123,7 +124,6 @@ class MainActivity : AppCompatActivity(), LocationListener {
 
     // Con el UID del usuario, obtener su información
     private fun getUserInfo(){
-        val database = FirebaseDatabase.getInstance()
         val userRef = database.getReference(PATH_USERS).child(auth.currentUser!!.uid)
 
         userRef.addListenerForSingleValueEvent(object : ValueEventListener {
