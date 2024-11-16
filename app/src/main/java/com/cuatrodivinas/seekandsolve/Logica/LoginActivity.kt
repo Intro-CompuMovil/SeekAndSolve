@@ -5,13 +5,11 @@ import android.content.Intent
 import android.graphics.Paint
 import android.os.Bundle
 import android.util.Log
-import android.widget.Button
+import android.util.Patterns
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.auth
-import com.cuatrodivinas.seekandsolve.R
 import com.cuatrodivinas.seekandsolve.databinding.ActivityLoginBinding
-import com.google.firebase.auth.FirebaseUser
 
 class LoginActivity : AppCompatActivity() {
     private lateinit var binding: ActivityLoginBinding
@@ -20,90 +18,68 @@ class LoginActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)
+    }
+
+    override fun onStart() {
+        super.onStart()
         setupUI()
     }
 
-    private fun setupRegisterButton() {
-        binding.registrateButtonText.paintFlags = binding.registrateButtonText.paintFlags or Paint.UNDERLINE_TEXT_FLAG
-
-        binding.registrateButtonText.setOnClickListener {
-            navigateToRegister()
-        }
-    }
-
     private fun setupUI() {
-        val normalLoginButton: Button = findViewById(R.id.iniciarSesionButton)
-        setupRegisterButton()
-
-
-        normalLoginButton.setOnClickListener {
-
-            if (binding.nombreUsuarioOCorreo.text.toString().isEmpty() ||
-                binding.contrasenia.text.toString().isEmpty()) {
-                showToast("Todos los campos deben estar llenos")
-            } else {
-                iniciarSesion()
-                if (auth.currentUser != null) {
-                    navigateToMain(auth.currentUser!!)
-                } else {
-                    showToast("Usuario no registrado :(")
-                }
-            }
-        }
+        // Subrayar el texto de registro
+        binding.registrateButtonText.paintFlags =
+            binding.registrateButtonText.paintFlags or Paint.UNDERLINE_TEXT_FLAG
+        // Listeners de botones
+        binding.registrateButtonText.setOnClickListener { startActivity(Intent(this, RegisterActivity::class.java)) }
+        binding.iniciarSesionButton.setOnClickListener { validateAndLogin() }
     }
 
-    private fun iniciarSesion(){
-        auth.signInWithEmailAndPassword(binding.nombreUsuarioOCorreo.text.toString(),binding.contrasenia.text.toString())
+    // Valida el formulario e inicia sesión
+    private fun validateAndLogin() {
+        // Obtener los valores de los campos sin espacios
+        val emailOrUsername = binding.nombreUsuarioOCorreo.text.toString().trim()
+        val password = binding.contrasenia.text.toString().trim()
+
+        if (emailOrUsername.isEmpty() || password.isEmpty()) {
+            showToast("Todos los campos deben estar llenos")
+            return
+        }
+
+        if (!isValidEmail(emailOrUsername)) {
+            showToast("Por favor, ingresa un correo electrónico válido")
+            return
+        }
+
+        if (password.length < 6) {
+            showToast("La contraseña debe tener al menos 6 caracteres")
+            return
+        }
+
+        iniciarSesion(emailOrUsername, password)
+    }
+
+    private fun isValidEmail(email: String): Boolean {
+        val emailPattern = Patterns.EMAIL_ADDRESS
+        return emailPattern.matcher(email).matches()
+    }
+
+    // Inicia sesión en Firebase Authentication
+    private fun iniciarSesion(emailOrUsername: String, password: String){
+        auth.signInWithEmailAndPassword(emailOrUsername, password)
             .addOnCompleteListener(this) { task ->
                 if (task.isSuccessful) {
-                    Log.d(TAG, "signInWithEmail:success:")
-                    val intentMain = Intent(this, MainActivity::class.java)
-                    val usuario = auth.currentUser
-                    intentMain.putExtra("usuario", usuario)
-                    startActivity(intentMain)
+                    Log.d(TAG, "signInWithEmail:success")
+                    navigateToMain()
                 } else {
                     Log.w(TAG, "signInWithEmail:failure", task.exception)
-                    Toast.makeText(this, "Authentication failed.",
-                        Toast.LENGTH_SHORT).show()
+                    showToast("Error al iniciar sesión. Revisa las credenciales.")
                 }
             }
     }
 
-    private fun navigateToMain(user: FirebaseUser) {
-        val intent = Intent(this, MainActivity::class.java)
-        /*val bundle = Bundle()
-        val database = FirebaseDatabase.getInstance()
-        val userRef = database.getReference("usuarios").child(user.uid)*/
-
-        startActivity(intent)
+    private fun navigateToMain() {
+        startActivity(Intent(this, MainActivity::class.java))
         finish()
-
-        /*userRef.addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                // Convierte el snapshot a la clase User
-                val usuario = snapshot.getValue(Usuario::class.java)
-
-                bundle.putString("id", user.uid)
-                bundle.putString("nombre", usuario?.nombre)
-                bundle.putString("username", usuario?.nombreUsuario)
-                bundle.putString("correo", usuario?.correo)
-                bundle.putString("contrasena", usuario?.password)
-                bundle.putString("fotoUrl", usuario?.imagenUrl)
-                bundle.putString("fechaNacimiento", usuario?.fechaNacimiento)
-                bundle.putString("externo", "false")
-                intent.putExtras(bundle)
-
-            }
-            override fun onCancelled(error: DatabaseError) {
-                showToast("No se pudo obtener los datos del usuario")
-            }
-        })*/
-
-    }
-
-    private fun navigateToRegister() {
-        val intent = Intent(this, RegisterActivity::class.java)
-        startActivity(intent)
     }
 
     private fun showToast(message: String) {
