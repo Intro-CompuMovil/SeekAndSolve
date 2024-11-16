@@ -35,7 +35,7 @@ class ConfigurarCarreraActivity : AppCompatActivity() {
         desafio = intent.getSerializableExtra("desafio") as Desafio
         binding.tituloDesafio.text = desafio.nombre
 
-        val urlImagen = desafio.fotoUrl
+        val urlImagen = desafio.imagenUrl
         if (urlImagen != null) {
             if (urlImagen.isNotEmpty()) {
                 Glide.with(binding.imagenDesafio.context)

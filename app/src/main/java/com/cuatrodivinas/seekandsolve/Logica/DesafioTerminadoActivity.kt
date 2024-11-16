@@ -2,17 +2,11 @@ package com.cuatrodivinas.seekandsolve.Logica
 
 import android.content.Intent
 import android.os.Bundle
-import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.ImageView
-import android.widget.ListView
 import android.widget.TextView
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import com.cuatrodivinas.seekandsolve.Datos.Desafio
-import com.cuatrodivinas.seekandsolve.Datos.Pregunta
 import com.cuatrodivinas.seekandsolve.Datos.Recompensa
 import com.cuatrodivinas.seekandsolve.R
 import com.squareup.picasso.Picasso
@@ -50,7 +44,7 @@ class DesafioTerminadoActivity : AppCompatActivity() {
         tituloDesafio.text = "Completaste ${desafio.nombre}"
         descripcionRecompensa.text = recompensa.nombre
         Picasso.get()
-            .load(recompensa.foto) // URL de la imagen
+            .load(recompensa.imagenUrl) // URL de la imagen
             .placeholder(R.drawable.cargando) // Imagen de marcador de posición mientras se carga
             .error(R.drawable.error) // Imagen en caso de error
             .into(imagenRecompensa)

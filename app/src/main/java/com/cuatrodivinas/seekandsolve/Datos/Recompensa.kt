@@ -1,4 +1,4 @@
 package com.cuatrodivinas.seekandsolve.Datos
 
-class Recompensa(val foto: String, val nombre: String) {
+class Recompensa(val imagenUrl: String, val nombre: String) {
 }
