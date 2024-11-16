@@ -44,6 +44,10 @@ import kotlin.math.sin
 import kotlin.math.sqrt
 
 class MainActivity : AppCompatActivity(), LocationListener {
+    private lateinit var binding: ActivityMainBinding
+    private lateinit var desafiosRef: DatabaseReference
+    private lateinit var desafiosListener: ValueEventListener
+    private var desafiosList: MutableList<Desafio> = mutableListOf()
     private lateinit var map: MapView
     private val REQUEST_PERMISSIONS_REQUEST_CODE = 1
     private lateinit var locationManager: LocationManager
@@ -55,48 +59,84 @@ class MainActivity : AppCompatActivity(), LocationListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setTheme(R.style.Base_Theme_SeekAndSolve)
-        setContentView(R.layout.activity_main)
-        auth = Firebase.auth
-        checkUser()
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
+        // Inicializar Firebase Auth
+        auth = Firebase.auth
     }
 
+    override fun onStart() {
+        super.onStart()
+        // Verificar si el usuario está logueado
+        checkUser()
+        marcadores = mutableListOf()
+        // Si está logueado, obtener su información
+        getUserInfo()
+        getDesafios()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (::map.isInitialized) {
+            map.onResume()
+        }
+        // Listeners de los botones de las opciones principales
+        binding.profileLayout.setOnClickListener {
+            startActivity(Intent(this, VerPerfil::class.java))
+        }
+        binding.desafiosButton.setOnClickListener {
+            startActivity(Intent(this, VerDesafiosActivity::class.java))
+        }
+        binding.crearDesafioButton.setOnClickListener {
+            startActivity(Intent(this, CrearDesafioActivity::class.java))
+        }
+        binding.clasificacionesButton.setOnClickListener {
+            val intent = Intent(this, RankingActivity::class.java)
+            startActivity(intent)
+        }
+        binding.amigosButton.setOnClickListener {
+            startActivity(Intent(this, Amigos::class.java))
+        }
+    }
+
+    override fun onStop() {
+        super.onStop()
+        // Remover la suscripción para evitar fugas de memoria
+        desafiosRef.removeEventListener(desafiosListener)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        if (::map.isInitialized) {
+            map.onDetach()
+        }
+    }
+
+    // Si el usuario no está logueado, redirigirlo a la Landing
     private fun checkUser() {
         if(auth.currentUser == null){
             startActivity(Intent(this, LandingActivity::class.java))
             finish()
-            return
         }
-        marcadores = mutableListOf()
-        getUser()
     }
 
-    private fun getUser(){
+    // Con el UID del usuario, obtener su información
+    private fun getUserInfo(){
         val database = FirebaseDatabase.getInstance()
-        val userRef = database.getReference("usuarios").child(auth.currentUser!!.uid)
+        val userRef = database.getReference(PATH_USERS).child(auth.currentUser!!.uid)
 
         userRef.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 // Convierte el snapshot a la clase User
                 val usuario = snapshot.getValue(Usuario::class.java)
-                nombre = usuario!!.nombre
-                username = usuario.nombreUsuario
-                correo = usuario.correo
-                contrasena = usuario.password
+                username = usuario!!.nombreUsuario
                 fotoUrl = usuario.imagenUrl
-                fechaNacimiento = usuario.fechaNacimiento
-
+                // Inicializar el mapa y el LocationManager
                 setupMap()
                 setupLocationManager()
-
-                setUsernameText()
-                setupProfileLayout()
-
-                setupVerDesafiosButton()
-                setupCrearDesafioButton()
-                setupRankingButton()
-                setupAmigosButton()
-
+                // Establecer el nombre de usuario y la imagen de perfil
+                setUsernameAndProfileImage()
             }
             override fun onCancelled(error: DatabaseError) {
                 //showToast("No se pudo obtener los datos del usuario")
@@ -104,68 +144,130 @@ class MainActivity : AppCompatActivity(), LocationListener {
         })
     }
 
-    private fun setupAmigosButton() {
-        val amigosButton: Button = findViewById(R.id.amigosButton)
-        amigosButton.setOnClickListener {
-            startActivity(Intent(this, Amigos::class.java))
+    // Obtener los desafíos de la base de datos
+    private fun getDesafios() {
+        val desafiosRef = database.getReference(PATH_DESAFIOS)
+
+        // Crear e inicializar el listener a los cambios en los desafíos
+        desafiosListener = object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                // Convertir el snapshot a una lista de Desafio (sin elementos nulos)
+                desafiosList = snapshot.children.mapNotNull { it.getValue(Desafio::class.java) }.toMutableList()
+                Log.d("Desafios", "Lista actualizada de desafíos: ${desafiosList.size}")
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Log.e("DatabaseError", "Error al suscribirse a los desafíos: ${error.message}")
+            }
         }
+        // Suscribirse a los cambios en los desafíos
+        desafiosRef.addValueEventListener(desafiosListener)
     }
 
-    private fun setupCrearDesafioButton() {
-        val crearDesafioButton: Button = findViewById(R.id.crearDesafioButton)
-        crearDesafioButton.setOnClickListener {
-            startActivity(Intent(this, CrearDesafioActivity::class.java))
-        }
-    }
-
-    private fun setupVerDesafiosButton() {
-        val verDesafiosButton: Button = findViewById(R.id.desafiosButton)
-        verDesafiosButton.setOnClickListener {
-            startActivity(Intent(this, VerDesafiosActivity::class.java))
-        }
-//        startLocationUpdates()
-    }
-
-    private fun setupProfileLayout() {
-        val profileLayout: LinearLayout = findViewById(R.id.profileLayout)
-        profileLayout.setOnClickListener {
-            startActivity(Intent(this, VerPerfil::class.java))
-        }
-    }
-
-    private fun setupRankingButton() {
-        val clasificacionesButton: Button = findViewById(R.id.clasificacionesButton)
-        clasificacionesButton.setOnClickListener {
-            val intent = Intent(this, RankingActivity::class.java)
-            startActivity(intent)
-        }
-    }
-
-
-
+    // Inicializar el mapa y su controlador
     private fun setupMap() {
         Configuration.getInstance().userAgentValue = BuildConfig.APPLICATION_ID
-        map = findViewById(R.id.map)
+        map = binding.map
         map.setMultiTouchControls(true)
         mapController = map.controller
         mapController.setZoom(15.0)
         val marcador = Marker(map)
         marcador.icon = map.context.getDrawable(R.drawable.ic_location)
-        marcador.position = GeoPoint(0.0, 0.0)
+        // Inicialmente ponemos el marcador en la ponti, luego se actualiza con la ubicación del usuario
+        marcador.position = GeoPoint(4.6390956,-74.0720802)
         marcador.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
         marcador.title = "Posición actual"
         marcadores.add(marcador)
     }
 
-    private fun setPoint(lalitud: Double, longitud: Double){
+    // Si tiene permisos de ubicación, inicializar el LocationManager, sino pedirlos
+    private fun setupLocationManager() {
+        locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        if (hasLocationPermissions()) {
+            initializeMap()
+        } else {
+            requestLocationPermissions()
+        }
+    }
+
+    // Verificar si la aplicación tiene permisos de ubicación
+    private fun hasLocationPermissions(): Boolean {
+        val fineLocationPermission = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+        val coarseLocationPermission = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
+        return fineLocationPermission == PackageManager.PERMISSION_GRANTED && coarseLocationPermission == PackageManager.PERMISSION_GRANTED
+    }
+
+    // Solicitar permisos de ubicación
+    private fun requestLocationPermissions() {
+        ActivityCompat.requestPermissions(
+            this,
+            arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION),
+            REQUEST_PERMISSIONS_REQUEST_CODE
+        )
+    }
+
+    // Se ejecuta cuando el usuario acepta o deniega los permisos de ubicación
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == REQUEST_PERMISSIONS_REQUEST_CODE) {
+            if (grantResults.isNotEmpty() && grantResults.all { it == PackageManager.PERMISSION_GRANTED }) {
+                initializeMap()
+            } else {
+                // Permisos denegados, no mostrar el mapa
+            }
+        }
+    }
+
+    // Función que se suscribe a las actualizaciones de ubicación
+    private fun initializeMap() {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED &&
+            ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0L, 0f, this)
+            if (locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
+                locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0L, 0f, this)
+            }
+        } else {
+            println("Permisos de ubicación no concedidos")
+        }
+    }
+
+    // Establecer el nombre de usuario y la imagen de perfil en la parte superior de la pantalla
+    private fun setUsernameAndProfileImage() {
+        val usernameText: TextView = binding.usernameText
+        val profileImage: ImageView = binding.profileImage
+        usernameText.text = username
+
+        if (fotoUrl.isNotEmpty() && fotoUrl.startsWith("/")) {
+            // Cargar imagen desde el archivo
+            val file = File(fotoUrl)
+            if (file.exists()) {
+                Glide.with(this)
+                    .load(file)
+                    .circleCrop() // Hacer la imagen circular
+                    .into(profileImage) // Establecer la imagen en el ImageView
+                return
+            }
+        }
+        // Si fotoUrl está vacío, el archivo no existe o no es válido
+        // Cargar imagen por defecto
+        profileImage.imageTintList = ContextCompat.getColorStateList(this, R.color.primaryColor)
+    }
+
+    // Se ejecuta cuando la ubicación del usuario cambia
+    override fun onLocationChanged(location: Location) {
+        setPoint(location.latitude, location.longitude)
+    }
+
+    // Actualiza todos los marcadores en el mapa (ubicación actual y desafíos cercanos)
+    private fun setPoint(latitud: Double, longitud: Double){
         //Obtener el GeoPoint
-        val newPoint = GeoPoint(lalitud, longitud)
+        val newPoint = GeoPoint(latitud, longitud)
 
         //Crear los marcadores
         eliminarDesafiosAnteriores()
         marcadores[0].position = newPoint
-        setDesafiosCercanos(lalitud, longitud)
-        agregarMarcadores()
+        setDesafiosCercanos(latitud, longitud)
+        agregarMarcadoresAlMapa()
 
         //Mover el mapa
         map.controller.animateTo(newPoint)
@@ -174,6 +276,7 @@ class MainActivity : AppCompatActivity(), LocationListener {
         map.invalidate()
     }
 
+    // Elimina los marcadores de la lista y del mapa, excepto el marcador de la posición actual
     private fun eliminarDesafiosAnteriores(){
         map.overlays.clear()
         val marcadorPosicion = marcadores[0]
@@ -181,33 +284,24 @@ class MainActivity : AppCompatActivity(), LocationListener {
         marcadores.add(marcadorPosicion)
     }
 
-    private fun agregarMarcadores(){
-        map.overlays.addAll(marcadores)
-        Log.d("Marcadores", "Marcadores ${map.overlays.size}")
-    }
-
-    private fun setDesafiosCercanos(lalitud: Double, longitud: Double){
-        val desafios = getDesafios()
-        if (desafios != null) {
-            val desafiosList = List(desafios.length()) { desafios.getJSONObject(it) }
-            for (desafio in desafiosList){
-                val puntoInicial = desafio.getJSONObject("puntoInicial")
-                val latitudPunto = puntoInicial.getDouble("latitud")
-                val longitudPunto = puntoInicial.getDouble("longitud")
-                val distancia = calcularDistancia(lalitud, longitud, latitudPunto, longitudPunto)
-                if(distancia <= 3000.0){
-                    val marcadorDesafio = Marker(map)
-                    marcadorDesafio.icon = map.context.getDrawable(R.drawable.desafio_marcador)
-                    marcadorDesafio.position = GeoPoint(latitudPunto, longitudPunto)
-                    marcadorDesafio.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
-                    marcadorDesafio.title = desafio.getString("nombre")
-                    marcadores.add(marcadorDesafio)
-                }
+    // Agrega marcadores a los desafíos cercanos
+    private fun setDesafiosCercanos(latitud: Double, longitud: Double){
+        for (desafio in desafiosList){
+            val puntoInicialDesafio: Punto = desafio.puntoInicial
+            val distancia = calcularDistancia(latitud, longitud, puntoInicialDesafio.latitud, puntoInicialDesafio.longitud)
+            if (distancia < 1000){
+                val marcador = Marker(map)
+                marcador.icon = map.context.getDrawable(R.drawable.desafio_marcador)
+                marcador.position = GeoPoint(puntoInicialDesafio.latitud, puntoInicialDesafio.longitud)
+                marcador.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
+                marcador.title = desafio.nombre
+                marcadores.add(marcador)
             }
         }
     }
 
-    fun calcularDistancia(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Double {
+    // Función para calcular la distancia en línea recta entre dos puntos
+    private fun calcularDistancia(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Double {
         val radioTierra = 6371000.0  // Radio de la Tierra en metros
         val dLat = Math.toRadians(lat2 - lat1)
         val dLon = Math.toRadians(lon2 - lon1)
@@ -221,132 +315,14 @@ class MainActivity : AppCompatActivity(), LocationListener {
         return radioTierra * c  // Distancia en metros
     }
 
-    private fun getDesafios(): JSONArray? {
-        try {
-            val inputStream: InputStream = assets.open("desafios.json")
-            val size: Int = inputStream.available()
-            val buffer = ByteArray(size)
-            inputStream.read(buffer)
-            inputStream.close()
-            val json = String(buffer, Charsets.UTF_8)
-            val desafios = JSONObject(json)
-            val jsonArray = desafios.getJSONArray("desafios")
-            return jsonArray
-        } catch (e: IOException) {
-            e.printStackTrace()
-        } catch (e: JSONException) {
-            e.printStackTrace()
-        }
-        return null
-    }
-
-    private fun setupLocationManager() {
-        locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
-        if (hasLocationPermissions()) {
-            initializeMap()
-        } else {
-            requestLocationPermissions()
-        }
-    }
-
-    private fun setUsernameText() {
-        val usernameText: TextView = findViewById(R.id.usernameText)
-        val profileImage: ImageView = findViewById(R.id.profileImage)
-        usernameText.text = username
-        if (fotoUrl.isNotEmpty()) {
-            if (fotoUrl.startsWith("/")) {
-                // Cargar imagen desde el archivo
-                val file = File(fotoUrl)
-                if (file.exists()) {
-                    Glide.with(this)
-                        .load(file)
-                        .circleCrop() // Hacer la imagen circular
-                        .into(profileImage) // Establecer la imagen en el ImageView
-                } else {
-                    // Caso: archivo no existe, cargar imagen por defecto
-                    profileImage.imageTintList = ContextCompat.getColorStateList(this, R.color.primaryColor)
-                }
-            } else {
-                // Caso: cargar imagen por defecto si la fotoUrl no es un archivo válido
-                profileImage.imageTintList = ContextCompat.getColorStateList(this, R.color.primaryColor)
-            }
-        } else {
-            // Caso: fotoUrl está vacía, cargar imagen por defecto
-            profileImage.imageTintList = ContextCompat.getColorStateList(this, R.color.primaryColor)
-        }
-    }
-
-    private fun hasLocationPermissions(): Boolean {
-        val fineLocationPermission = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-        val coarseLocationPermission = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
-        return fineLocationPermission == PackageManager.PERMISSION_GRANTED && coarseLocationPermission == PackageManager.PERMISSION_GRANTED
-    }
-
-    private fun requestLocationPermissions() {
-        ActivityCompat.requestPermissions(
-            this,
-            arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION),
-            REQUEST_PERMISSIONS_REQUEST_CODE
-        )
-    }
-
-    private fun initializeMap() {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED &&
-            ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0L, 0f, this)
-            if (locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
-                locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0L, 0f, this)
-            }
-        } else {
-            println("Permisos de ubicación no concedidos")
-        }
-    }
-
-    override fun onLocationChanged(location: Location) {
-        setPoint(location.latitude, location.longitude)
-    }
-
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == REQUEST_PERMISSIONS_REQUEST_CODE) {
-            if (grantResults.isNotEmpty() && grantResults.all { it == PackageManager.PERMISSION_GRANTED }) {
-                initializeMap()
-            } else {
-                // Permisos denegados, no mostrar el mapa
-            }
-        }
-    }
-
-    override fun onResume() {
-        super.onResume()
-        if (::map.isInitialized) {
-            map.onResume()
-        }
-    }
-
-   /* override fun onPause() {
-        super.onPause()
-        if (::map.isInitialized) {
-            map.onPause()
-        }
-    }
-
-    override fun onStop() {
-        super.onStop()
-        if (::map.isInitialized) {
-            map.onDetach()
-        }
-    }*/
-
-    override fun onDestroy() {
-        super.onDestroy()
-        if (::map.isInitialized) {
-            map.onDetach()
-        }
+    // Agrega los marcadores al mapa
+    private fun agregarMarcadoresAlMapa(){
+        map.overlays.addAll(marcadores)
+        Log.d("Marcadores", "Marcadores ${map.overlays.size}")
     }
 
     override fun onProviderEnabled(provider: String) {}
     override fun onProviderDisabled(provider: String) {}
+    @Deprecated("Deprecated in Java")
     override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) {}
 }
