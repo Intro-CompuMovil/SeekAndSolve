@@ -70,7 +70,11 @@ class MainActivity : AppCompatActivity(), LocationListener {
     override fun onStart() {
         super.onStart()
         // Verificar si el usuario está logueado
-        checkUser()
+        if(auth.currentUser == null){
+            startActivity(Intent(this, LandingActivity::class.java))
+            finish()
+            return
+        }
         marcadores = mutableListOf()
         // Si está logueado, obtener su información
         getUserInfo()
@@ -104,21 +108,15 @@ class MainActivity : AppCompatActivity(), LocationListener {
     override fun onStop() {
         super.onStop()
         // Remover la suscripción para evitar fugas de memoria
-        desafiosRef.removeEventListener(desafiosListener)
+        if(::desafiosRef.isInitialized){
+            desafiosRef.removeEventListener(desafiosListener)
+        }
     }
 
     override fun onDestroy() {
         super.onDestroy()
         if (::map.isInitialized) {
             map.onDetach()
-        }
-    }
-
-    // Si el usuario no está logueado, redirigirlo a la Landing
-    private fun checkUser() {
-        if(auth.currentUser == null){
-            startActivity(Intent(this, LandingActivity::class.java))
-            finish()
         }
     }
 
