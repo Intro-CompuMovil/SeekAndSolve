@@ -1,7 +1,7 @@
 package com.cuatrodivinas.seekandsolve.Datos
 
 data class Carrera(
-    val idDesafio: Int = 0,
+    val idDesafio: String = "",
     // Map<uid, UsuarioCarrera> ---> "uid1": { "idRecompensa": 1 },
     val usuarios: Map<String, UsuarioCarrera> = emptyMap(),
     // Tiempo total en minutos
@@ -13,7 +13,7 @@ data class Carrera(
     var puntosCompletados: MutableList<Punto> = mutableListOf()
 ) {
     data class UsuarioCarrera(
-        val idRecompensa: Int = 0
+        val idRecompensa: String = ""
     )
 }
 

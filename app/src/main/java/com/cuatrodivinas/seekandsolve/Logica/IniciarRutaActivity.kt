@@ -6,8 +6,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
-import android.graphics.drawable.Drawable
-import android.health.connect.datatypes.units.Length
 import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
@@ -16,19 +14,13 @@ import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
 import android.util.Log
-import android.widget.Button
-import android.widget.EditText
-import android.widget.ListView
-import android.widget.TextView
 import android.widget.Toast
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
+import com.cuatrodivinas.seekandsolve.Datos.Carrera
 import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.MY_PERMISSION_REQUEST_CAMERA
 import com.cuatrodivinas.seekandsolve.Datos.Desafio
 import com.cuatrodivinas.seekandsolve.Datos.Punto
@@ -61,10 +53,10 @@ class IniciarRutaActivity : AppCompatActivity(), LocationListener {
     private lateinit var map: MapView
     private val REQUEST_PERMISSIONS_REQUEST_CODE = 1
     private lateinit var locationManager: LocationManager
-    private var isFirstLocation = true
     private var trayectoRetrofit: RetrofitUrls
     private var geocoderRetrofit: RetrofitUrls
     private lateinit var desafio: Desafio
+    private lateinit var carrera: Carrera
     private lateinit var marcador: Marker
     private lateinit var photoUri: Uri
 
@@ -80,7 +72,9 @@ class IniciarRutaActivity : AppCompatActivity(), LocationListener {
         super.onCreate(savedInstanceState)
         binding = ActivityIniciarRutaBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        // Obtener el desafío y la carrera de la actividad anterior
         desafio = intent.getSerializableExtra("desafio") as Desafio
+        carrera = intent.getSerializableExtra("carrera") as Carrera
         setupMap()
         setupLocationManager()
         val puntoInicial = GeoPoint(desafio.puntoInicial.latitud, desafio.puntoInicial.longitud)
@@ -337,11 +331,11 @@ class IniciarRutaActivity : AppCompatActivity(), LocationListener {
                 locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER).let {
                     var checkpointAnterior: Punto? = null
                     for(checkpoint in desafio.puntosIntermedios){
-                        if(desafio.puntosCompletados.contains(checkpoint)){
+                        if(carrera.puntosCompletados.contains(checkpoint)){
                             Toast.makeText(this, "Este checkpoint ya ha sido completado!", Toast.LENGTH_LONG).show()
                             return@setOnClickListener
                         }
-                        if(checkpointAnterior != null && !desafio.puntosCompletados.contains(checkpointAnterior)){
+                        if(checkpointAnterior != null && !carrera.puntosCompletados.contains(checkpointAnterior)){
                             Toast.makeText(this, "Completa el checkpoint anterior antes de jugar este!", Toast.LENGTH_LONG).show()
                             return@setOnClickListener
                         }
@@ -354,7 +348,7 @@ class IniciarRutaActivity : AppCompatActivity(), LocationListener {
                     if(intent.extras == null && calcularDistancia(desafio.puntoFinal.latitud, desafio.puntoFinal.longitud, it!!.latitude, it.longitude) <= 100.0){
                         puntoFinal = true
                     }
-                    if(puntoFinal && !desafio.puntosCompletados.contains(desafio.puntosIntermedios.last())){
+                    if(puntoFinal && !carrera.puntosCompletados.contains(desafio.puntosIntermedios.last())){
                         Toast.makeText(this, "Completa el checkpoint anterior antes de jugar el final!", Toast.LENGTH_LONG).show()
                         return@setOnClickListener
                     }

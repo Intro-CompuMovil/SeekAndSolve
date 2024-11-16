@@ -11,6 +11,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.PERMISO_CAMARA
+import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.auth
 import com.cuatrodivinas.seekandsolve.Datos.Desafio
 import com.cuatrodivinas.seekandsolve.Datos.Punto
 import com.cuatrodivinas.seekandsolve.databinding.ActivityCrearDesafioBinding
@@ -29,7 +30,7 @@ class CrearDesafioActivity : AppCompatActivity() {
         binding = ActivityCrearDesafioBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        desafio = Desafio(0, "", "", "", Punto(0.0, 0.0), mutableListOf(), Punto(0.0, 0.0), mutableListOf())
+        desafio = Desafio(auth.currentUser!!.uid, "", "", "", Punto(0.0, 0.0), mutableListOf(), Punto(0.0, 0.0))
         checkpointsAdapter = CheckpointsAdapter(this, desafio.puntosIntermedios)
         binding.listaCheckpoints.adapter = checkpointsAdapter
 
