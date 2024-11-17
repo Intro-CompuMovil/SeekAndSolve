@@ -9,7 +9,7 @@ data class Carrera(
     // Map<uid, UsuarioCarrera> ---> "uid1": { "idRecompensa": 1 },
     val usuarios: Map<String, UsuarioCarrera> = emptyMap(),
     // Tiempo total en minutos
-    var horaInicio: LocalDateTime,
+    var tiempoTotal: Int = 0,
     var acertijosPrimerIntento: Int = 0,
     var velocidadMedia: Int = 0,
     var distanciaTotal: Int = 0,
