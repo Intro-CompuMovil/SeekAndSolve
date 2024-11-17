@@ -9,11 +9,11 @@ data class Carrera(
     // Map<uid, UsuarioCarrera> ---> "uid1": { "idRecompensa": 1 },
     val usuarios: Map<String, UsuarioCarrera> = emptyMap(),
     // Tiempo total en minutos
-    val horaInicio: LocalDateTime,
-    val acertijosPrimerIntento: Int = 0,
-    val velocidadMedia: Int = 0,
-    val distanciaTotal: Int = 0,
-    val fecha: String = "",
+    var horaInicio: LocalDateTime,
+    var acertijosPrimerIntento: Int = 0,
+    var velocidadMedia: Int = 0,
+    var distanciaTotal: Int = 0,
+    var fecha: String = "",
     var puntosCompletados: MutableList<Punto> = mutableListOf()
 ): Serializable {
     data class UsuarioCarrera(

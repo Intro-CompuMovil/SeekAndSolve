@@ -12,8 +12,10 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import com.cuatrodivinas.seekandsolve.Datos.Carrera
 import com.cuatrodivinas.seekandsolve.Datos.Desafio
 import com.cuatrodivinas.seekandsolve.Datos.Pregunta
+import com.cuatrodivinas.seekandsolve.Datos.Punto
 import com.cuatrodivinas.seekandsolve.R
 import com.squareup.picasso.Picasso
 
@@ -26,8 +28,10 @@ class ResolverAcertijoActivity : AppCompatActivity() {
     lateinit var intentMarcarCheckpoint: Intent
     lateinit var intentPista: Intent
     lateinit var desafio: Desafio
+    lateinit var carrera: Carrera
     lateinit var pregunta: Pregunta
     lateinit var preguntaSeleccionada: String
+    lateinit var punto: Punto
     var intentos: Int = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -41,6 +45,8 @@ class ResolverAcertijoActivity : AppCompatActivity() {
         intentMarcarCheckpoint = Intent(this, IniciarRutaActivity::class.java)
         intentPista = Intent(this, PistaActivity::class.java)
         desafio = intent.getSerializableExtra("desafio") as Desafio
+        punto = intent.getSerializableExtra("punto") as Punto
+        carrera = intent.getSerializableExtra("carrera") as Carrera
         inicializarElementos()
     }
 
@@ -48,11 +54,14 @@ class ResolverAcertijoActivity : AppCompatActivity() {
         //Obtener la pregunta random
         pregunta = Pregunta("Porque se extinguieron los mamuts", mutableListOf("a", "b", "c", "d") ,"b", "")
         acertijo.text = pregunta.enunciado
-        Picasso.get()
-            .load(pregunta.imagenUrl) // URL de la imagen
-            .placeholder(R.drawable.cargando) // Imagen de marcador de posición mientras se carga
-            .error(R.drawable.error) // Imagen en caso de error
-            .into(imagenAcertijo)
+        if(!pregunta.imagenUrl.isNullOrEmpty()){
+            Picasso.get()
+                .load(pregunta.imagenUrl) // URL de la imagen
+                .placeholder(R.drawable.cargando) // Imagen de marcador de posición mientras se carga
+                .error(R.drawable.error) // Imagen en caso de error
+                .into(imagenAcertijo)
+        }
+
         val adapter = ArrayAdapter(
             this,                     // Contexto
             android.R.layout.simple_list_item_1, // Diseño simple proporcionado por Android para cada elemento
@@ -81,9 +90,11 @@ class ResolverAcertijoActivity : AppCompatActivity() {
             if(!isRespuestaCorrecta()){
                 return@setOnClickListener
             }
+            carrera.puntosCompletados.add(punto)
             if(intent.getBooleanExtra("puntoFinal", false)){
                 val intentDesafio = Intent(this@ResolverAcertijoActivity, DesafioTerminadoActivity::class.java)
                 intentDesafio.putExtra("desafio", desafio)
+                intentDesafio.putExtra("carrera", carrera)
                 startActivity(intentDesafio)
                 return@setOnClickListener
             }
@@ -98,6 +109,7 @@ class ResolverAcertijoActivity : AppCompatActivity() {
     private fun isRespuestaCorrecta(): Boolean{
         if(preguntaSeleccionada.equals(pregunta.respuestaCorrecta) && intentos == 1){
             Toast.makeText(this, "Respuesta correcta! A la primera!", Toast.LENGTH_LONG).show()
+            carrera.acertijosPrimerIntento++
             return true
         }
         if(preguntaSeleccionada.equals(pregunta.respuestaCorrecta)){

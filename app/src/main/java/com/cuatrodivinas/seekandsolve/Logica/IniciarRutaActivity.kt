@@ -63,6 +63,7 @@ class IniciarRutaActivity : AppCompatActivity(), LocationListener {
     private lateinit var photoUri: Uri
     private lateinit var marcadorActual: Marker
     private var rutas: MutableList<Polyline>? = null
+    private lateinit var lastKnownLocation: Location
 
     init{
         val retrofit = RetrofitOsmClient.urlRuta()
@@ -278,6 +279,9 @@ class IniciarRutaActivity : AppCompatActivity(), LocationListener {
     }
 
     override fun onLocationChanged(location: Location) {
+        if(!shouldChangeLocation(location.latitude, location.longitude)){
+            return
+        }
         setPoint(location.latitude, location.longitude)
         val puntoActual = GeoPoint(location.latitude, location.longitude)
         var puntoDestino: GeoPoint? = null
@@ -296,6 +300,20 @@ class IniciarRutaActivity : AppCompatActivity(), LocationListener {
             }
         }
         getRoute(puntoActual, puntoDestino, true, true)
+    }
+
+    private fun shouldChangeLocation(latitud: Double, longitud: Double): Boolean{
+        var cambiar = false
+        if(::lastKnownLocation.isInitialized && calcularDistancia(latitud, longitud, lastKnownLocation.latitude, lastKnownLocation.longitude) > 2){
+            cambiar = true
+        }
+        else if(!::lastKnownLocation.isInitialized){
+            cambiar = true
+        }
+        lastKnownLocation = Location("")
+        lastKnownLocation.latitude = latitud
+        lastKnownLocation.longitude = longitud
+        return cambiar
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
@@ -321,10 +339,8 @@ class IniciarRutaActivity : AppCompatActivity(), LocationListener {
         }
         var puntoFinal = false
         binding.resolverAcertijo.setOnClickListener {
-            pedirPermiso(this, android.Manifest.permission.CAMERA,
-                "Necesitamos acceder a la cámara para tomar la foto y continuar con la experiencia", MY_PERMISSION_REQUEST_CAMERA
-            )
-            var intent = Intent(this, ResolverAcertijoActivity::class.java)
+
+            val intent = Intent(this, ResolverAcertijoActivity::class.java)
             if (ActivityCompat.checkSelfPermission(
                     this,
                     Manifest.permission.ACCESS_FINE_LOCATION
@@ -333,39 +349,47 @@ class IniciarRutaActivity : AppCompatActivity(), LocationListener {
                     Manifest.permission.ACCESS_COARSE_LOCATION
                 ) == PackageManager.PERMISSION_GRANTED
             ) {
-                locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER).let {
-                    var checkpointAnterior: Punto? = null
+                val distanciaInicio = calcularDistancia(desafio.puntoInicial.latitud, desafio.puntoInicial.longitud, lastKnownLocation.latitude, lastKnownLocation.longitude)
+                if(distanciaInicio <= 100){
+                    intent.putExtra("punto", desafio.puntoInicial)
+                }
+                var checkpointAnterior: Punto? = null
+                if(intent.extras == null){
                     for(checkpoint in desafio.puntosIntermedios){
                         if(carrera.puntosCompletados.contains(checkpoint)){
                             Toast.makeText(this, "Este checkpoint ya ha sido completado!", Toast.LENGTH_LONG).show()
                             return@setOnClickListener
                         }
-                        if(checkpointAnterior != null && !carrera.puntosCompletados.contains(checkpointAnterior)){
+                        if(checkpointAnterior != null && !carrera.puntosCompletados.contains(checkpointAnterior) && calcularDistancia(checkpoint.latitud, checkpoint.longitud, lastKnownLocation.latitude, lastKnownLocation.longitude) <= 100.0){
                             Toast.makeText(this, "Completa el checkpoint anterior antes de jugar este!", Toast.LENGTH_LONG).show()
                             return@setOnClickListener
                         }
-                        if(calcularDistancia(checkpoint.latitud, checkpoint.longitud, it!!.latitude, it.longitude) <= 100.0){
+                        if(calcularDistancia(checkpoint.latitud, checkpoint.longitud, lastKnownLocation.latitude, lastKnownLocation.longitude) <= 100.0){
                             intent.putExtra("punto", checkpoint)
                             break
                         }
                         checkpointAnterior = checkpoint
                     }
-                    if(intent.extras == null && calcularDistancia(desafio.puntoFinal.latitud, desafio.puntoFinal.longitud, it!!.latitude, it.longitude) <= 100.0){
-                        puntoFinal = true
-                        intent.putExtra("punto", desafio.puntoFinal)
-                    }
-                    if(puntoFinal && !carrera.puntosCompletados.contains(desafio.puntosIntermedios.last())){
-                        Toast.makeText(this, "Completa el checkpoint anterior antes de jugar el final!", Toast.LENGTH_LONG).show()
-                        return@setOnClickListener
-                    }
+                }
+                if(intent.extras == null && calcularDistancia(desafio.puntoFinal.latitud, desafio.puntoFinal.longitud, lastKnownLocation.latitude, lastKnownLocation.longitude) <= 100.0){
+                    puntoFinal = true
+                    intent.putExtra("punto", desafio.puntoFinal)
+                }
+                if(puntoFinal && !carrera.puntosCompletados.contains(desafio.puntosIntermedios.last())){
+                    Toast.makeText(this, "Completa el checkpoint anterior antes de jugar el final!", Toast.LENGTH_LONG).show()
+                    return@setOnClickListener
                 }
             }
             if(intent.extras == null){
                 Toast.makeText(this, "No te encuentras en un checkpoint", Toast.LENGTH_LONG).show()
                 return@setOnClickListener
             }
+            pedirPermiso(this, android.Manifest.permission.CAMERA,
+                "Necesitamos acceder a la cámara para tomar la foto y continuar con la experiencia", MY_PERMISSION_REQUEST_CAMERA
+            )
             intent.putExtra("desafio", desafio)
             intent.putExtra("puntoFinal", puntoFinal)
+            intent.putExtra("carrera", carrera)
             startActivity(intent)
         }
     }
