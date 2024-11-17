@@ -3,17 +3,24 @@ package com.cuatrodivinas.seekandsolve.Logica
 import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import com.bumptech.glide.Glide
 import com.cuatrodivinas.seekandsolve.Datos.Carrera
+import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.PATH_DESAFIOS
+import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.PATH_IMAGENES
+import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.auth
+import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.storage
 import com.cuatrodivinas.seekandsolve.Datos.Desafio
 import com.cuatrodivinas.seekandsolve.Datos.Punto
 import com.cuatrodivinas.seekandsolve.R
 import com.cuatrodivinas.seekandsolve.databinding.ActivityVerDesafioBinding
 import com.google.firebase.crashlytics.buildtools.reloc.com.google.common.reflect.TypeToken
+import com.google.firebase.storage.StorageReference
 import com.google.gson.Gson
 
 class VerDesafioActivity : AppCompatActivity() {
     private lateinit var binding: ActivityVerDesafioBinding
+    private lateinit var refImg: StorageReference
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -31,17 +38,15 @@ class VerDesafioActivity : AppCompatActivity() {
         binding.puntoInicial.text = textoPuntoInicial
         val textoPuntoFinal: String = "Punto final: " + desafio.getString("puntoFinal")
         binding.puntoFinal.text = textoPuntoFinal
+        val idDesafio = desafio.getString("id")
 
-        val urlImagen = desafio.getString("imagen")
-        if (urlImagen != null) {
-            if (urlImagen.isNotEmpty()) {
-                Glide.with(binding.imagenDesafio.context)
-                    .load(urlImagen)
-                    .into(binding.imagenDesafio)
-                binding.imagenDesafio.background = null
-            } else {
-                binding.imagenDesafio.setImageResource(R.drawable.profile_user_svgrepo_com)
-            }
+        refImg = storage.getReference(PATH_DESAFIOS).child("$idDesafio.jpg")
+        refImg.downloadUrl.addOnSuccessListener { uri ->
+            Glide.with(this)
+                .load(uri) // Carga la imagen desde la URL
+                .into(binding.imagenDesafio)
+        }.addOnFailureListener { exception ->
+            binding.imagenDesafio.setImageResource(R.drawable.foto_bandera)
         }
 
         binding.iniciarDesafio.setOnClickListener {
