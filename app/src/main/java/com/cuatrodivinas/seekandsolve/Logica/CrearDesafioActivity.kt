@@ -4,26 +4,38 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
+import android.graphics.drawable.BitmapDrawable
+import android.graphics.drawable.Drawable
+import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.PATH_DESAFIOS
+import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.PATH_IMAGENES
 import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.PERMISO_CAMARA
 import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.auth
+import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.storage
 import com.cuatrodivinas.seekandsolve.Datos.Desafio
 import com.cuatrodivinas.seekandsolve.Datos.Punto
 import com.cuatrodivinas.seekandsolve.databinding.ActivityCrearDesafioBinding
+import com.google.firebase.storage.StorageReference
 import org.json.JSONArray
 import org.osmdroid.util.GeoPoint
 import org.json.JSONObject
+import java.io.File
+import java.io.FileOutputStream
+import java.io.IOException
 import java.io.OutputStreamWriter
+import java.util.UUID
 
 class CrearDesafioActivity : AppCompatActivity() {
     private lateinit var binding: ActivityCrearDesafioBinding
     private lateinit var desafio: Desafio
     private lateinit var checkpointsAdapter: CheckpointsAdapter
+    private lateinit var refImg: StorageReference
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -112,6 +124,9 @@ class CrearDesafioActivity : AppCompatActivity() {
         // Crear un objeto JSONObject
         val jsonObject = JSONObject()
 
+        //Crear id para el desafio
+        val idDesafio = UUID.randomUUID().toString()
+
         // Agregar la información al objeto JSONObject
         jsonObject.put("nombre", binding.nombreDesafio.text.toString())
         jsonObject.put("descripcion", binding.descripcionDesafio.text.toString())
@@ -132,6 +147,36 @@ class CrearDesafioActivity : AppCompatActivity() {
         // Cerrar el archivo
         outputStreamWriter.close()
         fileOutputStream.close()
+
+        //guardar imagen en storage
+        val imagen = binding.imagenDesafio.drawable
+        refImg = storage.getReference("$PATH_DESAFIOS/$idDesafio.jpg")
+        refImg.putFile(toUri(imagen) ?: return)
+    }
+
+    private fun toUri(imagen: Drawable?): Uri? {
+        // Verificar si la imagen es null
+        if (imagen == null) return null
+
+        // Convertir el Drawable a un Bitmap
+        val bitmap = (imagen as BitmapDrawable).bitmap
+
+        // Crear un archivo temporal en el cache del contexto
+        val file = File(this.cacheDir, "imagen_temp.jpg")
+        try {
+            // Crear un flujo de salida para guardar el Bitmap como archivo
+            val fos = FileOutputStream(file)
+            // Comprimir el Bitmap en formato JPEG y guardarlo en el archivo temporal
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos)
+            fos.flush()
+            fos.close()
+
+            // Retornar el Uri del archivo temporal
+            return Uri.fromFile(file)
+        } catch (e: IOException) {
+            e.printStackTrace()
+            return null
+        }
     }
 
     fun Punto.toJSON(): JSONObject {

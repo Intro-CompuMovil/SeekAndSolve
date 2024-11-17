@@ -33,7 +33,7 @@ class RecompensasAdapter(context: Context?, c: Cursor?, flags: Int) : CursorAdap
         val lugarRecompensa = view?.findViewById<TextView>(R.id.lugarRecompensa)
         val fechaRecompensa = view?.findViewById<TextView>(R.id.fechaRecompensa)
 
-        val id = cursor?.getInt(_ID)
+        val id = cursor?.getString(_ID)
         val nombre = cursor?.getString(NOMBRE)
         val lugar = cursor?.getString(LUGAR)
         val fecha = cursor?.getString(FECHA)
@@ -46,7 +46,7 @@ class RecompensasAdapter(context: Context?, c: Cursor?, flags: Int) : CursorAdap
         fechaRecompensa!!.text = fecha
     }
 
-    private fun cargarImagen(id: Int?, imgRecompensa: ImageView?) {
+    private fun cargarImagen(id: String?, imgRecompensa: ImageView?) {
         if (id != null) {
             val refImg = storage.getReference(PATH_RECOMPENSAS).child("${id}.jpg")
 
