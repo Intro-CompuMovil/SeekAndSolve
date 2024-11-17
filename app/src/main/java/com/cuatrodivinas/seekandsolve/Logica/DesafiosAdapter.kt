@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import android.widget.CursorAdapter
 import android.widget.ImageView
 import android.widget.TextView
+import com.bumptech.glide.Glide
 import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.PATH_DESAFIOS
 import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.storage
 import com.cuatrodivinas.seekandsolve.R
@@ -35,9 +36,9 @@ class DesafiosAdapter(context: Context?, c: Cursor?, flags: Int) : CursorAdapter
         // Obtener la referencia de la imagen en Firebase Storage
         val refImg: StorageReference = storage.getReference("${PATH_DESAFIOS}/$id.jpg")
         refImg.downloadUrl.addOnSuccessListener { uri ->
-            Picasso.get()
-                .load(uri)
-                .into(imagenAmigo) // Poner la imagen en el ImageView
+            Glide.with(context!!)
+                .load(uri) // Carga la imagen desde la URL
+                .into(imagenAmigo!!)
         }.addOnFailureListener { exception ->
             imagenAmigo?.setImageResource(R.drawable.foto_bandera)
         }

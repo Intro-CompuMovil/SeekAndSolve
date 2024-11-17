@@ -36,14 +36,13 @@ class Amigos : AppCompatActivity() {
     }
 
     private fun setListAmigos() {
-        val columns = arrayOf("_id", "imagen", "nombre")
+        val columns = arrayOf("_id", "nombre")
         val matrixCursor = MatrixCursor(columns)
         for (i in 0 until amigosJsonArray.length()) {
             val jsonObject = amigosJsonArray.getJSONObject(i)
             val id = jsonObject.getInt("id")
-            val imagen = jsonObject.getString("fotoUrl")
             val nombre = jsonObject.getString("username")
-            matrixCursor.addRow(arrayOf(id, imagen, nombre))
+            matrixCursor.addRow(arrayOf(id, nombre))
         }
         val cursor: Cursor = matrixCursor
         val amigosAdapter = AmigosAdapter(this, cursor, 0)
