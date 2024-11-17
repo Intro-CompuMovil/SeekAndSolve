@@ -14,6 +14,9 @@ import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
 import android.util.Log
+import android.view.View
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -57,8 +60,9 @@ class IniciarRutaActivity : AppCompatActivity(), LocationListener {
     private var geocoderRetrofit: RetrofitUrls
     private lateinit var desafio: Desafio
     private lateinit var carrera: Carrera
-    private lateinit var marcador: Marker
     private lateinit var photoUri: Uri
+    private lateinit var marcadorActual: Marker
+    private var rutas: MutableList<Polyline>? = null
 
     init{
         val retrofit = RetrofitOsmClient.urlRuta()
@@ -75,48 +79,23 @@ class IniciarRutaActivity : AppCompatActivity(), LocationListener {
         // Obtener el desafío y la carrera de la actividad anterior
         desafio = intent.getSerializableExtra("desafio") as Desafio
         carrera = intent.getSerializableExtra("carrera") as Carrera
+        rutas = mutableListOf()
         setupMap()
         setupLocationManager()
-        val puntoInicial = GeoPoint(desafio.puntoInicial.latitud, desafio.puntoInicial.longitud)
-        val puntoFinal = GeoPoint(desafio.puntoFinal.latitud, desafio.puntoFinal.longitud)
-        buscarDireccion(puntoInicial.latitude, puntoInicial.longitude, puntoFinal.latitude,
-                        puntoFinal.longitude)
-        getRoute(puntoInicial, puntoFinal)
-        startLocationUpdates()
-    }
-
-    private fun startLocationUpdates() {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), 1)
-            return
-        }
-        locationManager.requestLocationUpdates(
-            LocationManager.GPS_PROVIDER,
-            1000L,
-            1f,
-            object: LocationListener {
-                override fun onLocationChanged(location: Location) {
-                    Log.d("Marcadores", "Marcadores ${map.overlays.size}")
-                    setPoint(location.latitude, location.longitude)
-                    val puntoInicial = GeoPoint(location.latitude, location.longitude)
-                    val puntoFinal = GeoPoint(desafio.puntoFinal.latitud, desafio.puntoFinal.longitud)
-                    getRoute(puntoInicial, puntoFinal)
-                }
-            }
-        )
     }
 
     private fun setupMap() {
         Configuration.getInstance().userAgentValue = BuildConfig.APPLICATION_ID
-        map = findViewById(R.id.map)
+        map = binding.map
         map.setMultiTouchControls(true)
-        marcador = Marker(map)
-        marcador.icon = getDrawable(R.drawable.ic_location)
         val mapController = map.controller
         mapController.setZoom(17.0)
         val startPoint = GeoPoint(0.0, 0.0)
-        mapController.setCenter(startPoint)
-        map.overlays.add(marcador)
+        marcadorActual = Marker(map)
+        marcadorActual.position = startPoint
+        marcadorActual.icon = map.context.getDrawable(R.drawable.ic_location)
+        marcadorActual.title = "Posición actual"
+        map.overlays.add(marcadorActual)
     }
 
     private fun setPoint(lalitud: Double, longitud: Double){
@@ -125,8 +104,7 @@ class IniciarRutaActivity : AppCompatActivity(), LocationListener {
 
         //Crear los marcadores
         map.overlays.clear()
-        marcador.position = newPoint
-        map.overlays.add(marcador)
+        marcadorActual.position = newPoint
 
         //Mover el mapa
         map.controller.animateTo(newPoint)
@@ -135,7 +113,7 @@ class IniciarRutaActivity : AppCompatActivity(), LocationListener {
         map.invalidate()
     }
 
-    private fun getRoute(startPoint: GeoPoint, endPoint: GeoPoint) {
+    private fun getRoute(startPoint: GeoPoint, endPoint: GeoPoint, adjustZoom: Boolean, borrarRutaAnterior: Boolean) {
         val getRoute = trayectoRetrofit.getRoute(startPoint.longitude, startPoint.latitude, endPoint.longitude, endPoint.latitude)
 
         getRoute.enqueue(object :
@@ -150,7 +128,13 @@ class IniciarRutaActivity : AppCompatActivity(), LocationListener {
                         .getJSONArray("routes")
                         .getJSONObject(0)
                         .getString("geometry")
-                    drawRoute(encodedPolyline)
+
+                    val path: List<GeoPoint> = decodePolyline(encodedPolyline)
+                    drawRoute(path, borrarRutaAnterior)
+                    if(adjustZoom){
+                        adjustZoomToRoute(path)
+                        adjustCenter(path)
+                    }
                 } else {
                     println("Error en la respuesta: ${response.errorBody()}")
                 }
@@ -162,17 +146,62 @@ class IniciarRutaActivity : AppCompatActivity(), LocationListener {
         })
     }
 
-    private fun drawRoute(encoded: String) {
-        val path: List<GeoPoint> = decodePolyline(encoded)
+    private fun drawRoute(path: List<GeoPoint>, borrarRutaAnterior: Boolean) {
         map.controller.setCenter(path[0])
         runOnUiThread {
+            if (rutas!!.size > 0 != null && borrarRutaAnterior) {
+                for(ruta in rutas!!){
+                    map.overlayManager.remove(ruta)  // Eliminar la ruta anterior
+                }
+            }
             val polyline = Polyline()
             polyline.setPoints(path)
             polyline.color = Color.BLUE
             polyline.width = 10f
             map.overlays.add(polyline)
+            rutas!!.add(polyline)
             map.invalidate()
         }
+    }
+
+    private fun adjustZoomToRoute(path: List<GeoPoint>) {
+        if (path.isEmpty()) return
+
+        // Determinar los límites de latitud y longitud
+        val minLat = path.minOf { it.latitude }
+        val maxLat = path.maxOf { it.latitude }
+        val minLon = path.minOf { it.longitude }
+        val maxLon = path.maxOf { it.longitude }
+
+        // Añadir un margen a los límites
+        val margin = 0.1 // Margen en grados (~1km dependiendo de la ubicación)
+        val adjustedBoundingBox = org.osmdroid.util.BoundingBox(
+            maxLat + margin, // Añadir margen al norte
+            maxLon + margin, // Añadir margen al este
+            minLat - margin, // Añadir margen al sur
+            minLon - margin  // Añadir margen al oeste
+        )
+
+        // Ajustar el mapa para que enfoque la ruta
+        map.zoomToBoundingBox(adjustedBoundingBox, true)
+    }
+
+    private fun adjustCenter(path: List<GeoPoint>){
+        var totalLat = 0.0
+        var totalLon = 0.0
+        path.forEach {
+            totalLat += it.latitude
+            totalLon += it.longitude
+        }
+
+        val centerLat = totalLat / path.size
+        val centerLon = totalLon / path.size
+
+        // Crear un GeoPoint para el centro de la ruta
+        val routeCenter = GeoPoint(centerLat, centerLon)
+        map.controller.setCenter(routeCenter)
+        // Asegurarse de que el mapa se haya actualizado correctamente
+        map.invalidate()
     }
 
     private fun decodePolyline(encoded: String): List<GeoPoint> {
@@ -212,46 +241,6 @@ class IniciarRutaActivity : AppCompatActivity(), LocationListener {
         return poly
     }
 
-    private fun buscarDireccion(latitudIni: Double, longitudIni: Double,
-                                latitudFin: Double, longitudFin: Double){
-        // Realizar la solicitud a la API
-        val reverseGeocode = geocoderRetrofit.reverseGeocode(latitudIni, longitudIni)
-
-        reverseGeocode.enqueue(object :
-            Callback<ResponseBody> {
-            override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
-                if (response.isSuccessful && response.body() != null) {
-                    val direction = response.body()!!.string()
-                    val jsonDirection = JSONObject(direction)
-                    val reverseGeocode2 = geocoderRetrofit.reverseGeocode(latitudFin, longitudFin)
-                    reverseGeocode2.enqueue(object :
-                    Callback<ResponseBody> {
-                        override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
-                            if (response.isSuccessful && response.body() != null) {
-                                val direction2 = response.body()!!.string()
-                                val jsonDirection2 = JSONObject(direction2)
-                                binding.tituloRuta.text = "De " + jsonDirection.getString("name") + " a " +  jsonDirection2.getString("name")
-                            } else {
-                                println("Error en la respuesta: ${response.errorBody()}")
-                            }
-                        }
-
-                        override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
-                            println("Error en la llamada: ${t.message}")
-                        }
-                    })
-                    binding.tituloRuta.text
-                } else {
-                    println("Error en la respuesta: ${response.errorBody()}")
-                }
-            }
-
-            override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
-                println("Error en la llamada: ${t.message}")
-            }
-        })
-    }
-
     private fun setupLocationManager() {
         locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
         if (hasLocationPermissions()) {
@@ -280,7 +269,9 @@ class IniciarRutaActivity : AppCompatActivity(), LocationListener {
             ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
 
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0L, 0f, this)
-            locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0L, 0f, this)
+            if (locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
+                locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0L, 0f, this)
+            }
         } else {
             println("Permisos de ubicación no concedidos")
         }
@@ -288,9 +279,23 @@ class IniciarRutaActivity : AppCompatActivity(), LocationListener {
 
     override fun onLocationChanged(location: Location) {
         setPoint(location.latitude, location.longitude)
-        val puntoInicial = GeoPoint(location.latitude, location.longitude)
-        val puntoFinal = GeoPoint(desafio.puntoFinal.latitud, desafio.puntoFinal.longitud)
-        getRoute(puntoInicial, puntoFinal)
+        val puntoActual = GeoPoint(location.latitude, location.longitude)
+        var puntoDestino: GeoPoint? = null
+        if(carrera.puntosCompletados.isEmpty()){
+            puntoDestino = GeoPoint(desafio.puntoInicial.latitud, desafio.puntoInicial.longitud)
+        }
+        else{
+            for(checkpoint in desafio.puntosIntermedios){
+                if(!carrera.puntosCompletados.contains(checkpoint)){
+                    puntoDestino = GeoPoint(checkpoint.latitud, checkpoint.longitud)
+                    break;
+                }
+            }
+            if(puntoDestino == null){
+                puntoDestino = GeoPoint(desafio.puntoFinal.latitud, desafio.puntoFinal.longitud)
+            }
+        }
+        getRoute(puntoActual, puntoDestino, true, true)
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
@@ -340,13 +345,14 @@ class IniciarRutaActivity : AppCompatActivity(), LocationListener {
                             return@setOnClickListener
                         }
                         if(calcularDistancia(checkpoint.latitud, checkpoint.longitud, it!!.latitude, it.longitude) <= 100.0){
-                            intent.putExtra("desafio", desafio)
+                            intent.putExtra("punto", checkpoint)
                             break
                         }
                         checkpointAnterior = checkpoint
                     }
                     if(intent.extras == null && calcularDistancia(desafio.puntoFinal.latitud, desafio.puntoFinal.longitud, it!!.latitude, it.longitude) <= 100.0){
                         puntoFinal = true
+                        intent.putExtra("punto", desafio.puntoFinal)
                     }
                     if(puntoFinal && !carrera.puntosCompletados.contains(desafio.puntosIntermedios.last())){
                         Toast.makeText(this, "Completa el checkpoint anterior antes de jugar el final!", Toast.LENGTH_LONG).show()

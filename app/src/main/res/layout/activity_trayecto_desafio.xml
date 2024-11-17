@@ -14,7 +14,7 @@
         android:layout_height="wrap_content"
         android:gravity="center"
         android:orientation="vertical"
-        app:layout_constraintBottom_toTopOf="@+id/iniciarDesafio"
+        app:layout_constraintBottom_toTopOf="@+id/linearLayout2"
         app:layout_constraintTop_toTopOf="parent">
 
         <TextView
@@ -28,8 +28,63 @@
             android:id="@+id/map"
             android:layout_width="match_parent"
             android:layout_height="500dp"
-            android:layout_marginTop="32dp"/>
+            android:layout_marginTop="32dp" />
 
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/linearLayout2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="vertical"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/linearLayout3"
+        app:layout_constraintBottom_toTopOf="@+id/iniciarDesafio"
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout">
+        <TextView
+            android:id="@+id/puntoInicialText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/punto_origen"
+            android:layout_gravity="start"
+            />
+        <Spinner
+            android:id="@+id/puntoInicial"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:spinnerMode="dropdown"
+            />
+
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/linearLayout3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="vertical"
+        app:layout_constraintStart_toEndOf="@+id/linearLayout2"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/iniciarDesafio"
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout">
+
+
+        <TextView
+            android:id="@+id/puntoFinalText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/punto_destino"
+            android:layout_gravity="start"
+            />
+        <Spinner
+            android:id="@+id/puntoFinal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:spinnerMode="dropdown"
+            />
     </LinearLayout>
 
     <Button
@@ -37,6 +92,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/iniciar_desafio"
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout3"
         app:layout_constraintBottom_toBottomOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

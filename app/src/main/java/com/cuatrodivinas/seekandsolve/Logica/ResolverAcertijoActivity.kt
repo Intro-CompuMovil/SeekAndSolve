@@ -7,6 +7,7 @@ import android.widget.Button
 import android.widget.ImageView
 import android.widget.ListView
 import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
@@ -25,6 +26,9 @@ class ResolverAcertijoActivity : AppCompatActivity() {
     lateinit var intentMarcarCheckpoint: Intent
     lateinit var intentPista: Intent
     lateinit var desafio: Desafio
+    lateinit var pregunta: Pregunta
+    lateinit var preguntaSeleccionada: String
+    var intentos: Int = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,25 +46,41 @@ class ResolverAcertijoActivity : AppCompatActivity() {
 
     private fun inicializarElementos(){
         //Obtener la pregunta random
-        val pregunta: Pregunta = Pregunta("Porque se extinguieron los mamuts", "a", "b", "C", "d", "d", "")
+        pregunta = Pregunta("Porque se extinguieron los mamuts", mutableListOf("a", "b", "c", "d") ,"b", "")
         acertijo.text = pregunta.enunciado
         Picasso.get()
             .load(pregunta.imagenUrl) // URL de la imagen
             .placeholder(R.drawable.cargando) // Imagen de marcador de posición mientras se carga
             .error(R.drawable.error) // Imagen en caso de error
             .into(imagenAcertijo)
-        val datos = arrayListOf(pregunta.opcion1, pregunta.opcion2, pregunta.opcion3, pregunta.opcion4)
         val adapter = ArrayAdapter(
             this,                     // Contexto
             android.R.layout.simple_list_item_1, // Diseño simple proporcionado por Android para cada elemento
-            datos                      // Datos a mostrar
+            pregunta.preguntas                      // Datos a mostrar
         )
         listaRespuestas.adapter = adapter
+        var lastSelectedPosition: Int = -1
+        listaRespuestas.setOnItemClickListener { parent, view, position, id ->
+            if (lastSelectedPosition != -1) {
+                // Si hay un ítem previamente seleccionado, se resalta de nuevo
+                val previousView = parent.getChildAt(lastSelectedPosition)
+                previousView.setBackgroundColor(resources.getColor(android.R.color.white)) // Volver al color normal
+            }
+
+            // Resaltar el ítem seleccionado
+            view.setBackgroundColor(resources.getColor(android.R.color.darker_gray)) // Resaltar el ítem presionado
+            lastSelectedPosition = position
+            preguntaSeleccionada = pregunta.preguntas[position]
+            intentos++;
+        }
     }
 
     override fun onResume() {
         super.onResume()
         btnMarcarCheckpoint.setOnClickListener {
+            if(!isRespuestaCorrecta()){
+                return@setOnClickListener
+            }
             if(intent.getBooleanExtra("puntoFinal", false)){
                 val intentDesafio = Intent(this@ResolverAcertijoActivity, DesafioTerminadoActivity::class.java)
                 intentDesafio.putExtra("desafio", desafio)
@@ -73,5 +93,21 @@ class ResolverAcertijoActivity : AppCompatActivity() {
         btnPista.setOnClickListener {
             startActivity(intentPista)
         }
+    }
+
+    private fun isRespuestaCorrecta(): Boolean{
+        if(preguntaSeleccionada.equals(pregunta.respuestaCorrecta) && intentos == 1){
+            Toast.makeText(this, "Respuesta correcta! A la primera!", Toast.LENGTH_LONG).show()
+            return true
+        }
+        if(preguntaSeleccionada.equals(pregunta.respuestaCorrecta)){
+            Toast.makeText(this, "Respuesta correcta!", Toast.LENGTH_LONG).show()
+            return true
+        }
+        if(!preguntaSeleccionada.equals(pregunta.respuestaCorrecta)){
+            Toast.makeText(this, "Respuesta incorrecta :(", Toast.LENGTH_LONG).show()
+            return false
+        }
+        return false
     }
 }

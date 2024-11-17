@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.bumptech.glide.Glide
+import com.cuatrodivinas.seekandsolve.Datos.Carrera
 import com.cuatrodivinas.seekandsolve.Datos.Desafio
 import com.cuatrodivinas.seekandsolve.Datos.Punto
 import com.cuatrodivinas.seekandsolve.R

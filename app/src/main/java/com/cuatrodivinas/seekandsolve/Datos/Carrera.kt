@@ -1,17 +1,21 @@
 package com.cuatrodivinas.seekandsolve.Datos
 
+import java.io.Serializable
+import java.time.LocalDate
+import java.time.LocalDateTime
+
 data class Carrera(
     val idDesafio: String = "",
     // Map<uid, UsuarioCarrera> ---> "uid1": { "idRecompensa": 1 },
     val usuarios: Map<String, UsuarioCarrera> = emptyMap(),
     // Tiempo total en minutos
-    val tiempoTotal: Int = 0,
+    val horaInicio: LocalDateTime,
     val acertijosPrimerIntento: Int = 0,
     val velocidadMedia: Int = 0,
     val distanciaTotal: Int = 0,
     val fecha: String = "",
     var puntosCompletados: MutableList<Punto> = mutableListOf()
-) {
+): Serializable {
     data class UsuarioCarrera(
         val idRecompensa: String = ""
     )

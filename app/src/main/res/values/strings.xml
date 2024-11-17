@@ -84,4 +84,6 @@
     <string name="seleccionar_punto">Seleccionar punto</string>
     <string name="addFriendsPlease">Agrega colegas a tu aventura por SeekAndSolve</string>
     <string name="ver_recompensas">Ver</string>
+    <string name="punto_origen">Punto Origen:</string>
+    <string name="punto_destino">Punto Destino:</string>
 </resources>

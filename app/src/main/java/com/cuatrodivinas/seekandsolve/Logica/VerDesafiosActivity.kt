@@ -77,6 +77,7 @@ class VerDesafiosActivity : AppCompatActivity(), LocationListener {
             val intent = Intent(this, VerDesafioActivity::class.java)
             val bundle = Bundle()
             val jsonObject = desafios!!.getJSONObject(position)
+            bundle.putString("uidCreador", "")
             bundle.putString("id", jsonObject.getString("id"))
             bundle.putString("nombre", jsonObject.getString("nombre"))
             bundle.putString("descripcion", jsonObject.getString("descripcion"))

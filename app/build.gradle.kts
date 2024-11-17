@@ -46,6 +46,7 @@ dependencies {
     implementation (libs.glide)
     implementation(libs.firebase.crashlytics.buildtools)
     implementation(libs.firebase.database.ktx)
+    implementation(libs.androidx.core.i18n)
     annotationProcessor (libs.compiler)
     implementation (libs.osmdroid.android)
     implementation(libs.androidx.credentials)

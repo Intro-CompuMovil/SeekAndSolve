@@ -10,6 +10,10 @@ import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
 import android.os.Bundle
+import android.view.View
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -36,9 +40,11 @@ class TrayectoDesafioActivity : AppCompatActivity(), LocationListener {
     private lateinit var map: MapView
     private val REQUEST_PERMISSIONS_REQUEST_CODE = 1
     private lateinit var locationManager: LocationManager
-    private var isFirstLocation = true
     private var retrofitUrls: RetrofitUrls
     private lateinit var desafio: Desafio
+    private lateinit var marcadorActual: Marker
+    private lateinit var listaElementos: MutableList<String>
+    private var rutas: MutableList<Polyline>? = null
 
     init{
         val retrofit = RetrofitOsmClient.urlRuta()
@@ -52,30 +58,54 @@ class TrayectoDesafioActivity : AppCompatActivity(), LocationListener {
         desafio = intent.getSerializableExtra("desafio") as Desafio
         val textoTitulo = "Ruta de " + desafio.nombre
         binding.tituloTrayecto.text = textoTitulo
+        rutas = mutableListOf()
+        inicializarSpinners()
         setupMap()
         setupLocationManager()
-        val puntoInicial = GeoPoint(desafio.puntoInicial.latitud, desafio.puntoInicial.longitud)
+        /*val puntoInicial = GeoPoint(desafio.puntoInicial.latitud, desafio.puntoInicial.longitud)
         var puntoAnterior = puntoInicial
         for(checkpoint in desafio.puntosIntermedios){
             val puntoSiguiente = GeoPoint(checkpoint.latitud, checkpoint.longitud)
-            getRoute(puntoAnterior, puntoSiguiente)
+            getRoute(puntoAnterior, puntoSiguiente, false, false)
             puntoAnterior = puntoSiguiente
         }
         val puntoFinal = GeoPoint(desafio.puntoFinal.latitud, desafio.puntoFinal.longitud)
-        getRoute(puntoAnterior, puntoFinal)
+        getRoute(puntoAnterior, puntoFinal, true, false)*/
+        eventoRutaSpinners()
+    }
+
+    private fun inicializarSpinners(){
+        listaElementos = mutableListOf()
+        listaElementos.add("Punto inicial")
+        listaElementos.addAll(desafio.puntosIntermedios.mapIndexed { index, punto ->
+            "Checkpoint ${index+1}"
+        }.toMutableList())
+        listaElementos.add("Punto final")
+        val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, listaElementos)
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        binding.puntoInicial.adapter = adapter
+        binding.puntoFinal.setSelection(0)
+        val adapter2 = ArrayAdapter(this, android.R.layout.simple_spinner_item, listaElementos)
+        adapter2.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        binding.puntoFinal.adapter = adapter2
+        binding.puntoFinal.setSelection(1)
     }
 
     private fun setupMap() {
         Configuration.getInstance().userAgentValue = BuildConfig.APPLICATION_ID
-        map = findViewById(R.id.map)
+        map = binding.map
         map.setMultiTouchControls(true)
         val mapController = map.controller
         mapController.setZoom(17.0)
         val startPoint = GeoPoint(0.0, 0.0)
-        mapController.setCenter(startPoint)
+        marcadorActual = Marker(map)
+        marcadorActual.position = startPoint
+        marcadorActual.icon = map.context.getDrawable(R.drawable.ic_location)
+        marcadorActual.title = "Posición actual"
+        map.overlays.add(marcadorActual)
     }
 
-    private fun getRoute(startPoint: GeoPoint, endPoint: GeoPoint) {
+    private fun getRoute(startPoint: GeoPoint, endPoint: GeoPoint, adjustZoom: Boolean, borrarRutaAnterior: Boolean) {
         val getRoute = retrofitUrls.getRoute(startPoint.longitude, startPoint.latitude, endPoint.longitude, endPoint.latitude)
 
         getRoute.enqueue(object :
@@ -90,7 +120,13 @@ class TrayectoDesafioActivity : AppCompatActivity(), LocationListener {
                         .getJSONArray("routes")
                         .getJSONObject(0)
                         .getString("geometry")
-                    drawRoute(encodedPolyline)
+
+                    val path: List<GeoPoint> = decodePolyline(encodedPolyline)
+                    drawRoute(path, borrarRutaAnterior)
+                    if(adjustZoom){
+                        adjustZoomToRoute(path)
+                        adjustCenter(path)
+                    }
                 } else {
                     println("Error en la respuesta: ${response.errorBody()}")
                 }
@@ -102,17 +138,62 @@ class TrayectoDesafioActivity : AppCompatActivity(), LocationListener {
         })
     }
 
-    private fun drawRoute(encoded: String) {
-        val path: List<GeoPoint> = decodePolyline(encoded)
+    private fun drawRoute(path: List<GeoPoint>, borrarRutaAnterior: Boolean) {
         map.controller.setCenter(path[0])
         runOnUiThread {
+            if (rutas!!.size > 0 != null && borrarRutaAnterior) {
+                for(ruta in rutas!!){
+                    map.overlayManager.remove(ruta)  // Eliminar la ruta anterior
+                }
+            }
             val polyline = Polyline()
             polyline.setPoints(path)
             polyline.color = Color.BLUE
             polyline.width = 10f
             map.overlays.add(polyline)
+            rutas!!.add(polyline)
             map.invalidate()
         }
+    }
+
+    private fun adjustZoomToRoute(path: List<GeoPoint>) {
+        if (path.isEmpty()) return
+
+        // Determinar los límites de latitud y longitud
+        val minLat = path.minOf { it.latitude }
+        val maxLat = path.maxOf { it.latitude }
+        val minLon = path.minOf { it.longitude }
+        val maxLon = path.maxOf { it.longitude }
+
+        // Añadir un margen a los límites
+        val margin = 0.1 // Margen en grados (~1km dependiendo de la ubicación)
+        val adjustedBoundingBox = org.osmdroid.util.BoundingBox(
+            maxLat + margin, // Añadir margen al norte
+            maxLon + margin, // Añadir margen al este
+            minLat - margin, // Añadir margen al sur
+            minLon - margin  // Añadir margen al oeste
+        )
+
+        // Ajustar el mapa para que enfoque la ruta
+        map.zoomToBoundingBox(adjustedBoundingBox, true)
+    }
+
+    private fun adjustCenter(path: List<GeoPoint>){
+        var totalLat = 0.0
+        var totalLon = 0.0
+        path.forEach {
+            totalLat += it.latitude
+            totalLon += it.longitude
+        }
+
+        val centerLat = totalLat / path.size
+        val centerLon = totalLon / path.size
+
+        // Crear un GeoPoint para el centro de la ruta
+        val routeCenter = GeoPoint(centerLat, centerLon)
+        map.controller.setCenter(routeCenter)
+        // Asegurarse de que el mapa se haya actualizado correctamente
+        map.invalidate()
     }
 
     private fun decodePolyline(encoded: String): List<GeoPoint> {
@@ -150,6 +231,98 @@ class TrayectoDesafioActivity : AppCompatActivity(), LocationListener {
             poly.add(point)
         }
         return poly
+    }
+    
+    private fun eventoRutaSpinners(){
+        binding.puntoInicial.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+               eventoInicial(position)
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>?) {
+                // Acción si no se selecciona nada
+                Toast.makeText(applicationContext, "No seleccionaste nada", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        binding.puntoFinal.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                eventoFinal(position)
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>?) {
+                // Acción si no se selecciona nada
+                Toast.makeText(applicationContext, "No seleccionaste nada", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private fun eventoInicial(position: Int){
+        var positionFinal = binding.puntoFinal.selectedItemPosition
+        if(positionFinal == position){
+            Toast.makeText(this@TrayectoDesafioActivity, "No se puede hacer una ruta con mismo origen y destino", Toast.LENGTH_LONG).show()
+            return
+        }
+        if(positionFinal-1 != position){
+            Toast.makeText(this@TrayectoDesafioActivity, "Realiza la ruta entre dos puntos seguidos", Toast.LENGTH_LONG).show()
+            return
+        }
+        var puntoOrigen: GeoPoint
+        if(position == 0){
+            puntoOrigen = GeoPoint(desafio.puntoInicial.latitud, desafio.puntoInicial.longitud)
+        }
+        else if (position == listaElementos.size - 1){
+            puntoOrigen  = GeoPoint(desafio.puntoFinal.latitud, desafio.puntoFinal.longitud)
+        }
+        else{
+            puntoOrigen  = GeoPoint(desafio.puntosIntermedios[position-1].latitud, desafio.puntosIntermedios[position-1].longitud)
+        }
+        var puntoDestino: GeoPoint
+
+        if(positionFinal == 0){
+            puntoDestino = GeoPoint(desafio.puntoInicial.latitud, desafio.puntoInicial.longitud)
+        }
+        else if (positionFinal == listaElementos.size - 1){
+            puntoDestino  = GeoPoint(desafio.puntoFinal.latitud, desafio.puntoFinal.longitud)
+        }
+        else{
+            puntoDestino  = GeoPoint(desafio.puntosIntermedios[positionFinal-1].latitud, desafio.puntosIntermedios[positionFinal-1].longitud)
+        }
+        getRoute(puntoOrigen, puntoDestino, true, true)
+    }
+
+    private fun eventoFinal(position: Int){
+        var positionInicial = binding.puntoInicial.selectedItemPosition
+        if(positionInicial == position){
+            Toast.makeText(this@TrayectoDesafioActivity, "No se puede hacer una ruta con mismo origen y destino", Toast.LENGTH_LONG).show()
+            return
+        }
+        if(positionInicial != position-1){
+            Toast.makeText(this@TrayectoDesafioActivity, "Realiza la ruta entre dos puntos seguidos", Toast.LENGTH_LONG).show()
+            return
+        }
+        var puntoDestino: GeoPoint
+        if(position == 0){
+            puntoDestino = GeoPoint(desafio.puntoInicial.latitud, desafio.puntoInicial.longitud)
+        }
+        else if (position == listaElementos.size - 1){
+            puntoDestino  = GeoPoint(desafio.puntoFinal.latitud, desafio.puntoFinal.longitud)
+        }
+        else{
+            puntoDestino  = GeoPoint(desafio.puntosIntermedios[position-1].latitud, desafio.puntosIntermedios[position-1].longitud)
+        }
+        var puntoOrigen: GeoPoint
+
+        if(positionInicial == 0){
+            puntoOrigen = GeoPoint(desafio.puntoInicial.latitud, desafio.puntoInicial.longitud)
+        }
+        else if (positionInicial == listaElementos.size - 1){
+            puntoOrigen  = GeoPoint(desafio.puntoFinal.latitud, desafio.puntoFinal.longitud)
+        }
+        else{
+            puntoOrigen  = GeoPoint(desafio.puntosIntermedios[positionInicial-1].latitud, desafio.puntosIntermedios[positionInicial-1].longitud)
+        }
+        getRoute(puntoOrigen, puntoDestino, true, true)
     }
 
     private fun setupLocationManager() {
@@ -189,29 +362,21 @@ class TrayectoDesafioActivity : AppCompatActivity(), LocationListener {
     }
 
     override fun onLocationChanged(location: Location) {
-        /*if (::map.isInitialized && map.handler != null && map.controller != null) {
-            val currentLocation = GeoPoint(location.latitude, location.longitude)
-            if (isFirstLocation) {
-                map.controller.setCenter(currentLocation)
-                isFirstLocation = false
-            }
-            // Crea un marcador solo si el mapa está listo
-            try {
-                val marker = Marker(map)
-                marker.position = currentLocation
-                marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
-                val icon: Drawable = ContextCompat.getDrawable(this, R.drawable.ic_location)!!
-                marker.icon = icon
-                map.overlays.clear()
-                map.overlays.add(marker)
-                map.invalidate()
-            } catch (e: Exception) {
-                e.printStackTrace()
-                println("Error al crear el marcador: ${e.message}")
-            }
-        } else {
-            println("El mapa no está listo aún")
-        }*/
+        setPoint(location.latitude, location.longitude)
+    }
+
+    private fun setPoint(latitud: Double, longitud: Double){
+        //Obtener el GeoPoint
+        val newPoint = GeoPoint(latitud, longitud)
+
+        //cambiar Ubicacion
+        marcadorActual.position = newPoint
+
+        //Mover el mapa
+        map.controller.animateTo(newPoint)
+
+        //Refrescar cambios en el mapa
+        map.invalidate()
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
