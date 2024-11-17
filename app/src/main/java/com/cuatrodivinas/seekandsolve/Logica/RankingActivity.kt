@@ -17,7 +17,11 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
+import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.PATH_IMAGENES
+import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.auth
+import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.storage
 import com.cuatrodivinas.seekandsolve.R
+import com.google.firebase.storage.StorageReference
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
@@ -26,10 +30,11 @@ import java.io.IOException
 import java.io.InputStream
 
 
-data class RankingItem(val username: String, val rewards: Int, val profileImageUrl: String)
+data class RankingItem(val username: String, val rewards: Int, val profileImageUrl: String, val uid: String)
 
 class RankingActivity : AppCompatActivity() {
     private lateinit var rankingItems: MutableList<RankingItem>
+    private lateinit var refImg: StorageReference
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,6 +50,9 @@ class RankingActivity : AppCompatActivity() {
         rankingItems = mutableListOf()
         for (i in 0 until usersArray!!.length()) {
             val user = usersArray.getJSONObject(i)
+            //obtener uid
+            //val uid = user.getString("uid")
+            val uid = "ejBDnjz1NKM8XcRBIWITcOUaNA"
             val username = user.getString("username")
             val recomepensas = if (user.has("recompensas")) {
                 user.getJSONArray("recompensas")
@@ -56,7 +64,7 @@ class RankingActivity : AppCompatActivity() {
             } else {
                 ""
             }
-            rankingItems.add(RankingItem(username, recomepensas.length(), foto))
+            rankingItems.add(RankingItem(username, recomepensas.length(), foto, uid))
         }
         agregarRankingItemsDeMundoExterno(rankingItems)
         val rankingList = findViewById<RecyclerView>(R.id.rankingList)
@@ -76,31 +84,12 @@ class RankingActivity : AppCompatActivity() {
                 val rewardsTextView: TextView = holder.itemView.findViewById(R.id.scoreTextView)
                 val verRecompensas: Button = holder.itemView.findViewById(R.id.btnRecompensas)
 
-                if (rankingItem.profileImageUrl.isNotEmpty()) {
-                    if (rankingItem.profileImageUrl.startsWith("/")) {
-                        // Cargar imagen desde el archivo
-                        val file = File(rankingItem.profileImageUrl)
-                        if (file.exists()) {
-                            Glide.with(profileImageView.context)
-                                .load(file)
-                                .circleCrop() // Hacer la imagen circular
-                                .into(profileImageView) // Establecer la imagen en el ImageView
-                        } else {
-                            // Caso: archivo no existe, cargar imagen por defecto
-                            profileImageView.imageTintList = ContextCompat.getColorStateList(profileImageView.context, R.color.primaryColor)
-                        }
-                    } else if (rankingItem.profileImageUrl.startsWith("http://") || rankingItem.profileImageUrl.startsWith("https://")) {
-                        // Cargar imagen desde una URL
-                        Glide.with(profileImageView.context)
-                            .load(rankingItem.profileImageUrl)
-                            .circleCrop() // Hacer la imagen circular
-                            .into(profileImageView) // Establecer la imagen en el ImageView
-                    } else {
-                        // Caso: cargar imagen por defecto si la fotoUrl no es válida
-                        profileImageView.imageTintList = ContextCompat.getColorStateList(profileImageView.context, R.color.primaryColor)
-                    }
-                } else {
-                    // Caso: fotoUrl está vacía, cargar imagen por defecto
+                refImg = storage.getReference(PATH_IMAGENES).child("${auth.currentUser!!.uid}.jpg")
+                refImg.downloadUrl.addOnSuccessListener { uri ->
+                    Glide.with(profileImageView.context)
+                        .load(uri) // Carga la imagen desde la URL
+                        .into(profileImageView)
+                }.addOnFailureListener { exception ->
                     profileImageView.imageTintList = ContextCompat.getColorStateList(profileImageView.context, R.color.primaryColor)
                 }
 
@@ -121,10 +110,10 @@ class RankingActivity : AppCompatActivity() {
 
     private fun agregarRankingItemsDeMundoExterno(rankingItems: MutableList<RankingItem>) {
         // Agregar rankingItems de un mundo externo
-        rankingItems.add(RankingItem("valeria-sol", 10, "https://avatars.githubusercontent.com/u/155045120?v=4"))
-        rankingItems.add(RankingItem("fernando-leon", 5, "https://avatars.githubusercontent.com/u/155045119?v=4"))
-        rankingItems.add(RankingItem("lucia-perla", 3, "https://avatars.githubusercontent.com/u/155045118?v=4"))
-        rankingItems.add(RankingItem("pedro-salinas", 1, "https://avatars.githubusercontent.com/u/155045117?v=4"))
+        rankingItems.add(RankingItem("valeria-sol", 10, "https://avatars.githubusercontent.com/u/155045120?v=4", "ejBDnjz1NKM8XcRBIWITcOUaNA"))
+        rankingItems.add(RankingItem("fernando-leon", 5, "https://avatars.githubusercontent.com/u/155045119?v=4", "ejBDnjz1NKM8XcRBIWITcOUaNA"))
+        rankingItems.add(RankingItem("lucia-perla", 3, "https://avatars.githubusercontent.com/u/155045118?v=4", "ejBDnjz1NKM8XcRBIWITcOUaNA"))
+        rankingItems.add(RankingItem("pedro-salinas", 1, "https://avatars.githubusercontent.com/u/155045117?v=4", "ejBDnjz1NKM8XcRBIWITcOUaNA"))
     }
 
     fun isBase64(string: String): Boolean {

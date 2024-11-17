@@ -47,17 +47,20 @@
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
+    <!-- RecyclerView con altura máxima -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rankingList"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         app:layout_constraintTop_toBottomOf="@id/header"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="150dp"
+        app:layout_constraintBottom_toTopOf="@id/medalImageView"
+        android:layout_marginTop="20dp"
         android:layout_marginHorizontal="10dp"/>
 
+    <!-- Imagen de medalla ajustada con constraints -->
     <ImageView
         android:id="@+id/medalImageView"
         android:layout_width="200dp"
@@ -66,8 +69,7 @@
         android:src="@drawable/baseline_workspace_premium_24"
         app:tint="@color/primaryColor"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/rankingList"
+        app:layout_constraintTop_toBottomOf="@id/rankingList"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
-
 </androidx.constraintlayout.widget.ConstraintLayout>
