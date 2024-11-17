@@ -16,9 +16,11 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.bumptech.glide.Glide
 import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.PATH_DESAFIOS
+import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.PATH_IMAGENES
 import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.PATH_USERS
 import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.auth
 import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.database
+import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.storage
 import com.cuatrodivinas.seekandsolve.Datos.Desafio
 import com.cuatrodivinas.seekandsolve.Datos.Punto
 import com.cuatrodivinas.seekandsolve.Datos.Usuario
@@ -36,6 +38,8 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
+import com.google.firebase.storage.FirebaseStorage
+import com.google.firebase.storage.StorageReference
 import org.osmdroid.api.IMapController
 import java.io.File
 import kotlin.math.atan2
@@ -55,6 +59,7 @@ class MainActivity : AppCompatActivity(), LocationListener {
     private lateinit var marcadores: MutableList<Marker>
     private lateinit var username: String
     private lateinit var fotoUrl: String
+    private lateinit var refImg: StorageReference
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -235,20 +240,14 @@ class MainActivity : AppCompatActivity(), LocationListener {
         val profileImage: ImageView = binding.profileImage
         usernameText.text = username
 
-        if (fotoUrl.isNotEmpty() && fotoUrl.startsWith("/")) {
-            // Cargar imagen desde el archivo
-            val file = File(fotoUrl)
-            if (file.exists()) {
-                Glide.with(this)
-                    .load(file)
-                    .circleCrop() // Hacer la imagen circular
-                    .into(profileImage) // Establecer la imagen en el ImageView
-                return
-            }
+        refImg = storage.getReference(PATH_IMAGENES).child("${auth.currentUser!!.uid}.jpg")
+        refImg.downloadUrl.addOnSuccessListener { uri ->
+            Glide.with(this)
+                .load(uri) // Carga la imagen desde la URL
+                .into(profileImage)
+        }.addOnFailureListener { exception ->
+            profileImage.imageTintList = ContextCompat.getColorStateList(this, R.color.primaryColor)
         }
-        // Si fotoUrl está vacío, el archivo no existe o no es válido
-        // Cargar imagen por defecto
-        profileImage.imageTintList = ContextCompat.getColorStateList(this, R.color.primaryColor)
     }
 
     // Se ejecuta cuando la ubicación del usuario cambia

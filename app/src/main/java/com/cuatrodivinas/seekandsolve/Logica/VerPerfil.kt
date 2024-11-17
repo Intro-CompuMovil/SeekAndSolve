@@ -2,6 +2,8 @@ package com.cuatrodivinas.seekandsolve.Logica
 
 import android.content.Intent
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import com.cuatrodivinas.seekandsolve.R
@@ -9,18 +11,22 @@ import com.cuatrodivinas.seekandsolve.databinding.ActivityVerPerfilBinding
 import android.widget.Toast
 import androidx.core.content.ContextCompat
 import com.bumptech.glide.Glide
+import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.PATH_IMAGENES
 import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.PATH_USERS
 import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.auth
 import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.database
+import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.storage
 import com.cuatrodivinas.seekandsolve.Datos.Usuario
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.ValueEventListener
+import com.google.firebase.storage.StorageReference
 import java.io.File
 
 class VerPerfil : AppCompatActivity() {
     private lateinit var binding: ActivityVerPerfilBinding
+    private lateinit var refImg: StorageReference
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -74,21 +80,17 @@ class VerPerfil : AppCompatActivity() {
         binding.nombreETxt.setText(nombre)
         binding.corrreoETxt.setText(correo)
         binding.FechaETxt.setText(fechaNacimiento)
-
         // Manejar la foto de perfil
-        if (fotoUrl.isNotEmpty() && fotoUrl.startsWith("/")) {
-            val file = File(fotoUrl)
-            if (file.exists()) {
+        Handler(Looper.getMainLooper()).postDelayed({
+            refImg = storage.getReference(PATH_IMAGENES).child("${auth.currentUser!!.uid}.jpg")
+            refImg.downloadUrl.addOnSuccessListener { uri ->
                 Glide.with(this)
-                    .load(file)
-                    .circleCrop()
+                    .load(uri) // Carga la imagen desde la URL
                     .into(binding.imagenPerfil)
-                return
+            }.addOnFailureListener { exception ->
+                binding.imagenPerfil.imageTintList = ContextCompat.getColorStateList(this, R.color.primaryColor)
             }
-        }
-        // Si fotoUrl está vacío, el archivo no existe o no es válido
-        // Cargar imagen por defecto
-        binding.imagenPerfil.imageTintList = ContextCompat.getColorStateList(this, R.color.primaryColor)
+        }, 1500)
     }
 
     private fun configurarEventos() {
@@ -110,7 +112,12 @@ class VerPerfil : AppCompatActivity() {
         }
 
         binding.editarPerfilBtn.setOnClickListener {
-            startActivity(Intent(this, EditarPerfil::class.java))
+            val intent = Intent(this, EditarPerfil::class.java)
+            intent.putExtra("nombre", binding.nombreETxt.text.toString())
+            intent.putExtra("username", binding.nombreUsuarioTxt.text.toString())
+            intent.putExtra("correo", binding.corrreoETxt.text.toString())
+            intent.putExtra("fechaNacimiento", binding.FechaETxt.text.toString())
+            startActivity(intent)
         }
     }
 

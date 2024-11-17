@@ -35,12 +35,16 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
+import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.PATH_IMAGENES
 import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.PERMISO_CAMARA
 import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.PERMISO_GALERIA
+import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.auth
+import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.storage
 //import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.SELECCIONAR_IMAGEN
 import com.cuatrodivinas.seekandsolve.R
 import com.cuatrodivinas.seekandsolve.databinding.ActivityEditarPerfilBinding
 import com.google.firebase.crashlytics.buildtools.reloc.org.apache.commons.io.output.ByteArrayOutputStream
+import com.google.firebase.storage.StorageReference
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
@@ -71,8 +75,8 @@ class EditarPerfil : AppCompatActivity() {
     private lateinit var contrasena: String
     private lateinit var fotoUrl: String
     private lateinit var fechaNacimiento: String
-
     private lateinit var localizacionFoto : File
+    private lateinit var refImg: StorageReference
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -96,32 +100,19 @@ class EditarPerfil : AppCompatActivity() {
 
     private fun quemarDatos() {
         binding.nombreETxt.setText(nombre)
-        if (fotoUrl.isNotEmpty()) {
-            if (fotoUrl.startsWith("/")) {
-                // Cargar imagen desde el archivo
-                val file = File(fotoUrl)
-                if (file.exists()) {
-                    Glide.with(this)
-                        .load(file)
-                        .circleCrop() // Hacer la imagen circular
-                        .into(binding.imagenPerfil) // Establecer la imagen en el ImageView
-                } else {
-                    // Caso: archivo no existe, cargar imagen por defecto
-                    binding.imagenPerfil.imageTintList = ContextCompat.getColorStateList(this, R.color.primaryColor)
-                }
-            } else {
-                // Caso: cargar imagen por defecto si la fotoUrl no es un archivo válido
-                binding.imagenPerfil.imageTintList = ContextCompat.getColorStateList(this, R.color.primaryColor)
-            }
-        } else {
-            // Caso: fotoUrl está vacía, cargar imagen por defecto
+        refImg = storage.getReference(PATH_IMAGENES).child("${auth.currentUser!!.uid}.jpg")
+        refImg.downloadUrl.addOnSuccessListener { uri ->
+            Glide.with(this)
+                .load(uri) // Carga la imagen desde la URL
+                .into(binding.imagenPerfil)
+        }.addOnFailureListener { exception ->
             binding.imagenPerfil.imageTintList = ContextCompat.getColorStateList(this, R.color.primaryColor)
         }
         binding.nombreETxt.setText(nombre)
         binding.corrreoETxt.setText(correo)
         binding.FechaETxt.setText(fechaNacimiento)
         binding.nombreUsuarioETxt.setText(username)
-        binding.contraETxt.setText(descifrarPassword(contrasena))
+        binding.contraETxt.setText(contrasena)
         /*if (sessionType == "Google") {
             binding.nombreUsuarioETxtLayout.visibility = View.GONE
             binding.contraETxtLayout.visibility = View.GONE
@@ -312,8 +303,6 @@ class EditarPerfil : AppCompatActivity() {
                 if (resultCode == RESULT_OK) {
                     binding.imagenPerfil.setImageURI(photoUri)
                     binding.imagenPerfil.imageTintList = null
-                    // Guardar la ruta de la imagen en la variable
-                    localizacionFoto = saveImageToFile(photoUri)
                 }
             }
             PERMISO_GALERIA -> {
@@ -321,27 +310,16 @@ class EditarPerfil : AppCompatActivity() {
                     data?.data?.let { imageUri ->
                         binding.imagenPerfil.setImageURI(imageUri)
                         binding.imagenPerfil.imageTintList = null
-                        // Guardar la ruta de la imagen seleccionada
-                        localizacionFoto = saveImageToFile(imageUri)
+                        photoUri = imageUri
                     }
                 }
             }
         }
     }
 
-    private fun saveImageToFile(imageUri: Uri): File {
-        // Crear un archivo temporal para almacenar la imagen
-        val timestamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
-        val storageDir: File = getExternalFilesDir(Environment.DIRECTORY_PICTURES)!!
-        val tempFile = File.createTempFile("IMG_${timestamp}_", ".jpg", storageDir)
-
-        // Copiar los datos de la imagen desde el InputStream hacia el archivo
-        val inputStream: InputStream? = contentResolver.openInputStream(imageUri)
-        val outputStream = FileOutputStream(tempFile)
-        inputStream?.copyTo(outputStream)
-        outputStream.close()
-        inputStream?.close()
-        return tempFile // Devolver el archivo
+    private fun subirImagen() {
+        refImg = storage.getReference("$PATH_IMAGENES/${auth.currentUser!!.uid}.jpg")
+        refImg.putFile(photoUri)
     }
 
     private fun eventoVolver() {
@@ -430,6 +408,10 @@ class EditarPerfil : AppCompatActivity() {
     }
 
     private fun actualizarInfo(id: Int, nombre: String, username: String, correo: String, contrasena: String, imagenPerfil: String) {
+
+        //Guardar imagen en storage
+        subirImagen()
+
         val userData = JSONObject()
         userData.put("id", id)
         userData.put("name", nombre)
@@ -437,7 +419,7 @@ class EditarPerfil : AppCompatActivity() {
         userData.put("email", correo)
         val hashPassword = hashPassword(contrasena)
         userData.put("password", hashPassword)
-        userData.put("photoUrl", imagenPerfil)
+        //userData.put("photoUrl", imagenPerfil)
         userData.put("fechaNacimiento", fechaNacimiento)
         userData.put("signInType", "Normal")
 
@@ -467,7 +449,7 @@ class EditarPerfil : AppCompatActivity() {
         bundle.putString("username", username)
         bundle.putString("correo", correo)
         bundle.putString("contrasena", hashPassword)
-        bundle.putString("fotoUrl", imagenPerfil)
+        //bundle.putString("fotoUrl", imagenPerfil)
         bundle.putString("fechaNacimiento", fechaNacimiento)
         intent.putExtras(bundle)
         startActivity(intent)
