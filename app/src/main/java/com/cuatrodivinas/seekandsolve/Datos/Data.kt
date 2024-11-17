@@ -15,12 +15,12 @@ class Data {
         const val PATH_USERS = "usuarios"
         const val PATH_DESAFIOS = "desafios"
         const val PATH_CARRERAS = "carreras"
-        const val PATH_RECOMPENSAS = "recompensas"
         const val PATH_PREGUNTAS = "preguntas"
+        const val PATH_IMAGENES = "profileImg"
+        const val PATH_RECOMPENSAS = "recompensas"
         var auth: FirebaseAuth
         var database: FirebaseDatabase
         var storage: FirebaseStorage
-        const val PATH_IMAGENES = "profileImg"
 
         init {
             auth = Firebase.auth
