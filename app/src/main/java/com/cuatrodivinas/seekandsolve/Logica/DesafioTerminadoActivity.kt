@@ -6,10 +6,13 @@ import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import com.cuatrodivinas.seekandsolve.Datos.Carrera
 import com.cuatrodivinas.seekandsolve.Datos.Desafio
 import com.cuatrodivinas.seekandsolve.Datos.Recompensa
 import com.cuatrodivinas.seekandsolve.R
 import com.squareup.picasso.Picasso
+import java.time.LocalDateTime
+import java.time.temporal.ChronoUnit
 
 class DesafioTerminadoActivity : AppCompatActivity() {
     private lateinit var tituloDesafio: TextView
@@ -19,8 +22,10 @@ class DesafioTerminadoActivity : AppCompatActivity() {
     private lateinit var descripcionRecompensa: TextView
 
     private lateinit var botonEstadisticas: Button
-    private lateinit var intent: Intent
+    private lateinit var intentEstadisticas: Intent
     lateinit var desafio: Desafio
+    private lateinit var carrera: Carrera
+    private lateinit var fechaInicio: LocalDateTime
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,7 +39,12 @@ class DesafioTerminadoActivity : AppCompatActivity() {
 
         botonEstadisticas = findViewById(R.id.estadisticas)
         desafio = intent.getSerializableExtra("desafio") as Desafio
-        intent = Intent(this, EstadisticasCarreraActivity::class.java)
+        carrera = intent.getSerializableExtra("carrera") as Carrera
+        if(carrera.tiempoTotal == 0){
+            fechaInicio = intent.getSerializableExtra("fechaInicio") as LocalDateTime
+            intentEstadisticas = Intent(this, EstadisticasCarreraActivity::class.java)
+            carrera.tiempoTotal = ChronoUnit.MINUTES.between(fechaInicio, LocalDateTime.now()).toInt()
+        }
         inicializarElementos()
     }
 
@@ -43,17 +53,28 @@ class DesafioTerminadoActivity : AppCompatActivity() {
         val recompensa: Recompensa = Recompensa("","Capitan Cuac Cuac")
         tituloDesafio.text = "Completaste ${desafio.nombre}"
         descripcionRecompensa.text = recompensa.nombre
-        Picasso.get()
-            .load(recompensa.imagenUrl) // URL de la imagen
-            .placeholder(R.drawable.cargando) // Imagen de marcador de posición mientras se carga
-            .error(R.drawable.error) // Imagen en caso de error
-            .into(imagenRecompensa)
+        if(recompensa.imagenUrl.isNotEmpty()){
+            Picasso.get()
+                .load(recompensa.imagenUrl) // URL de la imagen
+                .placeholder(R.drawable.cargando) // Imagen de marcador de posición mientras se carga
+                .error(R.drawable.error) // Imagen en caso de error
+                .into(imagenRecompensa)
+        }
+
+        if(desafio.imagenUrl.isNotEmpty()){
+            Picasso.get()
+                .load(desafio.imagenUrl) // URL de la imagen
+                .placeholder(R.drawable.cargando) // Imagen de marcador de posición mientras se carga
+                .error(R.drawable.error) // Imagen en caso de error
+                .into(imagenDesafio)
+        }
     }
 
     override fun onResume() {
         super.onResume()
         botonEstadisticas.setOnClickListener {
-            startActivity(intent)
+            intentEstadisticas.putExtra("carrera", carrera)
+            startActivity(intentEstadisticas)
         }
     }
 }

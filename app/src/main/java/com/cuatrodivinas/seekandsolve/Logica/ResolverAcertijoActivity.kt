@@ -18,6 +18,7 @@ import com.cuatrodivinas.seekandsolve.Datos.Pregunta
 import com.cuatrodivinas.seekandsolve.Datos.Punto
 import com.cuatrodivinas.seekandsolve.R
 import com.squareup.picasso.Picasso
+import java.time.LocalDateTime
 
 class ResolverAcertijoActivity : AppCompatActivity() {
     lateinit var acertijo: TextView
@@ -32,6 +33,7 @@ class ResolverAcertijoActivity : AppCompatActivity() {
     lateinit var pregunta: Pregunta
     lateinit var preguntaSeleccionada: String
     lateinit var punto: Punto
+    lateinit var fechaInicio: LocalDateTime
     var intentos: Int = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -47,6 +49,7 @@ class ResolverAcertijoActivity : AppCompatActivity() {
         desafio = intent.getSerializableExtra("desafio") as Desafio
         punto = intent.getSerializableExtra("punto") as Punto
         carrera = intent.getSerializableExtra("carrera") as Carrera
+        fechaInicio = intent.getSerializableExtra("fechaInicio") as LocalDateTime
         inicializarElementos()
     }
 
@@ -95,9 +98,13 @@ class ResolverAcertijoActivity : AppCompatActivity() {
                 val intentDesafio = Intent(this@ResolverAcertijoActivity, DesafioTerminadoActivity::class.java)
                 intentDesafio.putExtra("desafio", desafio)
                 intentDesafio.putExtra("carrera", carrera)
+                intentDesafio.putExtra("fechaInicio", fechaInicio)
                 startActivity(intentDesafio)
                 return@setOnClickListener
             }
+            intentMarcarCheckpoint.putExtra("desafio", desafio)
+            intentMarcarCheckpoint.putExtra("carrera", carrera)
+            intentMarcarCheckpoint.putExtra("fechaInicio", fechaInicio)
             startActivity(intentMarcarCheckpoint)
         }
 

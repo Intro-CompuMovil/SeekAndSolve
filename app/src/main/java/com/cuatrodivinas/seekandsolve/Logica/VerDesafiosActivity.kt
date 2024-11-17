@@ -1,6 +1,7 @@
 package com.cuatrodivinas.seekandsolve.Logica
 
 import android.Manifest
+import android.app.UiModeManager
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -25,6 +26,7 @@ import org.osmdroid.library.BuildConfig
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.Marker
+import org.osmdroid.views.overlay.TilesOverlay
 import java.io.IOException
 import java.io.InputStream
 import kotlin.math.atan2
@@ -143,6 +145,10 @@ class VerDesafiosActivity : AppCompatActivity(), LocationListener {
         marcador.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
         marcador.title = "Posición actual"
         marcadores.add(marcador)
+        val uiManager = getSystemService(Context.UI_MODE_SERVICE) as UiModeManager
+        if(uiManager.nightMode == UiModeManager.MODE_NIGHT_YES){
+            map.overlayManager.tilesOverlay.setColorFilter(TilesOverlay.INVERT_COLORS)
+        }
     }
 
     private fun setPoint(lalitud: Double, longitud: Double){

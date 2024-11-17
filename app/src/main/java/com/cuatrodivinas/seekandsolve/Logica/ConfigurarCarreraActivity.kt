@@ -70,9 +70,10 @@ class ConfigurarCarreraActivity : AppCompatActivity() {
             var intentJugar = Intent(this, IniciarRutaActivity::class.java).putExtra("desafio", desafio)
             val fechaHoy = LocalDate.now()  // Obtiene la fecha actual
             val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
-            var carrera = Carrera("", mutableMapOf(), LocalDateTime.now(), 0, 0, 0, fechaHoy.format(formatter), mutableListOf())
+            var carrera = Carrera("", mutableMapOf(), 0, 0, 0, 0, fechaHoy.format(formatter), mutableListOf())
             intentJugar.putExtra("desafio", desafio)
             intentJugar.putExtra("carrera", carrera)
+            intentJugar.putExtra("fechaInicio",LocalDateTime.now())
             startActivity(intentJugar)
         }
 

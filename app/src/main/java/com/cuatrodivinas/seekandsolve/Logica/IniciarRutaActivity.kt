@@ -1,6 +1,7 @@
 package com.cuatrodivinas.seekandsolve.Logica
 
 import android.Manifest
+import android.app.UiModeManager
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
@@ -39,17 +40,20 @@ import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.Marker
 import org.osmdroid.views.overlay.Polyline
+import org.osmdroid.views.overlay.TilesOverlay
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import java.io.File
 import java.text.SimpleDateFormat
+import java.time.LocalDateTime
 import java.util.Date
 import java.util.Locale
 import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.sqrt
+import kotlin.properties.Delegates
 
 class IniciarRutaActivity : AppCompatActivity(), LocationListener {
     private lateinit var binding: ActivityIniciarRutaBinding
@@ -64,6 +68,9 @@ class IniciarRutaActivity : AppCompatActivity(), LocationListener {
     private lateinit var marcadorActual: Marker
     private var rutas: MutableList<Polyline>? = null
     private lateinit var lastKnownLocation: Location
+    private var puntoFinal = false
+    private lateinit var punto: Punto
+    private lateinit var fechaInicio: LocalDateTime
 
     init{
         val retrofit = RetrofitOsmClient.urlRuta()
@@ -80,9 +87,16 @@ class IniciarRutaActivity : AppCompatActivity(), LocationListener {
         // Obtener el desafío y la carrera de la actividad anterior
         desafio = intent.getSerializableExtra("desafio") as Desafio
         carrera = intent.getSerializableExtra("carrera") as Carrera
+        fechaInicio = intent.getSerializableExtra("fechaInicio") as LocalDateTime
         rutas = mutableListOf()
+        inicializarTextos()
         setupMap()
         setupLocationManager()
+    }
+
+    private fun inicializarTextos(){
+        binding.tituloRuta.text = "Estas jugando " + desafio.nombre + "!"
+        binding.destinoActual.text = "Dirigete al punto inicial"
     }
 
     private fun setupMap() {
@@ -97,6 +111,10 @@ class IniciarRutaActivity : AppCompatActivity(), LocationListener {
         marcadorActual.icon = map.context.getDrawable(R.drawable.ic_location)
         marcadorActual.title = "Posición actual"
         map.overlays.add(marcadorActual)
+        val uiManager = getSystemService(Context.UI_MODE_SERVICE) as UiModeManager
+        if(uiManager.nightMode == UiModeManager.MODE_NIGHT_YES){
+            map.overlayManager.tilesOverlay.setColorFilter(TilesOverlay.INVERT_COLORS)
+        }
     }
 
     private fun setPoint(lalitud: Double, longitud: Double){
@@ -104,7 +122,6 @@ class IniciarRutaActivity : AppCompatActivity(), LocationListener {
         val newPoint = GeoPoint(lalitud, longitud)
 
         //Crear los marcadores
-        map.overlays.clear()
         marcadorActual.position = newPoint
 
         //Mover el mapa
@@ -175,7 +192,7 @@ class IniciarRutaActivity : AppCompatActivity(), LocationListener {
         val maxLon = path.maxOf { it.longitude }
 
         // Añadir un margen a los límites
-        val margin = 0.1 // Margen en grados (~1km dependiendo de la ubicación)
+        val margin = 0.006 // Margen en grados (~1km dependiendo de la ubicación)
         val adjustedBoundingBox = org.osmdroid.util.BoundingBox(
             maxLat + margin, // Añadir margen al norte
             maxLon + margin, // Añadir margen al este
@@ -290,9 +307,9 @@ class IniciarRutaActivity : AppCompatActivity(), LocationListener {
         }
         else{
             for(checkpoint in desafio.puntosIntermedios){
-                if(!carrera.puntosCompletados.contains(checkpoint)){
+                if(!containsLatitudLongitud(carrera.puntosCompletados, checkpoint)){
                     puntoDestino = GeoPoint(checkpoint.latitud, checkpoint.longitud)
-                    break;
+                    break
                 }
             }
             if(puntoDestino == null){
@@ -327,20 +344,40 @@ class IniciarRutaActivity : AppCompatActivity(), LocationListener {
         }
     }
 
+    private fun containsLatitudLongitud(puntos: List<Punto>, punto: Punto): Boolean{
+        for(point in puntos){
+            if(point.latitud == punto.latitud && point.longitud == punto.longitud){
+                return true
+            }
+        }
+        return false
+    }
+
     override fun onResume() {
         super.onResume()
         if (::map.isInitialized) {
             map.onResume()
         }
-
+        var checkpointEncontrado = false
+        if(!carrera.puntosCompletados.isEmpty()){
+            var numero = 1
+            for(checkpoint in desafio.puntosIntermedios){
+                if(!containsLatitudLongitud(carrera.puntosCompletados,checkpoint)){
+                    binding.destinoActual.text = "Dirigete al checkpoint $numero!"
+                    checkpointEncontrado = true
+                    break
+                }
+                numero++
+            }
+        }
+        if(!checkpointEncontrado){
+            binding.destinoActual.text = "Dirigete al punto final!!!"
+        }
         binding.abandonar.setOnClickListener {
             startActivity(Intent(this, VerDesafiosActivity::class.java))
             finish()
         }
-        var puntoFinal = false
         binding.resolverAcertijo.setOnClickListener {
-
-            val intent = Intent(this, ResolverAcertijoActivity::class.java)
             if (ActivityCompat.checkSelfPermission(
                     this,
                     Manifest.permission.ACCESS_FINE_LOCATION
@@ -350,47 +387,64 @@ class IniciarRutaActivity : AppCompatActivity(), LocationListener {
                 ) == PackageManager.PERMISSION_GRANTED
             ) {
                 val distanciaInicio = calcularDistancia(desafio.puntoInicial.latitud, desafio.puntoInicial.longitud, lastKnownLocation.latitude, lastKnownLocation.longitude)
-                if(distanciaInicio <= 100){
-                    intent.putExtra("punto", desafio.puntoInicial)
+                if(distanciaInicio <= 100 && !containsLatitudLongitud(carrera.puntosCompletados,desafio.puntoInicial)){
+                    carrera.puntosCompletados.add(desafio.puntoInicial)
+                    Toast.makeText(this, "Comienza tu aventura en el desafio ${desafio.nombre}!", Toast.LENGTH_LONG).show()
+                    val puntoInicial = GeoPoint(desafio.puntoInicial.latitud, desafio.puntoInicial.longitud)
+                    val puntoDestino = GeoPoint(desafio.puntosIntermedios[0].latitud, desafio.puntosIntermedios[0].longitud)
+                    getRoute(puntoInicial, puntoDestino, true, true)
+                    var destino = "Dirigete al"
+                    if(!desafio.puntosIntermedios.isEmpty()){
+                        destino += " Checkpoint 1!"
+                    }
+                    else{
+                        destino += " punto final!"
+                    }
+                    binding.destinoActual.text = destino
+                    return@setOnClickListener
                 }
                 var checkpointAnterior: Punto? = null
-                if(intent.extras == null){
-                    for(checkpoint in desafio.puntosIntermedios){
-                        if(carrera.puntosCompletados.contains(checkpoint)){
-                            Toast.makeText(this, "Este checkpoint ya ha sido completado!", Toast.LENGTH_LONG).show()
-                            return@setOnClickListener
-                        }
-                        if(checkpointAnterior != null && !carrera.puntosCompletados.contains(checkpointAnterior) && calcularDistancia(checkpoint.latitud, checkpoint.longitud, lastKnownLocation.latitude, lastKnownLocation.longitude) <= 100.0){
-                            Toast.makeText(this, "Completa el checkpoint anterior antes de jugar este!", Toast.LENGTH_LONG).show()
-                            return@setOnClickListener
-                        }
-                        if(calcularDistancia(checkpoint.latitud, checkpoint.longitud, lastKnownLocation.latitude, lastKnownLocation.longitude) <= 100.0){
-                            intent.putExtra("punto", checkpoint)
-                            break
-                        }
-                        checkpointAnterior = checkpoint
+                var puntoActual = Punto(lastKnownLocation.latitude, lastKnownLocation.longitude)
+                for(checkpoint in desafio.puntosIntermedios){
+
+                    if(containsLatitudLongitud(carrera.puntosCompletados,puntoActual)){
+                        Toast.makeText(this, "Este checkpoint ya ha sido completado!", Toast.LENGTH_LONG).show()
+                        return@setOnClickListener
                     }
+                    if(!containsLatitudLongitud(carrera.puntosCompletados,desafio.puntoInicial) && calcularDistancia(checkpoint.latitud, checkpoint.longitud, lastKnownLocation.latitude, lastKnownLocation.longitude) <= 100.0){
+                        Toast.makeText(this, "Llega al punto inicial antes de completar este checkpoint!", Toast.LENGTH_LONG).show()
+                        return@setOnClickListener
+                    }
+                    if(!containsLatitudLongitud(carrera.puntosCompletados,checkpoint) && calcularDistancia(desafio.puntoFinal.latitud, desafio.puntoFinal.longitud, lastKnownLocation.latitude, lastKnownLocation.longitude) <= 100.0){
+                        Toast.makeText(this, "Completa todos los checkpoints antes de finalizar el juego!", Toast.LENGTH_LONG).show()
+                        return@setOnClickListener
+                    }
+                    if(checkpointAnterior != null && !containsLatitudLongitud(carrera.puntosCompletados,checkpointAnterior)  && calcularDistancia(checkpoint.latitud, checkpoint.longitud, lastKnownLocation.latitude, lastKnownLocation.longitude) <= 100.0){
+                        Toast.makeText(this, "Completa el checkpoint anterior antes de jugar este!", Toast.LENGTH_LONG).show()
+                        return@setOnClickListener
+                    }
+                    if(calcularDistancia(checkpoint.latitud, checkpoint.longitud, lastKnownLocation.latitude, lastKnownLocation.longitude) <= 100.0){
+                        punto = checkpoint
+                        break
+                    }
+                    checkpointAnterior = checkpoint
                 }
-                if(intent.extras == null && calcularDistancia(desafio.puntoFinal.latitud, desafio.puntoFinal.longitud, lastKnownLocation.latitude, lastKnownLocation.longitude) <= 100.0){
+                if(!::punto.isInitialized && calcularDistancia(desafio.puntoFinal.latitud, desafio.puntoFinal.longitud, lastKnownLocation.latitude, lastKnownLocation.longitude) <= 100.0){
                     puntoFinal = true
-                    intent.putExtra("punto", desafio.puntoFinal)
+                    punto = desafio.puntoFinal
                 }
-                if(puntoFinal && !carrera.puntosCompletados.contains(desafio.puntosIntermedios.last())){
+                if(puntoFinal && !containsLatitudLongitud(carrera.puntosCompletados,desafio.puntosIntermedios.last())){
                     Toast.makeText(this, "Completa el checkpoint anterior antes de jugar el final!", Toast.LENGTH_LONG).show()
                     return@setOnClickListener
                 }
             }
-            if(intent.extras == null){
+            if(!::punto.isInitialized){
                 Toast.makeText(this, "No te encuentras en un checkpoint", Toast.LENGTH_LONG).show()
                 return@setOnClickListener
             }
             pedirPermiso(this, android.Manifest.permission.CAMERA,
                 "Necesitamos acceder a la cámara para tomar la foto y continuar con la experiencia", MY_PERMISSION_REQUEST_CAMERA
             )
-            intent.putExtra("desafio", desafio)
-            intent.putExtra("puntoFinal", puntoFinal)
-            intent.putExtra("carrera", carrera)
-            startActivity(intent)
         }
     }
 
@@ -438,6 +492,21 @@ class IniciarRutaActivity : AppCompatActivity(), LocationListener {
         } catch (e: ActivityNotFoundException) {
             e.message?. let{ Log.e("PERMISSION_APP",it) }
             Toast.makeText(this, "No es posible abrir la cámara", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (resultCode == RESULT_OK) {
+            val intent = Intent(this, ResolverAcertijoActivity::class.java)
+            intent.putExtra("desafio", desafio)
+            intent.putExtra("puntoFinal", puntoFinal)
+            intent.putExtra("punto", punto)
+            intent.putExtra("carrera", carrera)
+            intent.putExtra("fechaInicio", fechaInicio)
+            startActivity(intent)
+        } else {
+            Toast.makeText(this, "No se pudo tomar la foto", Toast.LENGTH_SHORT).show()
         }
     }
 
