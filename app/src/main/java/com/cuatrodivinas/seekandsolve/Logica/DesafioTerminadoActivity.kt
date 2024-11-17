@@ -40,9 +40,11 @@ class DesafioTerminadoActivity : AppCompatActivity() {
         botonEstadisticas = findViewById(R.id.estadisticas)
         desafio = intent.getSerializableExtra("desafio") as Desafio
         carrera = intent.getSerializableExtra("carrera") as Carrera
-        fechaInicio = intent.getSerializableExtra("fechaInicio") as LocalDateTime
-        intentEstadisticas = Intent(this, EstadisticasCarreraActivity::class.java)
-        carrera.tiempoTotal = ChronoUnit.MINUTES.between(fechaInicio, LocalDateTime.now()).toInt()
+        if(carrera.tiempoTotal == 0){
+            fechaInicio = intent.getSerializableExtra("fechaInicio") as LocalDateTime
+            intentEstadisticas = Intent(this, EstadisticasCarreraActivity::class.java)
+            carrera.tiempoTotal = ChronoUnit.MINUTES.between(fechaInicio, LocalDateTime.now()).toInt()
+        }
         inicializarElementos()
     }
 
@@ -51,16 +53,27 @@ class DesafioTerminadoActivity : AppCompatActivity() {
         val recompensa: Recompensa = Recompensa("","Capitan Cuac Cuac")
         tituloDesafio.text = "Completaste ${desafio.nombre}"
         descripcionRecompensa.text = recompensa.nombre
-        Picasso.get()
-            .load(recompensa.imagenUrl) // URL de la imagen
-            .placeholder(R.drawable.cargando) // Imagen de marcador de posición mientras se carga
-            .error(R.drawable.error) // Imagen en caso de error
-            .into(imagenRecompensa)
+        if(recompensa.imagenUrl.isNotEmpty()){
+            Picasso.get()
+                .load(recompensa.imagenUrl) // URL de la imagen
+                .placeholder(R.drawable.cargando) // Imagen de marcador de posición mientras se carga
+                .error(R.drawable.error) // Imagen en caso de error
+                .into(imagenRecompensa)
+        }
+
+        if(desafio.imagenUrl.isNotEmpty()){
+            Picasso.get()
+                .load(desafio.imagenUrl) // URL de la imagen
+                .placeholder(R.drawable.cargando) // Imagen de marcador de posición mientras se carga
+                .error(R.drawable.error) // Imagen en caso de error
+                .into(imagenDesafio)
+        }
     }
 
     override fun onResume() {
         super.onResume()
         botonEstadisticas.setOnClickListener {
+            intentEstadisticas.putExtra("carrera", carrera)
             startActivity(intentEstadisticas)
         }
     }
