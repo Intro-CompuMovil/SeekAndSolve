@@ -1,6 +1,7 @@
 package com.cuatrodivinas.seekandsolve.Logica
 
 import android.Manifest
+import android.app.UiModeManager
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
@@ -39,6 +40,7 @@ import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.Marker
 import org.osmdroid.views.overlay.Polyline
+import org.osmdroid.views.overlay.TilesOverlay
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -109,6 +111,10 @@ class IniciarRutaActivity : AppCompatActivity(), LocationListener {
         marcadorActual.icon = map.context.getDrawable(R.drawable.ic_location)
         marcadorActual.title = "Posición actual"
         map.overlays.add(marcadorActual)
+        val uiManager = getSystemService(Context.UI_MODE_SERVICE) as UiModeManager
+        if(uiManager.nightMode == UiModeManager.MODE_NIGHT_YES){
+            map.overlayManager.tilesOverlay.setColorFilter(TilesOverlay.INVERT_COLORS)
+        }
     }
 
     private fun setPoint(lalitud: Double, longitud: Double){

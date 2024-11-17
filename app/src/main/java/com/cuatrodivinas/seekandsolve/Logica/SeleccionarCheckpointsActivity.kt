@@ -1,6 +1,8 @@
 package com.cuatrodivinas.seekandsolve.Logica
 
 import android.Manifest
+import android.app.UiModeManager
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
@@ -28,6 +30,7 @@ import retrofit2.Callback
 import retrofit2.Response
 import okhttp3.ResponseBody
 import org.json.JSONObject
+import org.osmdroid.views.overlay.TilesOverlay
 
 
 class SeleccionarCheckpointsActivity : AppCompatActivity() {
@@ -207,6 +210,10 @@ class SeleccionarCheckpointsActivity : AppCompatActivity() {
         // Create a MapEventsOverlay using the receiver and add it to the overlays
         val eventsOverlay = org.osmdroid.views.overlay.MapEventsOverlay(mapEventsReceiver)
         map.overlays.add(eventsOverlay)
+        val uiManager = getSystemService(Context.UI_MODE_SERVICE) as UiModeManager
+        if(uiManager.nightMode == UiModeManager.MODE_NIGHT_YES){
+            map.overlayManager.tilesOverlay.setColorFilter(TilesOverlay.INVERT_COLORS)
+        }
     }
 
     private fun mostrarPuntoInicial(puntoInicial: Punto) {

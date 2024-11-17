@@ -1,6 +1,7 @@
 package com.cuatrodivinas.seekandsolve.Logica
 
 import android.Manifest
+import android.app.UiModeManager
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -37,6 +38,8 @@ import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import org.osmdroid.api.IMapController
+import org.osmdroid.tileprovider.tilesource.TileSourceFactory
+import org.osmdroid.views.overlay.TilesOverlay
 import java.io.File
 import kotlin.math.atan2
 import kotlin.math.cos
@@ -176,6 +179,11 @@ class MainActivity : AppCompatActivity(), LocationListener {
         marcador.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
         marcador.title = "Posición actual"
         marcadores.add(marcador)
+        map.setTileSource(TileSourceFactory.MAPNIK)
+        val uiManager = getSystemService(Context.UI_MODE_SERVICE) as UiModeManager
+        if(uiManager.nightMode == UiModeManager.MODE_NIGHT_YES){
+            map.overlayManager.tilesOverlay.setColorFilter(TilesOverlay.INVERT_COLORS)
+        }
     }
 
     // Si tiene permisos de ubicación, inicializar el LocationManager, sino pedirlos
