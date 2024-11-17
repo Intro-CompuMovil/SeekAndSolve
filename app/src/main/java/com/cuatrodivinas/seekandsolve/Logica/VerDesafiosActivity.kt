@@ -95,7 +95,7 @@ class VerDesafiosActivity : AppCompatActivity(), LocationListener {
     }
 
     private fun inicializarDesafios() {
-        val columns = arrayOf("_id", "imagen", "nombre")
+        val columns = arrayOf("_id", "nombre")
         val matrixCursor = MatrixCursor(columns)
 
         val json = cargarJson()?.let { JSONObject(it) }
@@ -103,18 +103,15 @@ class VerDesafiosActivity : AppCompatActivity(), LocationListener {
         if (desafios != null) {
             for (i in 0 until desafios!!.length()) {
                 val jsonObject = desafios!!.getJSONObject(i)
+                val id = jsonObject.getString("id")
                 val name = jsonObject.getString("nombre")
-                val desafioImageUrl = jsonObject.getString("fotoUrl")
-                val description = jsonObject.getString("descripcion")
-                val puntoInicial = jsonObject.getString("puntoInicial")
-                val puntoFinal = jsonObject.getString("puntoFinal")
-                matrixCursor.addRow(arrayOf(i, desafioImageUrl, name))
+                matrixCursor.addRow(arrayOf(id, name))
             }
         }
 
         val cursor: Cursor = matrixCursor
-        val amigosAdapter = AmigosAdapter(this, cursor, 0)
-        binding.listaDesafios.adapter = amigosAdapter
+        val desafiosAdapter = DesafiosAdapter(this, cursor, 0)
+        binding.listaDesafios.adapter = desafiosAdapter
     }
 
     private fun cargarJson(): String? {
