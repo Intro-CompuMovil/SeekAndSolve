@@ -41,6 +41,7 @@ class SeleccionarPuntoActivity : AppCompatActivity(), LocationListener {
     private lateinit var marcador: Marker
     private var retrofitUrls: RetrofitUrls
     private var retrofitUrls2: RetrofitUrls
+    private var isFirstLocation: Boolean = true
 
     init {
         val retrofit = RetrofitOsmClient.conectarBackURL()
@@ -175,7 +176,10 @@ class SeleccionarPuntoActivity : AppCompatActivity(), LocationListener {
     }
 
     override fun onLocationChanged(location: Location) {
-        setPoint(location.latitude, location.longitude)
+        if(isFirstLocation){
+            setPoint(location.latitude, location.longitude)
+            isFirstLocation = false
+        }
     }
 
     private fun eventoEnviarTexto(){
