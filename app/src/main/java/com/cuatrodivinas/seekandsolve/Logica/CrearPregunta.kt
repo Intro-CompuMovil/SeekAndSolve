@@ -11,6 +11,7 @@ import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Log
 import android.view.View
+import android.widget.RadioButton
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
@@ -70,16 +71,48 @@ class CrearPregunta : AppCompatActivity() {
         binding.cambiarFoto.setOnClickListener {
             pedirPermisosGaleria("Necesitamos el permiso de galeria para agregar una imagen de pregunta")
         }
-        binding.radioOption1.setOnClickListener {
+        binding.radioOption1.setOnClickListener{
+            binding.radioOption2.isChecked  = false
+            binding.radioOption3.isChecked  = false
+            binding.radioOption4.isChecked  = false
+            if(binding.editOption1.text.toString().isEmpty()){
+                Toast.makeText(this, "Ponga el texto antes de seleccionar", Toast.LENGTH_LONG).show()
+                binding.radioOption1.isChecked  = false
+                return@setOnClickListener
+            }
             respuestaCorrecta = binding.editOption1.text.toString()
         }
-        binding.radioOption2.setOnClickListener {
+        binding.radioOption2.setOnClickListener{
+            binding.radioOption1.isChecked  = false
+            binding.radioOption3.isChecked  = false
+            binding.radioOption4.isChecked  = false
+            if(binding.editOption2.text.toString().isEmpty()){
+                Toast.makeText(this, "Ponga el texto antes de seleccionar", Toast.LENGTH_LONG).show()
+                binding.radioOption2.isChecked  = false
+                return@setOnClickListener
+            }
             respuestaCorrecta = binding.editOption2.text.toString()
         }
-        binding.radioOption3.setOnClickListener {
+        binding.radioOption3.setOnClickListener{
+            binding.radioOption1.isChecked  = false
+            binding.radioOption2.isChecked  = false
+            binding.radioOption4.isChecked  = false
+            if(binding.editOption3.text.toString().isEmpty()){
+                Toast.makeText(this, "Ponga el texto antes de seleccionar", Toast.LENGTH_LONG).show()
+                binding.radioOption3.isChecked  = false
+                return@setOnClickListener
+            }
             respuestaCorrecta = binding.editOption3.text.toString()
         }
-        binding.radioOption4.setOnClickListener {
+        binding.radioOption4.setOnClickListener{
+            binding.radioOption1.isChecked  = false
+            binding.radioOption2.isChecked  = false
+            binding.radioOption3.isChecked  = false
+            if(binding.editOption4.text.toString().isEmpty()){
+                Toast.makeText(this, "Ponga el texto antes de seleccionar", Toast.LENGTH_LONG).show()
+                binding.radioOption4.isChecked  = false
+                return@setOnClickListener
+            }
             respuestaCorrecta = binding.editOption4.text.toString()
         }
     }
@@ -144,12 +177,12 @@ class CrearPregunta : AppCompatActivity() {
         val pregunta = preguntaId?.let {
             Pregunta(
                 it,binding.enunciadoPregunta.text.toString(),
-                arrayOf(binding.editOption1.text.toString(), binding.editOption2.text.toString(), binding.editOption3.text.toString(), binding.editOption4.text.toString()),
+                listOf(binding.editOption1.text.toString(), binding.editOption2.text.toString(), binding.editOption3.text.toString(), binding.editOption4.text.toString()),
                 respuestaCorrecta, imagenUrl
             )
         }
         preguntaRef.child(preguntaId!!).setValue(pregunta)
-        startActivity(Intent(this, VerDesafiosActivity::class.java))
+        startActivity(Intent(this, MainActivity::class.java))
     }
 
     private fun pedirPermisosGaleria(justificacion: String) {

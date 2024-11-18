@@ -124,6 +124,10 @@ class MainActivity : AppCompatActivity(), LocationListener {
             startActivity(Intent(this, Amigos::class.java))
         }
 
+        binding.crearPreguntaButton.setOnClickListener {
+            startActivity(Intent(this, CrearPregunta::class.java))
+        }
+
         val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
