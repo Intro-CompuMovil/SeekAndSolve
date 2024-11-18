@@ -346,7 +346,7 @@ class IniciarRutaActivity : AppCompatActivity(), LocationListener {
 
     private fun containsLatitudLongitud(puntos: List<Punto>, punto: Punto): Boolean{
         for(point in puntos){
-            if(point.latitud == punto.latitud && point.longitud == punto.longitud){
+            if(calcularDistancia(point.latitud, point.longitud, punto.latitud, punto.longitud) <= 100){
                 return true
             }
         }
@@ -370,7 +370,7 @@ class IniciarRutaActivity : AppCompatActivity(), LocationListener {
                 numero++
             }
         }
-        if(!checkpointEncontrado){
+        if(!checkpointEncontrado  && !carrera.puntosCompletados.isEmpty()){
             binding.destinoActual.text = "Dirigete al punto final!!!"
         }
         binding.abandonar.setOnClickListener {
