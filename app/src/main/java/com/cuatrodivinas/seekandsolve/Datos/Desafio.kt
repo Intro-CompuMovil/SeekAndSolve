@@ -3,16 +3,14 @@ package com.cuatrodivinas.seekandsolve.Datos
 import java.io.Serializable
 
 class Desafio(
-    var id: String?,
-    var uidCreador: String?,
-    var nombre: String?,
-    var imagenUrl: String?,
-    var descripcion: String?,
-    var puntoInicial: Punto?,
-    var puntosIntermedios: MutableList<Punto>?,
+    var id: String,
+    var uidCreador: String,
+    var nombre: String,
+    var imagenUrl: String,
+    var descripcion: String,
+    var puntoInicial: Punto,
+    var puntosIntermedios: MutableList<Punto>,
     var puntoFinal: Punto?): Serializable{
-
-    constructor():this(null, null, null, null, null, null, null, null)
 
     constructor(): this("", "", "", "", "", Punto(0.0, 0.0), mutableListOf(), Punto(0.0, 0.0))
 
