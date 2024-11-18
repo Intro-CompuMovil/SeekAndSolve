@@ -8,6 +8,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.bumptech.glide.Glide
 import com.cuatrodivinas.seekandsolve.Datos.Carrera
 import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.PATH_DESAFIOS
+import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.auth
 import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.storage
 import com.cuatrodivinas.seekandsolve.Datos.Desafio
 import com.cuatrodivinas.seekandsolve.R
@@ -70,8 +71,9 @@ class ConfigurarCarreraActivity : AppCompatActivity() {
         binding.jugarDesafio.setOnClickListener {
             var intentJugar = Intent(this, IniciarRutaActivity::class.java).putExtra("desafio", desafio)
             val fechaHoy = LocalDate.now()  // Obtiene la fecha actual
-            val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
-            var carrera = Carrera("", mutableMapOf(), 0, 0, 0, 0, fechaHoy.format(formatter), mutableListOf())
+            // Poner un formato que incluya la hora con segundos
+            val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")
+            val carrera = Carrera("FALTAID", desafio.id, fechaHoy.format(formatter), mutableMapOf(), mutableListOf(auth.currentUser!!.uid))
             intentJugar.putExtra("desafio", desafio)
             intentJugar.putExtra("carrera", carrera)
             intentJugar.putExtra("fechaInicio",LocalDateTime.now())

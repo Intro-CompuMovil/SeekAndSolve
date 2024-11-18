@@ -8,15 +8,14 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.bumptech.glide.Glide
 import com.cuatrodivinas.seekandsolve.Datos.Carrera
+import com.cuatrodivinas.seekandsolve.Datos.CarreraUsuarioCompletada
 import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.PATH_DESAFIOS
-import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.PATH_PREGUNTAS
 import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.PATH_RECOMPENSAS
 import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.storage
 import com.cuatrodivinas.seekandsolve.Datos.Desafio
 import com.cuatrodivinas.seekandsolve.Datos.Recompensa
 import com.cuatrodivinas.seekandsolve.R
 import com.google.firebase.storage.StorageReference
-import com.squareup.picasso.Picasso
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 
@@ -30,7 +29,7 @@ class DesafioTerminadoActivity : AppCompatActivity() {
     private lateinit var botonEstadisticas: Button
     private lateinit var intentEstadisticas: Intent
     lateinit var desafio: Desafio
-    private lateinit var carrera: Carrera
+    private lateinit var carreraCompletada: CarreraUsuarioCompletada
     private lateinit var fechaInicio: LocalDateTime
     private lateinit var refImg: StorageReference
 
@@ -46,11 +45,11 @@ class DesafioTerminadoActivity : AppCompatActivity() {
 
         botonEstadisticas = findViewById(R.id.estadisticas)
         desafio = intent.getSerializableExtra("desafio") as Desafio
-        carrera = intent.getSerializableExtra("carrera") as Carrera
-        if(carrera.tiempoTotal == 0){
+        carreraCompletada = intent.getSerializableExtra("carreraCompletada") as CarreraUsuarioCompletada
+        if(carreraCompletada.tiempoTotal == 0){
             fechaInicio = intent.getSerializableExtra("fechaInicio") as LocalDateTime
             intentEstadisticas = Intent(this, EstadisticasCarreraActivity::class.java)
-            carrera.tiempoTotal = ChronoUnit.MINUTES.between(fechaInicio, LocalDateTime.now()).toInt()
+            carreraCompletada.tiempoTotal = ChronoUnit.MINUTES.between(fechaInicio, LocalDateTime.now()).toInt()
         }
         inicializarElementos()
     }
@@ -85,7 +84,7 @@ class DesafioTerminadoActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         botonEstadisticas.setOnClickListener {
-            intentEstadisticas.putExtra("carrera", carrera)
+            intentEstadisticas.putExtra("carrera", carreraCompletada)
             startActivity(intentEstadisticas)
         }
     }

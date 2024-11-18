@@ -8,13 +8,10 @@ import android.widget.ImageView
 import android.widget.ListView
 import android.widget.TextView
 import android.widget.Toast
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import com.bumptech.glide.Glide
 import com.cuatrodivinas.seekandsolve.Datos.Carrera
-import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.PATH_DESAFIOS
+import com.cuatrodivinas.seekandsolve.Datos.CarreraActual
 import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.PATH_PREGUNTAS
 import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.storage
 import com.cuatrodivinas.seekandsolve.Datos.Desafio
@@ -22,7 +19,6 @@ import com.cuatrodivinas.seekandsolve.Datos.Pregunta
 import com.cuatrodivinas.seekandsolve.Datos.Punto
 import com.cuatrodivinas.seekandsolve.R
 import com.google.firebase.storage.StorageReference
-import com.squareup.picasso.Picasso
 import java.time.LocalDateTime
 
 class ResolverAcertijoActivity : AppCompatActivity() {
@@ -34,7 +30,7 @@ class ResolverAcertijoActivity : AppCompatActivity() {
     lateinit var intentMarcarCheckpoint: Intent
     lateinit var intentPista: Intent
     lateinit var desafio: Desafio
-    lateinit var carrera: Carrera
+    lateinit var carreraActual: CarreraActual
     lateinit var pregunta: Pregunta
     lateinit var preguntaSeleccionada: String
     lateinit var punto: Punto
@@ -54,7 +50,7 @@ class ResolverAcertijoActivity : AppCompatActivity() {
         intentPista = Intent(this, PistaActivity::class.java)
         desafio = intent.getSerializableExtra("desafio") as Desafio
         punto = intent.getSerializableExtra("punto") as Punto
-        carrera = intent.getSerializableExtra("carrera") as Carrera
+        carreraActual = intent.getSerializableExtra("carreraActual") as CarreraActual
         fechaInicio = intent.getSerializableExtra("fechaInicio") as LocalDateTime
         inicializarElementos()
     }
@@ -102,17 +98,17 @@ class ResolverAcertijoActivity : AppCompatActivity() {
             if(!isRespuestaCorrecta()){
                 return@setOnClickListener
             }
-            carrera.puntosCompletados.add(punto)
+            carreraActual.puntosCompletados.add(punto)
             if(intent.getBooleanExtra("puntoFinal", false)){
                 val intentDesafio = Intent(this@ResolverAcertijoActivity, DesafioTerminadoActivity::class.java)
                 intentDesafio.putExtra("desafio", desafio)
-                intentDesafio.putExtra("carrera", carrera)
+                intentDesafio.putExtra("carrera", carreraActual)
                 intentDesafio.putExtra("fechaInicio", fechaInicio)
                 startActivity(intentDesafio)
                 return@setOnClickListener
             }
             intentMarcarCheckpoint.putExtra("desafio", desafio)
-            intentMarcarCheckpoint.putExtra("carrera", carrera)
+            intentMarcarCheckpoint.putExtra("carrera", carreraActual)
             intentMarcarCheckpoint.putExtra("fechaInicio", fechaInicio)
             startActivity(intentMarcarCheckpoint)
         }
@@ -125,7 +121,7 @@ class ResolverAcertijoActivity : AppCompatActivity() {
     private fun isRespuestaCorrecta(): Boolean{
         if(preguntaSeleccionada.equals(pregunta.respuestaCorrecta) && intentos == 1){
             Toast.makeText(this, "Respuesta correcta! A la primera!", Toast.LENGTH_LONG).show()
-            carrera.acertijosPrimerIntento++
+            carreraActual.acertijosPrimerIntento++
             return true
         }
         if(preguntaSeleccionada.equals(pregunta.respuestaCorrecta)){

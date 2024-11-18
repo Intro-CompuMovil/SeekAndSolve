@@ -15,9 +15,6 @@ import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
 import android.util.Log
-import android.view.View
-import android.widget.AdapterView
-import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -25,6 +22,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import com.cuatrodivinas.seekandsolve.Datos.Carrera
+import com.cuatrodivinas.seekandsolve.Datos.CarreraActual
 import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.MY_PERMISSION_REQUEST_CAMERA
 import com.cuatrodivinas.seekandsolve.Datos.Desafio
 import com.cuatrodivinas.seekandsolve.Datos.Punto
@@ -53,7 +51,6 @@ import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.sqrt
-import kotlin.properties.Delegates
 
 class IniciarRutaActivity : AppCompatActivity(), LocationListener {
     private lateinit var binding: ActivityIniciarRutaBinding
@@ -63,7 +60,7 @@ class IniciarRutaActivity : AppCompatActivity(), LocationListener {
     private var trayectoRetrofit: RetrofitUrls
     private var geocoderRetrofit: RetrofitUrls
     private lateinit var desafio: Desafio
-    private lateinit var carrera: Carrera
+    private lateinit var carreraActual: CarreraActual
     private lateinit var photoUri: Uri
     private lateinit var marcadorActual: Marker
     private var rutas: MutableList<Polyline>? = null
@@ -86,7 +83,7 @@ class IniciarRutaActivity : AppCompatActivity(), LocationListener {
         setContentView(binding.root)
         // Obtener el desafío y la carrera de la actividad anterior
         desafio = intent.getSerializableExtra("desafio") as Desafio
-        carrera = intent.getSerializableExtra("carrera") as Carrera
+        carreraActual = intent.getSerializableExtra("carreraActual") as CarreraActual
         fechaInicio = intent.getSerializableExtra("fechaInicio") as LocalDateTime
         rutas = mutableListOf()
         inicializarTextos()
@@ -302,12 +299,12 @@ class IniciarRutaActivity : AppCompatActivity(), LocationListener {
         setPoint(location.latitude, location.longitude)
         val puntoActual = GeoPoint(location.latitude, location.longitude)
         var puntoDestino: GeoPoint? = null
-        if(carrera.puntosCompletados.isEmpty()){
+        if(carreraActual.puntosCompletados.isEmpty()){
             puntoDestino = GeoPoint(desafio.puntoInicial.latitud, desafio.puntoInicial.longitud)
         }
         else{
             for(checkpoint in desafio.puntosIntermedios){
-                if(!containsLatitudLongitud(carrera.puntosCompletados, checkpoint)){
+                if(!containsLatitudLongitud(carreraActual.puntosCompletados, checkpoint)){
                     puntoDestino = GeoPoint(checkpoint.latitud, checkpoint.longitud)
                     break
                 }
@@ -359,10 +356,10 @@ class IniciarRutaActivity : AppCompatActivity(), LocationListener {
             map.onResume()
         }
         var checkpointEncontrado = false
-        if(!carrera.puntosCompletados.isEmpty()){
+        if(!carreraActual.puntosCompletados.isEmpty()){
             var numero = 1
             for(checkpoint in desafio.puntosIntermedios){
-                if(!containsLatitudLongitud(carrera.puntosCompletados,checkpoint)){
+                if(!containsLatitudLongitud(carreraActual.puntosCompletados,checkpoint)){
                     binding.destinoActual.text = "Dirigete al checkpoint $numero!"
                     checkpointEncontrado = true
                     break
@@ -370,7 +367,7 @@ class IniciarRutaActivity : AppCompatActivity(), LocationListener {
                 numero++
             }
         }
-        if(!checkpointEncontrado  && !carrera.puntosCompletados.isEmpty()){
+        if(!checkpointEncontrado  && !carreraActual.puntosCompletados.isEmpty()){
             binding.destinoActual.text = "Dirigete al punto final!!!"
         }
         binding.abandonar.setOnClickListener {
@@ -387,8 +384,8 @@ class IniciarRutaActivity : AppCompatActivity(), LocationListener {
                 ) == PackageManager.PERMISSION_GRANTED
             ) {
                 val distanciaInicio = calcularDistancia(desafio.puntoInicial.latitud, desafio.puntoInicial.longitud, lastKnownLocation.latitude, lastKnownLocation.longitude)
-                if(distanciaInicio <= 100 && !containsLatitudLongitud(carrera.puntosCompletados,desafio.puntoInicial)){
-                    carrera.puntosCompletados.add(desafio.puntoInicial)
+                if(distanciaInicio <= 100 && !containsLatitudLongitud(carreraActual.puntosCompletados,desafio.puntoInicial)){
+                    carreraActual.puntosCompletados.add(desafio.puntoInicial)
                     Toast.makeText(this, "Comienza tu aventura en el desafio ${desafio.nombre}!", Toast.LENGTH_LONG).show()
                     val puntoInicial = GeoPoint(desafio.puntoInicial.latitud, desafio.puntoInicial.longitud)
                     val puntoDestino = GeoPoint(desafio.puntosIntermedios[0].latitud, desafio.puntosIntermedios[0].longitud)
@@ -407,19 +404,19 @@ class IniciarRutaActivity : AppCompatActivity(), LocationListener {
                 var puntoActual = Punto(lastKnownLocation.latitude, lastKnownLocation.longitude)
                 for(checkpoint in desafio.puntosIntermedios){
 
-                    if(containsLatitudLongitud(carrera.puntosCompletados,puntoActual)){
+                    if(containsLatitudLongitud(carreraActual.puntosCompletados,puntoActual)){
                         Toast.makeText(this, "Este checkpoint ya ha sido completado!", Toast.LENGTH_LONG).show()
                         return@setOnClickListener
                     }
-                    if(!containsLatitudLongitud(carrera.puntosCompletados,desafio.puntoInicial) && calcularDistancia(checkpoint.latitud, checkpoint.longitud, lastKnownLocation.latitude, lastKnownLocation.longitude) <= 100.0){
+                    if(!containsLatitudLongitud(carreraActual.puntosCompletados,desafio.puntoInicial) && calcularDistancia(checkpoint.latitud, checkpoint.longitud, lastKnownLocation.latitude, lastKnownLocation.longitude) <= 100.0){
                         Toast.makeText(this, "Llega al punto inicial antes de completar este checkpoint!", Toast.LENGTH_LONG).show()
                         return@setOnClickListener
                     }
-                    if(!containsLatitudLongitud(carrera.puntosCompletados,checkpoint) && calcularDistancia(desafio.puntoFinal.latitud, desafio.puntoFinal.longitud, lastKnownLocation.latitude, lastKnownLocation.longitude) <= 100.0){
+                    if(!containsLatitudLongitud(carreraActual.puntosCompletados,checkpoint) && calcularDistancia(desafio.puntoFinal.latitud, desafio.puntoFinal.longitud, lastKnownLocation.latitude, lastKnownLocation.longitude) <= 100.0){
                         Toast.makeText(this, "Completa todos los checkpoints antes de finalizar el juego!", Toast.LENGTH_LONG).show()
                         return@setOnClickListener
                     }
-                    if(checkpointAnterior != null && !containsLatitudLongitud(carrera.puntosCompletados,checkpointAnterior)  && calcularDistancia(checkpoint.latitud, checkpoint.longitud, lastKnownLocation.latitude, lastKnownLocation.longitude) <= 100.0){
+                    if(checkpointAnterior != null && !containsLatitudLongitud(carreraActual.puntosCompletados,checkpointAnterior)  && calcularDistancia(checkpoint.latitud, checkpoint.longitud, lastKnownLocation.latitude, lastKnownLocation.longitude) <= 100.0){
                         Toast.makeText(this, "Completa el checkpoint anterior antes de jugar este!", Toast.LENGTH_LONG).show()
                         return@setOnClickListener
                     }
@@ -433,7 +430,7 @@ class IniciarRutaActivity : AppCompatActivity(), LocationListener {
                     puntoFinal = true
                     punto = desafio.puntoFinal
                 }
-                if(puntoFinal && !containsLatitudLongitud(carrera.puntosCompletados,desafio.puntosIntermedios.last())){
+                if(puntoFinal && !containsLatitudLongitud(carreraActual.puntosCompletados,desafio.puntosIntermedios.last())){
                     Toast.makeText(this, "Completa el checkpoint anterior antes de jugar el final!", Toast.LENGTH_LONG).show()
                     return@setOnClickListener
                 }
@@ -502,7 +499,7 @@ class IniciarRutaActivity : AppCompatActivity(), LocationListener {
             intent.putExtra("desafio", desafio)
             intent.putExtra("puntoFinal", puntoFinal)
             intent.putExtra("punto", punto)
-            intent.putExtra("carrera", carrera)
+            intent.putExtra("carrera", carreraActual)
             intent.putExtra("fechaInicio", fechaInicio)
             startActivity(intent)
         } else {
