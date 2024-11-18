@@ -230,7 +230,7 @@ class SeleccionarPuntoActivity : AppCompatActivity(), LocationListener {
                     try {
                         val direction = response.body()!!.string()
                         val jsonDirection = JSONObject(direction)
-                        binding.direccion.text = jsonDirection.getString("display_name")
+                        binding.direccion.text = peluquearDireccion(jsonDirection.getString("display_name"))
                     } catch (e: Exception) {
                         Log.e("Geocode", "Error parsing JSON response", e)
                     }
@@ -243,6 +243,18 @@ class SeleccionarPuntoActivity : AppCompatActivity(), LocationListener {
                 Log.e("Geocode", "Error en la llamada: ${t.message}", t)
             }
         })
+    }
+
+    private fun peluquearDireccion(direccion: String):String{
+        val partes = direccion.split(",")
+
+        // Si hay más de 3 partes, unir las primeras 3 con comas y devolverlo
+        return if (partes.size > 3) {
+            partes.take(3).joinToString(",")
+        } else {
+            // Si no hay más de 3 comas, devolver el string original
+            direccion
+        }
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {

@@ -47,6 +47,7 @@ class TrayectoDesafioActivity : AppCompatActivity(), LocationListener {
     private lateinit var marcadorActual: Marker
     private lateinit var listaElementos: MutableList<String>
     private var rutas: MutableList<Polyline>? = null
+    private var isFirstLocation: Boolean = true
 
     init{
         val retrofit = RetrofitOsmClient.urlRuta()
@@ -368,7 +369,10 @@ class TrayectoDesafioActivity : AppCompatActivity(), LocationListener {
     }
 
     override fun onLocationChanged(location: Location) {
-        setPoint(location.latitude, location.longitude)
+        if(isFirstLocation){
+            setPoint(location.latitude, location.longitude)
+            isFirstLocation = false
+        }
     }
 
     private fun setPoint(latitud: Double, longitud: Double){
