@@ -49,8 +49,7 @@ class AgregarAmigos : AppCompatActivity(), AdapterView.OnItemSelectedListener {
             val cursor = parent.adapter.getItem(position) as Cursor
             val newFriend = JSONObject()
             newFriend.put("id", cursor.getInt(0))
-            newFriend.put("fotoUrl", cursor.getString(1))
-            newFriend.put("username", cursor.getString(2))
+            newFriend.put("username", cursor.getString(1))
             // Escribir de nuevo el archivo user_friends.json con el nuevo amigo
             amigosJsonArray = agregarAmigoAMiMundo(newFriend)
             // Hacer el intent hacia AmigosActivity, mandando la lista de amigos actualizada
@@ -114,7 +113,7 @@ class AgregarAmigos : AppCompatActivity(), AdapterView.OnItemSelectedListener {
     }
 
     private fun actualizarResultados(busqueda: String) {
-        val columns = arrayOf("_id", "imagen", "nombre")
+        val columns = arrayOf("_id", "nombre")
         val matrixCursor = MatrixCursor(columns)
         buscarUsuarios(matrixCursor, busqueda)
         val cursor: Cursor = matrixCursor
@@ -131,20 +130,20 @@ class AgregarAmigos : AppCompatActivity(), AdapterView.OnItemSelectedListener {
             val username = jsonObject.getString("username")
             val correo = jsonObject.getString("correo")
             if (username.contains(busqueda) || correo.contains(busqueda)) {
-                val id = jsonObject.getInt("id")
+                val id = jsonObject.getString("id")
                 // Si el usuario encontrado no es él mismo, se verifica si ya está en la lista de amigos
-                if (lastRegisteredUser!!.getInt("id") != id) {
+                if (lastRegisteredUser!!.getString("id") != id) {
                     var encontrado = false
                     for (j in 0 until amigosJsonArray!!.length()) {
                         val amigo = amigosJsonArray!!.getJSONObject(j)
-                        if (amigo.getInt("id") == id) {
+                        if (amigo.getString("id") == id) {
                             encontrado = true
                             break
                         }
                     }
                     if (!encontrado) {
                         // Si no está en la lista de amigos, se agrega al cursor
-                        matrixCursor.addRow(arrayOf(id, jsonObject.getString("fotoUrl"), jsonObject.getString("username")))
+                        matrixCursor.addRow(arrayOf(id, jsonObject.getString("username")))
                     }
                 }
             }

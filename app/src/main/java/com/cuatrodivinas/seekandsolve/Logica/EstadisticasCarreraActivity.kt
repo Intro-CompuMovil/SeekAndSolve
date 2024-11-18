@@ -11,9 +11,13 @@ import android.widget.ImageView
 import android.widget.ListView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import com.bumptech.glide.Glide
 import com.cuatrodivinas.seekandsolve.Datos.Carrera
+import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.PATH_RECOMPENSAS
+import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.storage
 import com.cuatrodivinas.seekandsolve.Datos.Recompensa
 import com.cuatrodivinas.seekandsolve.R
+import com.google.firebase.storage.StorageReference
 import com.squareup.picasso.Picasso
 
 class EstadisticasCarreraActivity : AppCompatActivity() {
@@ -25,6 +29,7 @@ class EstadisticasCarreraActivity : AppCompatActivity() {
     private lateinit var botonVolverAInicio: Button
     private lateinit var intentMain: Intent
     private lateinit var carrera: Carrera
+    private lateinit var refImg: StorageReference
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -54,13 +59,15 @@ class EstadisticasCarreraActivity : AppCompatActivity() {
     }
 
     private fun inicializarRecompensa(){
-        val recompensa: Recompensa = Recompensa("","Capitan Cuac Cuac")
-        if(recompensa.imagenUrl.isNotEmpty()){
-            Picasso.get()
-                .load(recompensa.imagenUrl) // URL de la imagen
-                .placeholder(R.drawable.cargando) // Imagen de marcador de posición mientras se carga
-                .error(R.drawable.error) // Imagen en caso de error
+        val recompensa: Recompensa = Recompensa("1","Capitan Cuac Cuac")
+        val idRecompensa = recompensa.id
+        refImg = storage.getReference(PATH_RECOMPENSAS).child("$idRecompensa.jpg")
+        refImg.downloadUrl.addOnSuccessListener { uri ->
+            Glide.with(this)
+                .load(uri) // Carga la imagen desde la URL
                 .into(imagenRecompensa)
+        }.addOnFailureListener { exception ->
+            imagenRecompensa.imageTintList = getColorStateList(R.color.primaryColor)
         }
     }
 

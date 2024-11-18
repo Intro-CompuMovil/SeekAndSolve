@@ -6,10 +6,16 @@ import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import com.bumptech.glide.Glide
 import com.cuatrodivinas.seekandsolve.Datos.Carrera
+import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.PATH_DESAFIOS
+import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.PATH_PREGUNTAS
+import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.PATH_RECOMPENSAS
+import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.storage
 import com.cuatrodivinas.seekandsolve.Datos.Desafio
 import com.cuatrodivinas.seekandsolve.Datos.Recompensa
 import com.cuatrodivinas.seekandsolve.R
+import com.google.firebase.storage.StorageReference
 import com.squareup.picasso.Picasso
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
@@ -26,6 +32,7 @@ class DesafioTerminadoActivity : AppCompatActivity() {
     lateinit var desafio: Desafio
     private lateinit var carrera: Carrera
     private lateinit var fechaInicio: LocalDateTime
+    private lateinit var refImg: StorageReference
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -50,23 +57,28 @@ class DesafioTerminadoActivity : AppCompatActivity() {
 
     private fun inicializarElementos(){
         //Obtener la pregunta random
-        val recompensa: Recompensa = Recompensa("","Capitan Cuac Cuac")
+        val recompensa: Recompensa = Recompensa("1","Capitan Cuac Cuac")
         tituloDesafio.text = "Completaste ${desafio.nombre}"
         descripcionRecompensa.text = recompensa.nombre
-        if(recompensa.imagenUrl.isNotEmpty()){
-            Picasso.get()
-                .load(recompensa.imagenUrl) // URL de la imagen
-                .placeholder(R.drawable.cargando) // Imagen de marcador de posición mientras se carga
-                .error(R.drawable.error) // Imagen en caso de error
+
+        val idRecompensa = recompensa.id
+        refImg = storage.getReference(PATH_RECOMPENSAS).child("$idRecompensa.jpg")
+        refImg.downloadUrl.addOnSuccessListener { uri ->
+            Glide.with(this)
+                .load(uri) // Carga la imagen desde la URL
                 .into(imagenRecompensa)
+        }.addOnFailureListener { exception ->
+            imagenRecompensa.imageTintList = getColorStateList(R.color.primaryColor)
         }
 
-        if(desafio.imagenUrl.isNotEmpty()){
-            Picasso.get()
-                .load(desafio.imagenUrl) // URL de la imagen
-                .placeholder(R.drawable.cargando) // Imagen de marcador de posición mientras se carga
-                .error(R.drawable.error) // Imagen en caso de error
+        val idDesafio = desafio.id
+        refImg = storage.getReference(PATH_DESAFIOS).child("$idDesafio.jpg")
+        refImg.downloadUrl.addOnSuccessListener { uri ->
+            Glide.with(this)
+                .load(uri) // Carga la imagen desde la URL
                 .into(imagenDesafio)
+        }.addOnFailureListener { exception ->
+            imagenDesafio.setImageResource(R.drawable.foto_bandera)
         }
     }
 

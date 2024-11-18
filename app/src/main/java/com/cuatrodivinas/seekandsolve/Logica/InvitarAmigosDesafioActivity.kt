@@ -67,8 +67,7 @@ class InvitarAmigosDesafioActivity : AppCompatActivity(), AdapterView.OnItemSele
             // El nuevo amigo a invitar
             val newFriend = JSONObject()
             newFriend.put("id", cursor.getInt(0))
-            newFriend.put("fotoUrl", cursor.getString(1))
-            newFriend.put("username", cursor.getString(2))
+            newFriend.put("username", cursor.getString(1))
             // Hacer el intent hacia intentConfigurar, mandando el amigo seleccionado
             val intentConfigurar = Intent(this, ConfigurarCarreraActivity::class.java)
             // Eliminar el amigo de la lista de amigos no invitados
@@ -104,15 +103,14 @@ class InvitarAmigosDesafioActivity : AppCompatActivity(), AdapterView.OnItemSele
     }
 
     private fun setListAmigos() {
-        val columns = arrayOf("_id", "imagen", "nombre")
+        val columns = arrayOf("_id", "nombre")
         val matrixCursor = MatrixCursor(columns)
         // Llenar la lista (visual) de amigos no invitados
         for (i in 0 until amigosNoInvitadosJsonArray.length()) {
             val jsonObject = amigosNoInvitadosJsonArray.getJSONObject(i)
             val id = jsonObject.getInt("id")
-            val imagen = jsonObject.getString("fotoUrl")
             val nombre = jsonObject.getString("username")
-            matrixCursor.addRow(arrayOf(id, imagen, nombre))
+            matrixCursor.addRow(arrayOf(id, nombre))
         }
         val cursor: Cursor = matrixCursor
         val amigosAdapter = AmigosAdapter(this, cursor, 0)
