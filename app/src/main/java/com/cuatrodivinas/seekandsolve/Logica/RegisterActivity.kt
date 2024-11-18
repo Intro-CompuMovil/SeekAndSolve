@@ -170,9 +170,9 @@ class RegisterActivity : AppCompatActivity() {
             binding.contrasenia.text.toString(),
             "",
             binding.fechaNacimiento.text.toString(),
-            mutableListOf(),
+            mutableMapOf(),
             null,
-            mutableListOf()
+            mutableMapOf()
         )
         val myRef = database.getReference("$PATH_USERS/${auth.currentUser!!.uid}")
         myRef.setValue(usuario).addOnCompleteListener { task ->

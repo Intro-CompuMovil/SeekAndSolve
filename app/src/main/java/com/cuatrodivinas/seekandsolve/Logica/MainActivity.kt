@@ -24,6 +24,7 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import com.bumptech.glide.Glide
+import com.cuatrodivinas.seekandsolve.Datos.CarreraActual
 import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.PATH_DESAFIOS
 import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.PATH_IMAGENES
 import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.PATH_USERS
@@ -33,6 +34,7 @@ import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.auth
 import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.database
 import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.storage
 import com.cuatrodivinas.seekandsolve.Datos.Desafio
+import com.cuatrodivinas.seekandsolve.Datos.InfoRecompensa
 import com.cuatrodivinas.seekandsolve.Datos.Punto
 import com.cuatrodivinas.seekandsolve.Datos.Usuario
 import com.cuatrodivinas.seekandsolve.R
@@ -145,15 +147,17 @@ class MainActivity : AppCompatActivity(), LocationListener {
 
         userRef.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                // Convierte el snapshot a la clase User
                 val usuario = snapshot.getValue(Usuario::class.java)
-                username = usuario!!.nombreUsuario
-                fotoUrl = usuario.imagenUrl
-                // Inicializar el mapa y el LocationManager
-                setupMap()
-                setupLocationManager()
-                // Establecer el nombre de usuario y la imagen de perfil
-                setUsernameAndProfileImage()
+
+                if (usuario != null) {
+                    username = usuario.nombreUsuario
+                    fotoUrl = usuario.imagenUrl
+                    // Inicializar el mapa y el LocationManager
+                    setupMap()
+                    setupLocationManager()
+                    // Establecer el nombre de usuario y la imagen de perfil
+                    setUsernameAndProfileImage()
+                }
             }
             override fun onCancelled(error: DatabaseError) {
                 //showToast("No se pudo obtener los datos del usuario")
