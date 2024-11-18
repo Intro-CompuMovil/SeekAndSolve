@@ -125,24 +125,6 @@ class MainActivity : AppCompatActivity(), LocationListener {
         }
     }
 
-    private fun mostrarJustificacion(mensaje: String, onAccept: () -> Unit) {
-        androidx.appcompat.app.AlertDialog.Builder(this)
-            .setTitle("Justificación de permisos")
-            .setMessage(mensaje)
-            .setPositiveButton("Aceptar") { dialog, _ ->
-                onAccept()
-                dialog.dismiss()
-            }
-            .setNegativeButton("Cancelar") { dialog, _ ->
-                dialog.dismiss()
-            }
-            .create()
-            .show()
-        binding.crearPreguntaButton.setOnClickListener {
-            startActivity(Intent(this, CrearPregunta::class.java))
-        }
-    }
-
     override fun onPause() {
         super.onPause()
         // Remover la suscripción para evitar fugas de memoria
