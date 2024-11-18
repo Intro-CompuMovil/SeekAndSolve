@@ -86,4 +86,7 @@
     <string name="ver_recompensas">Ver</string>
     <string name="punto_origen">Punto Origen:</string>
     <string name="punto_destino">Punto Destino:</string>
+    <string name="crear_pregunta">Crear Pregunta</string>.
+    <string name="creacion_pregunta">Creación de Pregunta</string>
+    <string name="enunciado">Enunciado</string>
 </resources>

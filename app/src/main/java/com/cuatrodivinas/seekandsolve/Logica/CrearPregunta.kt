@@ -1,13 +1,10 @@
 package com.cuatrodivinas.seekandsolve.Logica
 
 import android.content.ActivityNotFoundException
-import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.drawable.BitmapDrawable
-import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -15,30 +12,34 @@ import android.provider.MediaStore
 import android.util.Log
 import android.view.View
 import android.widget.Toast
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.MY_PERMISSION_REQUEST_GALLERY
 import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.PATH_DESAFIOS
+import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.PATH_PREGUNTAS
 import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.PERMISO_CAMARA
-import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.auth
 import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.database
 import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.storage
-import com.cuatrodivinas.seekandsolve.Datos.Desafio
+import com.cuatrodivinas.seekandsolve.Datos.Pregunta
 import com.cuatrodivinas.seekandsolve.Datos.Punto
-import com.cuatrodivinas.seekandsolve.databinding.ActivityCrearDesafioBinding
-import com.google.firebase.storage.StorageReference
+import com.cuatrodivinas.seekandsolve.R
+import com.cuatrodivinas.seekandsolve.databinding.ActivityCrearPreguntaBinding
+import com.google.firebase.database.DatabaseReference
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 import java.io.InputStream
 
-class CrearDesafioActivity : AppCompatActivity() {
-    private lateinit var binding: ActivityCrearDesafioBinding
-    private lateinit var desafio: Desafio
-    private lateinit var checkpointsAdapter: CheckpointsAdapter
-    private lateinit var refImg: StorageReference
+class CrearPregunta : AppCompatActivity() {
+    private lateinit var binding: ActivityCrearPreguntaBinding
+    private lateinit var preguntaRef: DatabaseReference
+    private var preguntaId: String? = null
+    private lateinit var respuestaCorrecta: String
+
     private val requestGalleryPermissions = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
         when {
             permissions.all { it.value } -> {
@@ -54,53 +55,43 @@ class CrearDesafioActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityCrearDesafioBinding.inflate(layoutInflater)
+        binding = ActivityCrearPreguntaBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
-        initDesafio()
-        setupUI()
     }
 
-    private fun initDesafio() {
-        desafio = Desafio("", auth.currentUser!!.uid, "", "", "", Punto(0.0, 0.0), mutableListOf(), Punto(0.0, 0.0))
-        checkpointsAdapter = CheckpointsAdapter(this, desafio.puntosIntermedios!!)
-        binding.listaCheckpoints.adapter = checkpointsAdapter
-    }
-
-    private fun setupUI() {
-        binding.cambiarFoto.setOnClickListener {
-            pedirPermisosGaleria("Necesitamos el permiso de galeria para agregar una imagen de desafio")
-        }
-        binding.editarPuntoInicial.setOnClickListener { editarPunto("inicial", REQUEST_CODE_PUNTO_INICIAL) }
-        binding.editarPuntoFinal.setOnClickListener { editarPunto("final", REQUEST_CODE_PUNTO_FINAL) }
-        binding.agregarCheckpoint.setOnClickListener { editarPunto("checkpoint", REQUEST_CODE_CHECKPOINT) }
-        binding.crearDesafio.setOnClickListener {
-            crearDesafio()
-            startActivity(Intent(this, VerDesafiosActivity::class.java))
-        }
+    override fun onResume() {
+        super.onResume()
         binding.backButton.setOnClickListener {
             finish()
         }
+        binding.crearPreguntaBtn.setOnClickListener {
+            crearPregunta()
+        }
+        binding.cambiarFoto.setOnClickListener {
+            pedirPermisosGaleria("Necesitamos el permiso de galeria para agregar una imagen de pregunta")
+        }
+        binding.radioOption1.setOnClickListener {
+            respuestaCorrecta = binding.editOption1.text.toString()
+        }
+        binding.radioOption2.setOnClickListener {
+            respuestaCorrecta = binding.editOption2.text.toString()
+        }
+        binding.radioOption3.setOnClickListener {
+            respuestaCorrecta = binding.editOption3.text.toString()
+        }
+        binding.radioOption4.setOnClickListener {
+            respuestaCorrecta = binding.editOption4.text.toString()
+        }
     }
 
-    private fun editarPunto(tipoPunto: String, requestCode: Int) {
-        val bundle = Bundle().apply {
-            putString("tipoPunto", tipoPunto)
-            putDouble("latitudPuntoInicial", desafio.puntoInicial!!.latitud)
-            putDouble("longitudPuntoInicial", desafio.puntoInicial!!.longitud)
-            putDouble("latitudPuntoFinal", desafio.puntoFinal!!.latitud)
-            putDouble("longitudPuntoFinal", desafio.puntoFinal!!.longitud)
+    private fun crearPregunta(){
+        if(binding.enunciadoPregunta.text.isEmpty() || binding.editOption1.text.isEmpty() ||
+            binding.editOption2.text.isEmpty() ||  binding.editOption3.text.isEmpty() ||
+            binding.editOption4.text.isEmpty() || binding.imagenPregunta.drawable == null){
+            Toast.makeText(this, "llene todos los campos antes de continuar", Toast.LENGTH_LONG).show()
+            return
         }
-        val intent = when (tipoPunto) {
-            "inicial" -> Intent(this, SeleccionarPuntoActivity::class.java)
-            "final" -> Intent(this, SeleccionarPuntoFinalActivity::class.java)
-            else -> Intent(this, SeleccionarCheckpointsActivity::class.java)
-        }
-        startActivityForResult(intent.putExtra("bundle", bundle), requestCode)
-    }
-
-    private fun crearDesafio(){
-        val drawable = binding.imagenDesafio.drawable
+        val drawable = binding.imagenPregunta.drawable
         if (drawable is BitmapDrawable) {
             val bitmap = drawable.bitmap
 
@@ -118,18 +109,19 @@ class CrearDesafioActivity : AppCompatActivity() {
 
             // Convertir el archivo a Uri
             val fileUri = Uri.fromFile(file)
+            preguntaRef = database.reference.child(PATH_PREGUNTAS)
+            preguntaId = preguntaRef.push().key // Genera el ID
             val imageRef =
-                storage.reference.child("$PATH_DESAFIOS/${desafio.nombre}_${desafio.uidCreador}.jpg")
+                storage.reference.child("$PATH_PREGUNTAS/${preguntaId}.jpg")
             imageRef.putFile(fileUri)
                 .addOnSuccessListener { taskSnapshot ->
                     // Obtener la URL de descarga después de que la imagen se suba con éxito
                     imageRef.downloadUrl.addOnSuccessListener { uri ->
-                        desafio.imagenUrl = uri.toString()
                         // Guardar el URL en la base de datos o usarlo como desees
-                        escribirDesafioBD()
+                        escribirPreguntaBD(uri.toString())
                     }.addOnFailureListener { exception ->
                         Toast.makeText(
-                            this@CrearDesafioActivity,
+                            this@CrearPregunta,
                             "No fue posible obtener la URL de descarga",
                             Toast.LENGTH_LONG
                         ).show()
@@ -137,7 +129,7 @@ class CrearDesafioActivity : AppCompatActivity() {
                 }
                 .addOnFailureListener { exception ->
                     Toast.makeText(
-                        this@CrearDesafioActivity,
+                        this@CrearPregunta,
                         "No fue posible subir la imagen",
                         Toast.LENGTH_LONG
                     ).show()
@@ -148,13 +140,18 @@ class CrearDesafioActivity : AppCompatActivity() {
         }
     }
 
-    private fun escribirDesafioBD() {
-        val desafioRef = database.reference.child(PATH_DESAFIOS)
-        val desafioId = desafioRef.push().key // Genera el ID
-        desafioRef.child(desafioId!!).setValue(desafio.toMap())
+    private fun escribirPreguntaBD(imagenUrl: String) {
+        val pregunta = preguntaId?.let {
+            Pregunta(
+                it,binding.enunciadoPregunta.text.toString(),
+                arrayOf(binding.editOption1.text.toString(), binding.editOption2.text.toString(), binding.editOption3.text.toString(), binding.editOption4.text.toString()),
+                respuestaCorrecta, imagenUrl
+            )
+        }
+        preguntaRef.child(preguntaId!!).setValue(pregunta)
+        startActivity(Intent(this, VerDesafiosActivity::class.java))
     }
 
-    // Pedir permiso para acceder a la cámara
     private fun pedirPermisosGaleria(justificacion: String) {
         // Array de permisos a solicitar basado en la versión de Android del dispositivo
         val permisos = when {
@@ -215,19 +212,11 @@ class CrearDesafioActivity : AppCompatActivity() {
             MY_PERMISSION_REQUEST_GALLERY -> {
                 if (resultCode == RESULT_OK) {
                     try {
-                        val punto = data?.getSerializableExtra("punto") as? Punto
-                        punto?.let {
-                            when (requestCode) {
-                                REQUEST_CODE_PUNTO_INICIAL -> actualizarPuntoInicial(it)
-                                REQUEST_CODE_PUNTO_FINAL -> actualizarPuntoFinal(it)
-                                REQUEST_CODE_CHECKPOINT -> agregarCheckpoint(it)
-                            }
-                        }
                         val imageUri = data?.data
                         val imageStream: InputStream? = contentResolver.openInputStream(imageUri!!)
                         val selectedImage = BitmapFactory.decodeStream(imageStream)
-                        binding.imagenDesafio.setImageBitmap(selectedImage)
-                        Toast.makeText(this, "Foto de desafio actualizada", Toast.LENGTH_SHORT).show()
+                        binding.imagenPregunta.setImageBitmap(selectedImage)
+                        Toast.makeText(this, "Foto de pregunta actualizada", Toast.LENGTH_SHORT).show()
                     } catch (e: Exception) {
                         e.message?. let{ Log.e("PERMISSION_APP",it) }
                         Toast.makeText(this, "No fue posible seleccionar la imagen (exc.)", Toast.LENGTH_SHORT).show()
@@ -235,31 +224,5 @@ class CrearDesafioActivity : AppCompatActivity() {
                 }
             }
         }
-    }
-
-    private fun actualizarPuntoInicial(punto: Punto) {
-        desafio.puntoInicial = punto
-        Log.d("CrearDesafioActivity", "Nuevo punto inicial: ${punto.latitud}, ${punto.longitud}")
-        desafio.puntosIntermedios!!.add(0, desafio.puntoInicial!!)
-        checkpointsAdapter.notifyDataSetChanged()
-    }
-
-    private fun actualizarPuntoFinal(punto: Punto) {
-        desafio.puntoFinal = punto
-        Log.d("CrearDesafioActivity", "Nuevo punto final: ${punto.latitud}, ${punto.longitud}")
-        desafio.puntosIntermedios!!.add(0, desafio.puntoInicial!!)
-        checkpointsAdapter.notifyDataSetChanged()
-    }
-
-    private fun agregarCheckpoint(punto: Punto) {
-        desafio.puntosIntermedios!!.add(punto)
-        checkpointsAdapter.notifyDataSetChanged()
-    }
-
-    companion object {
-        private const val REQUEST_CODE_PUNTO_INICIAL = 1001
-        private const val REQUEST_CODE_PUNTO_FINAL = 1002
-        private const val REQUEST_CODE_CHECKPOINT = 1003
-        private const val REQUEST_CODE_MARCADORES_ADICIONALES = 1004
     }
 }

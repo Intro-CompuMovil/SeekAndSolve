@@ -69,7 +69,6 @@ class MainActivity : AppCompatActivity(), LocationListener {
         setTheme(R.style.Base_Theme_SeekAndSolve)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
         // Inicializar Firebase Auth y la database
         auth = Firebase.auth
         database = FirebaseDatabase.getInstance()
@@ -112,6 +111,9 @@ class MainActivity : AppCompatActivity(), LocationListener {
         }
         binding.amigosButton.setOnClickListener {
             startActivity(Intent(this, Amigos::class.java))
+        }
+        binding.crearPreguntaButton.setOnClickListener {
+            startActivity(Intent(this, CrearPregunta::class.java))
         }
     }
 
@@ -293,8 +295,8 @@ class MainActivity : AppCompatActivity(), LocationListener {
     // Agrega marcadores a los desafíos cercanos
     private fun setDesafiosCercanos(latitud: Double, longitud: Double){
         for (desafio in desafiosList){
-            val puntoInicialDesafio: Punto = desafio.puntoInicial
-            val distancia = calcularDistancia(latitud, longitud, puntoInicialDesafio.latitud, puntoInicialDesafio.longitud)
+            val puntoInicialDesafio: Punto? = desafio.puntoInicial
+            val distancia = calcularDistancia(latitud, longitud, puntoInicialDesafio!!.latitud, puntoInicialDesafio.longitud)
             if (distancia < 1000){
                 val marcador = Marker(map)
                 marcador.icon = map.context.getDrawable(R.drawable.desafio_marcador)

@@ -57,7 +57,7 @@ class ResolverAcertijoActivity : AppCompatActivity() {
 
     private fun inicializarElementos(){
         //Obtener la pregunta random
-        pregunta = Pregunta("1","Porque se extinguieron los mamuts", mutableListOf("a", "b", "c", "d") ,"b", "")
+        pregunta = Pregunta("1","Porque se extinguieron los mamuts", arrayOf("a", "b", "c", "d") ,"b", "")
         acertijo.text = pregunta.enunciado
 
         val idPregunta = pregunta.id

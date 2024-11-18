@@ -73,7 +73,7 @@ class ConfigurarCarreraActivity : AppCompatActivity() {
             val fechaHoy = LocalDate.now()  // Obtiene la fecha actual
             // Poner un formato que incluya la hora con segundos
             val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")
-            val carrera = Carrera("FALTAID", desafio.id, fechaHoy.format(formatter), mutableMapOf(), mutableListOf(auth.currentUser!!.uid))
+            val carrera = Carrera("FALTAID", desafio.id!!, fechaHoy.format(formatter), mutableMapOf(), mutableListOf(auth.currentUser!!.uid))
             intentJugar.putExtra("desafio", desafio)
             intentJugar.putExtra("carrera", carrera)
             intentJugar.putExtra("fechaInicio",LocalDateTime.now())

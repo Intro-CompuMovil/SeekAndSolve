@@ -79,7 +79,7 @@ class TrayectoDesafioActivity : AppCompatActivity(), LocationListener {
     private fun inicializarSpinners(){
         listaElementos = mutableListOf()
         listaElementos.add("Punto inicial")
-        listaElementos.addAll(desafio.puntosIntermedios.mapIndexed { index, punto ->
+        listaElementos.addAll(desafio.puntosIntermedios!!.mapIndexed { index, punto ->
             "Checkpoint ${index+1}"
         }.toMutableList())
         listaElementos.add("Punto final")
@@ -275,24 +275,24 @@ class TrayectoDesafioActivity : AppCompatActivity(), LocationListener {
         }
         var puntoOrigen: GeoPoint
         if(position == 0){
-            puntoOrigen = GeoPoint(desafio.puntoInicial.latitud, desafio.puntoInicial.longitud)
+            puntoOrigen = GeoPoint(desafio.puntoInicial!!.latitud, desafio.puntoInicial!!.longitud)
         }
         else if (position == listaElementos.size - 1){
-            puntoOrigen  = GeoPoint(desafio.puntoFinal.latitud, desafio.puntoFinal.longitud)
+            puntoOrigen  = GeoPoint(desafio.puntoFinal!!.latitud, desafio.puntoFinal!!.longitud)
         }
         else{
-            puntoOrigen  = GeoPoint(desafio.puntosIntermedios[position-1].latitud, desafio.puntosIntermedios[position-1].longitud)
+            puntoOrigen  = GeoPoint(desafio.puntosIntermedios!![position-1].latitud, desafio.puntosIntermedios!![position-1].longitud)
         }
         var puntoDestino: GeoPoint
 
         if(positionFinal == 0){
-            puntoDestino = GeoPoint(desafio.puntoInicial.latitud, desafio.puntoInicial.longitud)
+            puntoDestino = GeoPoint(desafio.puntoInicial!!.latitud, desafio.puntoInicial!!.longitud)
         }
         else if (positionFinal == listaElementos.size - 1){
-            puntoDestino  = GeoPoint(desafio.puntoFinal.latitud, desafio.puntoFinal.longitud)
+            puntoDestino  = GeoPoint(desafio.puntoFinal!!.latitud, desafio.puntoFinal!!.longitud)
         }
         else{
-            puntoDestino  = GeoPoint(desafio.puntosIntermedios[positionFinal-1].latitud, desafio.puntosIntermedios[positionFinal-1].longitud)
+            puntoDestino  = GeoPoint(desafio.puntosIntermedios!![positionFinal-1].latitud, desafio.puntosIntermedios!![positionFinal-1].longitud)
         }
         getRoute(puntoOrigen, puntoDestino, true, true)
     }
@@ -309,24 +309,24 @@ class TrayectoDesafioActivity : AppCompatActivity(), LocationListener {
         }
         var puntoDestino: GeoPoint
         if(position == 0){
-            puntoDestino = GeoPoint(desafio.puntoInicial.latitud, desafio.puntoInicial.longitud)
+            puntoDestino = GeoPoint(desafio.puntoInicial!!.latitud, desafio.puntoInicial!!.longitud)
         }
         else if (position == listaElementos.size - 1){
-            puntoDestino  = GeoPoint(desafio.puntoFinal.latitud, desafio.puntoFinal.longitud)
+            puntoDestino  = GeoPoint(desafio.puntoFinal!!.latitud, desafio.puntoFinal!!.longitud)
         }
         else{
-            puntoDestino  = GeoPoint(desafio.puntosIntermedios[position-1].latitud, desafio.puntosIntermedios[position-1].longitud)
+            puntoDestino  = GeoPoint(desafio.puntosIntermedios!![position-1].latitud, desafio.puntosIntermedios!![position-1].longitud)
         }
         var puntoOrigen: GeoPoint
 
         if(positionInicial == 0){
-            puntoOrigen = GeoPoint(desafio.puntoInicial.latitud, desafio.puntoInicial.longitud)
+            puntoOrigen = GeoPoint(desafio.puntoInicial!!.latitud, desafio.puntoInicial!!.longitud)
         }
         else if (positionInicial == listaElementos.size - 1){
-            puntoOrigen  = GeoPoint(desafio.puntoFinal.latitud, desafio.puntoFinal.longitud)
+            puntoOrigen  = GeoPoint(desafio.puntoFinal!!.latitud, desafio.puntoFinal!!.longitud)
         }
         else{
-            puntoOrigen  = GeoPoint(desafio.puntosIntermedios[positionInicial-1].latitud, desafio.puntosIntermedios[positionInicial-1].longitud)
+            puntoOrigen  = GeoPoint(desafio.puntosIntermedios!![positionInicial-1].latitud, desafio.puntosIntermedios!![positionInicial-1].longitud)
         }
         getRoute(puntoOrigen, puntoDestino, true, true)
     }
