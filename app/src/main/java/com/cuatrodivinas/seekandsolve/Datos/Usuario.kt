@@ -9,8 +9,9 @@ class Usuario(
     var imagenUrl: String,
     var fechaNacimiento: String,
     var amigos: MutableList<String>,
-    var carreraActual: CarreraActual?
+    var carreraActual: CarreraActual?,
+    var recompensas: MutableList<InfoRecompensa>
     ) {
 
-    constructor() : this("", "", "", "", "", "", mutableListOf(), null)
+    constructor() : this("", "", "", "", "", "", mutableListOf(), null, mutableListOf())
 }

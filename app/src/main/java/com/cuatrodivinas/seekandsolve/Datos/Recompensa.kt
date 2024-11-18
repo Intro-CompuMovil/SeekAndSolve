@@ -1,4 +1,10 @@
 package com.cuatrodivinas.seekandsolve.Datos
 
-class Recompensa(val id: String, val nombre: String) {
+import java.io.Serializable
+
+class Recompensa(
+    val id: String,
+    val nombre: String): Serializable {
+
+        constructor(): this("", "")
 }

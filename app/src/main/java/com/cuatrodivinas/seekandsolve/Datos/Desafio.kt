@@ -12,6 +12,8 @@ class Desafio(
     var puntosIntermedios: MutableList<Punto>,
     var puntoFinal: Punto): Serializable{
 
+    constructor(): this("", "", "", "", "", Punto(0.0, 0.0), mutableListOf(), Punto(0.0, 0.0))
+
     // Convertir a Map para subir a Realtime Database (sin id)
     fun toMap(): Map<String, Any> {
         return mapOf(
