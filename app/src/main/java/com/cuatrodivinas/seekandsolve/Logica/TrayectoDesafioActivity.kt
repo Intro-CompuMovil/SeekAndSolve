@@ -173,7 +173,7 @@ class TrayectoDesafioActivity : AppCompatActivity(), LocationListener {
         val maxLon = path.maxOf { it.longitude }
 
         // Añadir un margen a los límites
-        val margin = 0.1 // Margen en grados (~1km dependiendo de la ubicación)
+        val margin = 0.006 // Margen en grados (~1km dependiendo de la ubicación)
         val adjustedBoundingBox = org.osmdroid.util.BoundingBox(
             maxLat + margin, // Añadir margen al norte
             maxLon + margin, // Añadir margen al este
