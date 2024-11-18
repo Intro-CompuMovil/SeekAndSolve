@@ -81,108 +81,101 @@
         android:backgroundTint="@color/secondaryColor"
         android:layout_marginBottom="16dp" />
 
-        <RadioGroup
-            android:id="@+id/radioGroupOptions"
+        <!-- Opción 1 -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="8dp">
 
-            <!-- Opción 1 -->
-            <LinearLayout
-                android:layout_width="match_parent"
+            <RadioButton
+                android:id="@+id/radioOption1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <EditText
+                android:id="@+id/editOption1"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:layout_marginBottom="8dp">
+                android:layout_weight="1"
+                android:hint="Opción 1"
+                android:padding="8dp"
+                android:background="@android:drawable/edit_text"
+                android:inputType="text" />
+        </LinearLayout>
 
-                <RadioButton
-                    android:id="@+id/radioOption1"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
+        <!-- Opción 2 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="8dp">
 
-                <EditText
-                    android:id="@+id/editOption1"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:hint="Opción 1"
-                    android:padding="8dp"
-                    android:background="@android:drawable/edit_text"
-                    android:inputType="text" />
-            </LinearLayout>
+            <RadioButton
+                android:id="@+id/radioOption2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
 
-            <!-- Opción 2 -->
-            <LinearLayout
-                android:layout_width="match_parent"
+            <EditText
+                android:id="@+id/editOption2"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:layout_marginBottom="8dp">
+                android:layout_weight="1"
+                android:hint="Opción 2"
+                android:padding="8dp"
+                android:background="@android:drawable/edit_text"
+                android:inputType="text" />
+        </LinearLayout>
 
-                <RadioButton
-                    android:id="@+id/radioOption2"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
+        <!-- Opción 3 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="8dp">
 
-                <EditText
-                    android:id="@+id/editOption2"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:hint="Opción 2"
-                    android:padding="8dp"
-                    android:background="@android:drawable/edit_text"
-                    android:inputType="text" />
-            </LinearLayout>
+            <RadioButton
+                android:id="@+id/radioOption3"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
 
-            <!-- Opción 3 -->
-            <LinearLayout
-                android:layout_width="match_parent"
+            <EditText
+                android:id="@+id/editOption3"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:layout_marginBottom="8dp">
+                android:layout_weight="1"
+                android:hint="Opción 3"
+                android:padding="8dp"
+                android:background="@android:drawable/edit_text"
+                android:inputType="text" />
+        </LinearLayout>
 
-                <RadioButton
-                    android:id="@+id/radioOption3"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
+        <!-- Opción 4 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="8dp">
 
-                <EditText
-                    android:id="@+id/editOption3"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:hint="Opción 3"
-                    android:padding="8dp"
-                    android:background="@android:drawable/edit_text"
-                    android:inputType="text" />
-            </LinearLayout>
+            <RadioButton
+                android:id="@+id/radioOption4"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
 
-            <!-- Opción 4 -->
-            <LinearLayout
-                android:layout_width="match_parent"
+            <EditText
+                android:id="@+id/editOption4"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:layout_marginBottom="8dp">
-
-                <RadioButton
-                    android:id="@+id/radioOption4"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
-
-                <EditText
-                    android:id="@+id/editOption4"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:hint="Opción 4"
-                    android:padding="8dp"
-                    android:background="@android:drawable/edit_text"
-                    android:inputType="text" />
-            </LinearLayout>
-        </RadioGroup>
+                android:layout_weight="1"
+                android:hint="Opción 4"
+                android:padding="8dp"
+                android:background="@android:drawable/edit_text"
+                android:inputType="text" />
+        </LinearLayout>
     </LinearLayout>
 
     <Button

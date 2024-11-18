@@ -85,9 +85,11 @@ class SeleccionarPuntoFinalActivity : AppCompatActivity(), LocationListener {
             val puntoFinal = Punto(marcadorPuntoFinal.position.latitude, marcadorPuntoFinal.position.longitude)
 
             // Obtener la ruta real entre el punto inicial y el punto final
-            val startPoint = GeoPoint(puntoInicial.latitud, puntoInicial.longitud)
-            val endPoint = GeoPoint(puntoFinal.latitud, puntoFinal.longitud)
-            getRoute(startPoint, endPoint)
+            if (::puntoInicial.isInitialized) {
+                val startPoint = GeoPoint(puntoInicial.latitud, puntoInicial.longitud)
+                val endPoint = GeoPoint(puntoFinal.latitud, puntoFinal.longitud)
+                getRoute(startPoint, endPoint)
+            }
 
             // Crear un Intent para devolver el resultado
             val resultIntent = Intent().apply {

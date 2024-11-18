@@ -10,7 +10,7 @@ class Desafio(
     var descripcion: String,
     var puntoInicial: Punto,
     var puntosIntermedios: MutableList<Punto>,
-    var puntoFinal: Punto?): Serializable{
+    var puntoFinal: Punto): Serializable{
 
     constructor(): this("", "", "", "", "", Punto(0.0, 0.0), mutableListOf(), Punto(0.0, 0.0))
 

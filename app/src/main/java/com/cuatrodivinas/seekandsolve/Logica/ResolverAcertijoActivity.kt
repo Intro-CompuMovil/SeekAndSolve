@@ -2,6 +2,7 @@ package com.cuatrodivinas.seekandsolve.Logica
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.ImageView
@@ -12,11 +13,14 @@ import androidx.appcompat.app.AppCompatActivity
 import com.bumptech.glide.Glide
 import com.cuatrodivinas.seekandsolve.Datos.CarreraActual
 import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.PATH_PREGUNTAS
+import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.PATH_USERS
+import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.database
 import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.storage
 import com.cuatrodivinas.seekandsolve.Datos.Desafio
 import com.cuatrodivinas.seekandsolve.Datos.Pregunta
 import com.cuatrodivinas.seekandsolve.Datos.Punto
 import com.cuatrodivinas.seekandsolve.R
+import com.google.firebase.database.DataSnapshot
 import com.google.firebase.storage.StorageReference
 import java.time.LocalDateTime
 
@@ -51,12 +55,30 @@ class ResolverAcertijoActivity : AppCompatActivity() {
         punto = intent.getSerializableExtra("punto") as Punto
         carreraActual = intent.getSerializableExtra("carreraActual") as CarreraActual
         fechaInicio = intent.getSerializableExtra("fechaInicio") as LocalDateTime
-        inicializarElementos()
+        obtenerPregunta()
+    }
+
+    private fun obtenerPregunta(){
+        val preguntaRef = database.getReference(PATH_PREGUNTAS)
+        preguntaRef.get().addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                val snapshot: DataSnapshot = task.result
+                val preguntasMap = snapshot?.children?.map { it.key to it.getValue(Pregunta::class.java) }?.toMap()
+                if (preguntasMap != null) {
+                    val randomKey = preguntasMap.keys.random()
+                    val preguntaAleatoria = preguntasMap[randomKey]
+                    if (preguntaAleatoria != null) {
+                        pregunta = preguntaAleatoria
+                        inicializarElementos()
+                    }
+                }
+            } else {
+                Log.e("Firebase", "Error al obtener los datos", task.exception)
+            }
+        }
     }
 
     private fun inicializarElementos(){
-        //Obtener la pregunta random
-        pregunta = Pregunta("1","Porque se extinguieron los mamuts", arrayOf("a", "b", "c", "d") ,"b", "")
         acertijo.text = pregunta.enunciado
 
         val idPregunta = pregunta.id
