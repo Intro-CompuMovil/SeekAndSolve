@@ -73,7 +73,7 @@ class ResolverAcertijoActivity : AppCompatActivity() {
         val adapter = ArrayAdapter(
             this,                     // Contexto
             android.R.layout.simple_list_item_1, // Diseño simple proporcionado por Android para cada elemento
-            pregunta.preguntas                      // Datos a mostrar
+            pregunta.opciones                      // Datos a mostrar
         )
         listaRespuestas.adapter = adapter
         var lastSelectedPosition: Int = -1
@@ -87,7 +87,7 @@ class ResolverAcertijoActivity : AppCompatActivity() {
             // Resaltar el ítem seleccionado
             view.setBackgroundColor(resources.getColor(android.R.color.darker_gray)) // Resaltar el ítem presionado
             lastSelectedPosition = position
-            preguntaSeleccionada = pregunta.preguntas[position]
+            preguntaSeleccionada = pregunta.opciones[position]
             intentos++;
         }
     }
