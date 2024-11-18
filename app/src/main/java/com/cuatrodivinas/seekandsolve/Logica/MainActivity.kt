@@ -94,6 +94,8 @@ class MainActivity : AppCompatActivity(), LocationListener {
         if (::map.isInitialized) {
             map.onResume()
         }
+        setupMap()
+        setupLocationManager()
         // Listeners de los botones de las opciones principales
         binding.profileLayout.setOnClickListener {
             startActivity(Intent(this, VerPerfil::class.java))
@@ -113,18 +115,17 @@ class MainActivity : AppCompatActivity(), LocationListener {
         }
     }
 
-    override fun onStop() {
-        super.onStop()
+    override fun onPause() {
+        super.onPause()
         // Remover la suscripción para evitar fugas de memoria
         if(::desafiosRef.isInitialized){
             desafiosRef.removeEventListener(desafiosListener)
         }
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
         if (::map.isInitialized) {
-            map.onDetach()
+            map.onPause()
+            if (::locationManager.isInitialized) {
+                locationManager.removeUpdates(this)
+            }
         }
     }
 

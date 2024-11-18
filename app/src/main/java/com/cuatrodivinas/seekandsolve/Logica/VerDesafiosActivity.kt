@@ -39,7 +39,6 @@ class VerDesafiosActivity : AppCompatActivity(), LocationListener {
     private lateinit var map: MapView
     private val REQUEST_PERMISSIONS_REQUEST_CODE = 1
     private lateinit var locationManager: LocationManager
-    private var isFirstLocation = true
     private var desafios: JSONArray? = null
     private lateinit var marcadores: MutableList<Marker>
 
@@ -50,28 +49,8 @@ class VerDesafiosActivity : AppCompatActivity(), LocationListener {
         marcadores = mutableListOf()
         inicializarDesafios()
         setupMap()
-        setupLocationManager()
         eventoVolver()
         verDesafio()
-        startLocationUpdates()
-    }
-
-    private fun startLocationUpdates() {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), 1)
-            return
-        }
-        locationManager.requestLocationUpdates(
-            LocationManager.GPS_PROVIDER,
-            1000L,
-            1f,
-            object: LocationListener {
-                override fun onLocationChanged(location: Location) {
-                    Log.d("Marcadores", "Marcadores ${map.overlays.size}")
-                    setPoint(location.latitude, location.longitude)
-                }
-            }
-        )
     }
 
     private fun verDesafio() {
@@ -266,27 +245,17 @@ class VerDesafiosActivity : AppCompatActivity(), LocationListener {
         super.onResume()
         if (::map.isInitialized) {
             map.onResume()
+            setupLocationManager()
         }
     }
 
-    /*override fun onPause() {
+    override fun onPause() {
         super.onPause()
         if (::map.isInitialized) {
             map.onPause()
-        }
-    }
-
-    override fun onStop() {
-        super.onStop()
-        if (::map.isInitialized) {
-            map.onDetach()
-        }
-    }*/
-
-    override fun onDestroy() {
-        super.onDestroy()
-        if (::map.isInitialized) {
-            map.onDetach()
+            if (::locationManager.isInitialized) {
+                locationManager.removeUpdates(this)
+            }
         }
     }
 
