@@ -13,6 +13,8 @@
           </Target>
         </DropdownSelection>
         <DialogSelection />
+=======
+>>>>>>> Stashed changes
       </SelectionState>
     </selectionStates>
   </component>

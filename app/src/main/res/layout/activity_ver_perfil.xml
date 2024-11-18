@@ -180,6 +180,8 @@
         android:text="@string/establecerse_inactivo"
 <<<<<<< Updated upstream
         app:layout_constraintBottom_toTopOf="@+id/botonesAmarillosLayout"
+=======
+>>>>>>> Stashed changes
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/FechaETxt" />
