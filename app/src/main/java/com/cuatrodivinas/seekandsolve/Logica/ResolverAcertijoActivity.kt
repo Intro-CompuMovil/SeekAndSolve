@@ -10,7 +10,6 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.bumptech.glide.Glide
-import com.cuatrodivinas.seekandsolve.Datos.Carrera
 import com.cuatrodivinas.seekandsolve.Datos.CarreraActual
 import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.PATH_PREGUNTAS
 import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.storage
@@ -57,7 +56,7 @@ class ResolverAcertijoActivity : AppCompatActivity() {
 
     private fun inicializarElementos(){
         //Obtener la pregunta random
-        pregunta = Pregunta("1","Porque se extinguieron los mamuts", arrayOf("a", "b", "c", "d") ,"b", "")
+        pregunta = Pregunta("1","Porque se extinguieron los mamuts", mutableListOf("a", "b", "c", "d") ,"b", "")
         acertijo.text = pregunta.enunciado
 
         val idPregunta = pregunta.id
@@ -73,7 +72,7 @@ class ResolverAcertijoActivity : AppCompatActivity() {
         val adapter = ArrayAdapter(
             this,                     // Contexto
             android.R.layout.simple_list_item_1, // Diseño simple proporcionado por Android para cada elemento
-            pregunta.preguntas                      // Datos a mostrar
+            pregunta.opciones                      // Datos a mostrar
         )
         listaRespuestas.adapter = adapter
         var lastSelectedPosition: Int = -1
@@ -87,7 +86,7 @@ class ResolverAcertijoActivity : AppCompatActivity() {
             // Resaltar el ítem seleccionado
             view.setBackgroundColor(resources.getColor(android.R.color.darker_gray)) // Resaltar el ítem presionado
             lastSelectedPosition = position
-            preguntaSeleccionada = pregunta.preguntas[position]
+            preguntaSeleccionada = pregunta.opciones[position]
             intentos++;
         }
     }
