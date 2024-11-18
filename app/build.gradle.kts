@@ -47,6 +47,7 @@ dependencies {
     implementation(libs.firebase.crashlytics.buildtools)
     implementation(libs.firebase.database.ktx)
     implementation(libs.androidx.core.i18n)
+    implementation(libs.firebase.messaging)
     annotationProcessor (libs.compiler)
     implementation (libs.osmdroid.android)
     implementation(libs.androidx.credentials)
