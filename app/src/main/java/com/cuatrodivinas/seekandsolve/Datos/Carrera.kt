@@ -5,20 +5,14 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 
 data class Carrera(
-    val idDesafio: String = "",
-    // Map<uid, UsuarioCarrera> ---> "uid1": { "idRecompensa": 1 },
-    val usuarios: Map<String, UsuarioCarrera> = emptyMap(),
-    // Tiempo total en minutos
-    var tiempoTotal: Int = 0,
-    var acertijosPrimerIntento: Int = 0,
-    var velocidadMedia: Int = 0,
-    var distanciaTotal: Int = 0,
-    var fecha: String = "",
-    var puntosCompletados: MutableList<Punto> = mutableListOf()
+    var id: String = "",
+    var idDesafio: String = "",
+    var horaInicio: String = "",
+    // uid -> CarreraUsuarioCompletada
+    var usuariosCompletaron: MutableMap<String, CarreraUsuarioCompletada> = mutableMapOf(),
+    // uids de los usuarios que están en progreso (cada uno almacena su progreso en usuarios/uid/carreraActual)
+    var usuariosEnProgreso: MutableList<String> = mutableListOf(),
 ): Serializable {
-    data class UsuarioCarrera(
-        val idRecompensa: String = ""
-    )
 }
 
 /*
