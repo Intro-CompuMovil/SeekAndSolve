@@ -1,6 +1,10 @@
 [versions]
+<<<<<<< HEAD
 agp = "8.6.0"
 converterGson = "2.9.02"
+=======
+agp = "8.7.2"
+>>>>>>> 143a7af (feat: dark mode added)
 credentials = "1.2.2"
 firebaseAuthKtx = "23.0.0"
 firebaseBom = "33.3.0"
