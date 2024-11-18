@@ -144,7 +144,7 @@ class CrearPregunta : AppCompatActivity() {
         val pregunta = preguntaId?.let {
             Pregunta(
                 it,binding.enunciadoPregunta.text.toString(),
-                arrayOf(binding.editOption1.text.toString(), binding.editOption2.text.toString(), binding.editOption3.text.toString(), binding.editOption4.text.toString()),
+                mutableListOf(binding.editOption1.text.toString(), binding.editOption2.text.toString(), binding.editOption3.text.toString(), binding.editOption4.text.toString()),
                 respuestaCorrecta, imagenUrl
             )
         }
