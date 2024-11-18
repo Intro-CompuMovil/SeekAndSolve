@@ -21,73 +21,48 @@ import com.google.gson.Gson
 class VerDesafioActivity : AppCompatActivity() {
     private lateinit var binding: ActivityVerDesafioBinding
     private lateinit var refImg: StorageReference
+    private lateinit var desafio: Desafio
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityVerDesafioBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        desafio = intent.getSerializableExtra("desafio") as Desafio
+
         inicializarElementos()
+        setupListeners()
     }
 
     private fun inicializarElementos() {
-        val desafio = intent.getBundleExtra("bundle")!!
-        binding.tituloDesafio.text = desafio.getString("nombre")
-        binding.descripcionDesafio.text = desafio.getString("descripcion")
-        val textoPuntoInicial: String = "Punto inicial: " + desafio.getString("puntoInicial")
-        binding.puntoInicial.text = textoPuntoInicial
-        val textoPuntoFinal: String = "Punto final: " + desafio.getString("puntoFinal")
-        binding.puntoFinal.text = textoPuntoFinal
-        val idDesafio = desafio.getString("id")
+        binding.tituloDesafio.text = desafio.nombre
+        binding.descripcionDesafio.text = desafio.descripcion
+        binding.puntoInicial.text = "Punto inicial: " + desafio.puntoInicial.latitud.toString() + ", " + desafio.puntoInicial.longitud.toString()
+        binding.puntoFinal.text = "Punto final: " + desafio.puntoFinal!!.latitud.toString() + ", " + desafio.puntoFinal!!.longitud.toString()
 
-        refImg = storage.getReference(PATH_DESAFIOS).child("$idDesafio.jpg")
+        refImg = storage.getReference(PATH_DESAFIOS).child("${desafio.id}.jpg")
         refImg.downloadUrl.addOnSuccessListener { uri ->
             Glide.with(this)
-                .load(uri) // Carga la imagen desde la URL
+                .load(uri)
                 .into(binding.imagenDesafio)
-        }.addOnFailureListener { exception ->
+        }.addOnFailureListener {
             binding.imagenDesafio.setImageResource(R.drawable.foto_bandera)
         }
+    }
 
+    private fun setupListeners() {
         binding.iniciarDesafio.setOnClickListener {
-            val intentIniciarDesafio = Intent(this, ConfigurarCarreraActivity::class.java)
-            intentIniciarDesafio.putExtra("bundle", desafio)
-            val gson = Gson()
-            val puntoListType = object : TypeToken<MutableList<Punto>>() {}.type
-            val puntoInicial: Punto = gson.fromJson(desafio.getString("puntoInicial"), Punto::class.java)
-            val puntoFinal: Punto = gson.fromJson(desafio.getString("puntoFinal"), Punto::class.java)
-            var puntosIntermedios: MutableList<Punto> = mutableListOf()
-            if(desafio.getString("puntosIntermedios") != null){
-                puntosIntermedios = gson.fromJson(desafio.getString("puntosIntermedios"), puntoListType)
-            }
-            val desafioVar = Desafio(desafio.getString("id")!!,desafio.getString("uidCreador")!!, desafio.getString("nombre")!!, desafio.getString("imagen")!!,
-                desafio.getString("descripcion")!!, puntoInicial,
-                puntosIntermedios, puntoFinal)
-            intentIniciarDesafio.putExtra("desafio", desafioVar)
-            startActivity(intentIniciarDesafio)
+            val intent = Intent(this, ConfigurarCarreraActivity::class.java)
+            intent.putExtra("desafio", desafio)
+            startActivity(intent)
         }
 
         binding.revisarTrayecto.setOnClickListener {
-            val intentRevisarTrayecto = Intent(this, TrayectoDesafioActivity::class.java)
-            val gson = Gson()
-            val puntoListType = object : TypeToken<MutableList<Punto>>() {}.type
-            val puntoInicial: Punto = gson.fromJson(desafio.getString("puntoInicial"), Punto::class.java)
-            val puntoFinal: Punto = gson.fromJson(desafio.getString("puntoFinal"), Punto::class.java)
-            var puntosIntermedios: MutableList<Punto> = mutableListOf()
-            if(desafio.getString("puntosIntermedios") != null){
-                puntosIntermedios = gson.fromJson(desafio.getString("puntosIntermedios"), puntoListType)
-            }
-            val desafioVar = Desafio(desafio.getString("id")!!,desafio.getString("uidCreador")!!, desafio.getString("nombre")!!, desafio.getString("imagen")!!,
-                desafio.getString("descripcion")!!, puntoInicial,
-                puntosIntermedios, puntoFinal)
-            intentRevisarTrayecto.putExtra("desafio", desafioVar)
-            startActivity(intentRevisarTrayecto)
+            val intent = Intent(this, TrayectoDesafioActivity::class.java)
+            intent.putExtra("desafio", desafio)
+            startActivity(intent)
         }
 
-        eventoVolver()
-    }
-
-    private fun eventoVolver(){
         binding.backButtonChallenge.setOnClickListener {
             finish()
         }
