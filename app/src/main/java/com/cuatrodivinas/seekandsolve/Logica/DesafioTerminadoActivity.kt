@@ -2,6 +2,7 @@ package com.cuatrodivinas.seekandsolve.Logica
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
@@ -11,13 +12,21 @@ import com.cuatrodivinas.seekandsolve.Datos.Carrera
 import com.cuatrodivinas.seekandsolve.Datos.CarreraUsuarioCompletada
 import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.PATH_DESAFIOS
 import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.PATH_RECOMPENSAS
+import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.PATH_USERS
+import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.auth
+import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.database
 import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.storage
 import com.cuatrodivinas.seekandsolve.Datos.Desafio
+import com.cuatrodivinas.seekandsolve.Datos.InfoRecompensa
 import com.cuatrodivinas.seekandsolve.Datos.Recompensa
 import com.cuatrodivinas.seekandsolve.R
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.ValueEventListener
 import com.google.firebase.storage.StorageReference
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
+import kotlin.random.Random
 
 class DesafioTerminadoActivity : AppCompatActivity() {
     private lateinit var tituloDesafio: TextView
@@ -87,5 +96,40 @@ class DesafioTerminadoActivity : AppCompatActivity() {
             intentEstadisticas.putExtra("carrera", carreraCompletada)
             startActivity(intentEstadisticas)
         }
+    }
+
+    // TODO: Para cuando el usuario complete una carrera
+    private fun agregarRecompensaAleatoria() {
+        val recompensasRef = database.reference.child(PATH_RECOMPENSAS)
+        val usuarioRecompensasRef = database.reference.child(PATH_USERS)
+            .child(auth.currentUser?.uid ?: return).child(PATH_RECOMPENSAS)
+
+        recompensasRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                val recompensasList = mutableListOf<Recompensa>()
+                for (recompensaSnapshot in dataSnapshot.children) {
+                    // Leer el value que es un string, crear el objeto y asignarle el id y agregarlo a la lista
+                    val nombreRecompensa = recompensaSnapshot.value as String
+                    val recompensa = Recompensa(recompensaSnapshot.key ?: "", nombreRecompensa)
+                    recompensasList.add(recompensa)
+                }
+
+                if (recompensasList.isNotEmpty()) {
+                    val recompensaAleatoria = recompensasList[Random.nextInt(recompensasList.size)]
+                    val infoRecompensaAsignada = InfoRecompensa(
+                        recompensaAleatoria.id,
+                        recompensaAleatoria.nombre,
+                        "desafio.nombre",
+                        "fechaActual dd/MM/yyyy"
+                    )
+                    val nuevaRecompensaRef = usuarioRecompensasRef.push()
+                    nuevaRecompensaRef.setValue(infoRecompensaAsignada)
+                }
+            }
+
+            override fun onCancelled(databaseError: DatabaseError) {
+                Log.e("Firebase", "Error al leer las recompensas", databaseError.toException())
+            }
+        })
     }
 }

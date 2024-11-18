@@ -20,6 +20,7 @@ class Data {
         const val PATH_PREGUNTAS = "preguntas"
         const val PATH_IMAGENES = "profileImg"
         const val PATH_RECOMPENSAS = "recompensas"
+        const val PATH_ACTIVOS = "activos"
         var auth: FirebaseAuth
         var database: FirebaseDatabase
         var storage: FirebaseStorage

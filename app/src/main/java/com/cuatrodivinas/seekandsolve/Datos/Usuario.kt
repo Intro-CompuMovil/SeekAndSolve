@@ -8,10 +8,10 @@ class Usuario(
     var password: String,
     var imagenUrl: String,
     var fechaNacimiento: String,
-    var amigos: MutableList<String>,
+    var amigos: MutableMap<String, String>,
     var carreraActual: CarreraActual?,
-    var recompensas: MutableList<InfoRecompensa>
+    var recompensas: MutableMap<String, InfoRecompensa>
     ) {
 
-    constructor() : this("", "", "", "", "", "", mutableListOf(), null, mutableListOf())
+    constructor() : this("", "", "", "", "", "", mutableMapOf(), null, mutableMapOf())
 }

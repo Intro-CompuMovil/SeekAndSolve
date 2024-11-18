@@ -24,6 +24,7 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import com.bumptech.glide.Glide
+import com.cuatrodivinas.seekandsolve.Datos.CarreraActual
 import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.PATH_DESAFIOS
 import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.PATH_IMAGENES
 import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.PATH_USERS
@@ -33,6 +34,7 @@ import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.auth
 import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.database
 import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.storage
 import com.cuatrodivinas.seekandsolve.Datos.Desafio
+import com.cuatrodivinas.seekandsolve.Datos.InfoRecompensa
 import com.cuatrodivinas.seekandsolve.Datos.Punto
 import com.cuatrodivinas.seekandsolve.Datos.Usuario
 import com.cuatrodivinas.seekandsolve.R
@@ -123,85 +125,6 @@ class MainActivity : AppCompatActivity(), LocationListener {
         binding.amigosButton.setOnClickListener {
             startActivity(Intent(this, Amigos::class.java))
         }
-
-        binding.crearPreguntaButton.setOnClickListener {
-            startActivity(Intent(this, CrearPregunta::class.java))
-        }
-
-        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(
-                "wearable_channel", // ID del canal
-                "Wearable Notifications", // Nombre del canal
-                NotificationManager.IMPORTANCE_DEFAULT
-            )
-            notificationManager.createNotificationChannel(channel)
-        }
-
-        val notificationId = 1 // Un ID único para la notificación
-
-        val notification = NotificationCompat.Builder(this, "wearable_channel")
-            .setSmallIcon(R.drawable.logo) // Icono de la notificación
-            .setContentTitle("Notificación para el reloj")
-            .setContentText("Esta notificación debería mostrarse también en tu reloj.")
-            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-            .setAutoCancel(true) // La notificación se eliminará al hacer clic
-            .build()
-
-// Mostrar la notificación en el teléfono (y debería aparecer en el reloj si está conectado)
-        notificationManager.notify(notificationId, notification)
-
-
-        /*notification = NotificationCompat.Builder(this)
-            .setContentTitle("New mail from ")
-            .setContentText("subject")
-            .setSmallIcon(R.drawable.logo)
-            .extend(
-                NotificationCompat.WearableExtender()
-                    .setContentIcon(R.drawable.logo)
-            )
-            .build()
-
-        pedirPermiso(this, android.Manifest.permission.POST_NOTIFICATIONS,
-            "Necesitamos el permiso de cámara para cambiar tu foto de perfil", PERMISO_NOTIFICACIONES)*/
-        //NotificationManagerCompat.from(this).notify(0, notification)
-    }
-
-    private fun pedirPermiso(context: Context, permiso: String, justificacion: String,
-                             idCode: Int){
-        if(ContextCompat.checkSelfPermission(context, permiso) !=
-            PackageManager.PERMISSION_GRANTED){
-            if (shouldShowRequestPermissionRationale(permiso)) {
-                // Explicar al usuario por qué necesitamos el permiso
-                mostrarJustificacion(justificacion) {
-                    requestPermissions(arrayOf(permiso), idCode)
-                }
-            } else {
-                requestPermissions(arrayOf(permiso), idCode)
-            }
-        }
-        else{
-            NotificationManagerCompat.from(this).notify(0, notification)
-        }
-    }
-
-    private fun mostrarJustificacion(mensaje: String, onAccept: () -> Unit) {
-        androidx.appcompat.app.AlertDialog.Builder(this)
-            .setTitle("Justificación de permisos")
-            .setMessage(mensaje)
-            .setPositiveButton("Aceptar") { dialog, _ ->
-                onAccept()
-                dialog.dismiss()
-            }
-            .setNegativeButton("Cancelar") { dialog, _ ->
-                dialog.dismiss()
-            }
-            .create()
-            .show()
-        binding.crearPreguntaButton.setOnClickListener {
-            startActivity(Intent(this, CrearPregunta::class.java))
-        }
     }
 
     override fun onPause() {
@@ -224,15 +147,17 @@ class MainActivity : AppCompatActivity(), LocationListener {
 
         userRef.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                // Convierte el snapshot a la clase User
                 val usuario = snapshot.getValue(Usuario::class.java)
-                username = usuario!!.nombreUsuario
-                fotoUrl = usuario.imagenUrl
-                // Inicializar el mapa y el LocationManager
-                setupMap()
-                setupLocationManager()
-                // Establecer el nombre de usuario y la imagen de perfil
-                setUsernameAndProfileImage()
+
+                if (usuario != null) {
+                    username = usuario.nombreUsuario
+                    fotoUrl = usuario.imagenUrl
+                    // Inicializar el mapa y el LocationManager
+                    setupMap()
+                    setupLocationManager()
+                    // Establecer el nombre de usuario y la imagen de perfil
+                    setUsernameAndProfileImage()
+                }
             }
             override fun onCancelled(error: DatabaseError) {
                 //showToast("No se pudo obtener los datos del usuario")
