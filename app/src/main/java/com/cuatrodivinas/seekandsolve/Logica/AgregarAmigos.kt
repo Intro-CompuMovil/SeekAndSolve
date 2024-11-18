@@ -113,7 +113,7 @@ class AgregarAmigos : AppCompatActivity(), AdapterView.OnItemSelectedListener {
     }
 
     private fun actualizarResultados(busqueda: String) {
-        val columns = arrayOf("_id", "nombre")
+        val columns = arrayOf("_id", "idUser", "nombre")
         val matrixCursor = MatrixCursor(columns)
         buscarUsuarios(matrixCursor, busqueda)
         val cursor: Cursor = matrixCursor
@@ -124,6 +124,7 @@ class AgregarAmigos : AppCompatActivity(), AdapterView.OnItemSelectedListener {
     private fun buscarUsuarios(matrixCursor: MatrixCursor, busqueda: String) {
         val json = JSONObject(loadJSONFromAssetExternalWorld("usuarios.json"))
         val usuariosJson = json.getJSONArray("usuarios")
+        var idCounter = 1L
         // Buscar dentro del arreglo todos los usuarios que tengan en alguna parte del username o el correo la busqueda
         for (i in 0 until usuariosJson.length()) {
             val jsonObject = usuariosJson.getJSONObject(i)
@@ -143,7 +144,8 @@ class AgregarAmigos : AppCompatActivity(), AdapterView.OnItemSelectedListener {
                     }
                     if (!encontrado) {
                         // Si no está en la lista de amigos, se agrega al cursor
-                        matrixCursor.addRow(arrayOf(id, jsonObject.getString("username")))
+                        matrixCursor.addRow(arrayOf(idCounter,id, jsonObject.getString("username")))
+                        idCounter++
                     }
                 }
             }

@@ -17,8 +17,8 @@ import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
 
 class AmigosAdapter(context: Context?, c: Cursor?, flags: Int): CursorAdapter(context, c, flags) {
-    private val ID = 0
-    private val NOMBRE = 1
+    private val ID = 1
+    private val NOMBRE = 2
 
     override fun newView(context: Context?, cursor: Cursor?, parent: ViewGroup?): View {
         return LayoutInflater.from(context)
