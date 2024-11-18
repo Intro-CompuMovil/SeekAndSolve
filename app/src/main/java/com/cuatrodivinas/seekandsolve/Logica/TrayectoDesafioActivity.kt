@@ -407,7 +407,7 @@ class TrayectoDesafioActivity : AppCompatActivity(), LocationListener {
         binding.iniciarDesafio.setOnClickListener {
             val intentIniciarDesafio = Intent(this, ConfigurarCarreraActivity::class.java)
             intentIniciarDesafio.putExtra("desafio", desafio)
-            intentIniciarDesafio.putExtra("bundle", intent.getBundleExtra("bundle"))
+//            intentIniciarDesafio.putExtra("bundle", intent.getBundleExtra("bundle"))
             startActivity(intentIniciarDesafio)
         }
 
