@@ -241,9 +241,17 @@ class MainActivity : AppCompatActivity(), LocationListener {
         // Crear e inicializar el listener a los cambios en los desafíos
         desafiosListener = object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                // Convertir el snapshot a una lista de Desafio (sin elementos nulos)
-                desafiosList = snapshot.children.mapNotNull { it.getValue(Desafio::class.java) }.toMutableList()
-                Log.d("Desafios", "Lista actualizada de desafíos: ${desafiosList.size}")
+                for (desafioSnapshot in snapshot.children) {
+                    val desafio = desafioSnapshot.getValue(Desafio::class.java)
+                    desafio?.let {
+                        // Asigna el ID manualmente si no viene en el modelo
+                        it.id = desafioSnapshot.key ?: ""
+                        if (it.id.isEmpty()) {
+                            Log.e("Realtime Database", "Desafío sin id: ${it.nombre}")
+                        }
+                        desafiosList.add(it)
+                    }
+                }
             }
 
             override fun onCancelled(error: DatabaseError) {

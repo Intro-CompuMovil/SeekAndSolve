@@ -5,7 +5,6 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
-import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
@@ -21,6 +20,7 @@ import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.storage
 import com.cuatrodivinas.seekandsolve.Datos.Desafio
 import com.cuatrodivinas.seekandsolve.Datos.Punto
 import com.cuatrodivinas.seekandsolve.databinding.ActivityCrearDesafioBinding
+import com.google.firebase.database.DatabaseReference
 import com.google.firebase.storage.StorageReference
 import java.io.File
 import java.io.FileOutputStream
@@ -76,59 +76,54 @@ class CrearDesafioActivity : AppCompatActivity() {
         startActivityForResult(intent.putExtra("bundle", bundle), requestCode)
     }
 
-    private fun crearDesafio(){
+    private fun crearDesafio() {
         val drawable = binding.imagenDesafio.drawable
         if (drawable is BitmapDrawable) {
             val bitmap = drawable.bitmap
-
-            // Guardar el Bitmap en un archivo temporal
-            val file = File(cacheDir, "temp_image.jpg")
-            try {
-                val outputStream = FileOutputStream(file)
-                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
-                outputStream.flush()
-                outputStream.close()
-            } catch (e: IOException) {
-                e.printStackTrace()
-                return
+            val fileUri = saveBitmapToFile(bitmap)
+            if (fileUri != null) {
+                val desafiosRef = database.reference.child(PATH_DESAFIOS)
+                val desafioId = desafiosRef.push().key // Genera el ID del desafío
+                desafio.id = desafioId!!
+                guardarImagenYDesafio(fileUri, desafioId, desafiosRef)
             }
-
-            // Convertir el archivo a Uri
-            val fileUri = Uri.fromFile(file)
-            val imageRef =
-                storage.reference.child("$PATH_DESAFIOS/${desafio.nombre}_${desafio.uidCreador}.jpg")
-            imageRef.putFile(fileUri)
-                .addOnSuccessListener { taskSnapshot ->
-                    // Obtener la URL de descarga después de que la imagen se suba con éxito
-                    imageRef.downloadUrl.addOnSuccessListener { uri ->
-                        desafio.imagenUrl = uri.toString()
-                        // Guardar el URL en la base de datos o usarlo como desees
-                        escribirDesafioBD()
-                    }.addOnFailureListener { exception ->
-                        Toast.makeText(
-                            this@CrearDesafioActivity,
-                            "No fue posible obtener la URL de descarga",
-                            Toast.LENGTH_LONG
-                        ).show()
-                    }
-                }
-                .addOnFailureListener { exception ->
-                    Toast.makeText(
-                        this@CrearDesafioActivity,
-                        "No fue posible subir la imagen",
-                        Toast.LENGTH_LONG
-                    ).show()
-                }
-        }
-        else{
+        } else {
             Toast.makeText(this, "La imagen no es un BitmapDrawable", Toast.LENGTH_SHORT).show()
         }
     }
 
-    private fun escribirDesafioBD() {
-        val desafioRef = database.reference.child(PATH_DESAFIOS)
-        val desafioId = desafioRef.push().key // Genera el ID
-        desafioRef.child(desafioId!!).setValue(desafio.toMap())
+    private fun saveBitmapToFile(bitmap: Bitmap): Uri? {
+        val file = File(cacheDir, "temp_image.jpg")
+        return try {
+            val outputStream = FileOutputStream(file)
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
+            outputStream.flush()
+            outputStream.close()
+            Uri.fromFile(file)
+        } catch (e: IOException) {
+            e.printStackTrace()
+            null
+        }
+    }
+
+    private fun guardarImagenYDesafio(fileUri: Uri, desafioId: String, desafiosRef: DatabaseReference) {
+        val imageRef = storage.reference.child("$PATH_DESAFIOS/${desafioId}.jpg")
+        imageRef.putFile(fileUri)
+            .addOnSuccessListener {
+                imageRef.downloadUrl.addOnSuccessListener { uri ->
+                    desafio.imagenUrl = uri.toString()
+                    escribirDesafioDB(desafioId, desafiosRef)
+                }.addOnFailureListener {
+                    showToast("No fue posible obtener la URL de descarga")
+                }
+            }
+            .addOnFailureListener {
+                showToast("No fue posible subir la imagen")
+            }
+    }
+
+    private fun escribirDesafioDB(desafioId: String, desafiosRef: DatabaseReference) {
+        desafiosRef.child(desafioId).setValue(desafio.toMap())
     }
 
     // Pedir permiso para acceder a la cámara
@@ -195,6 +190,10 @@ class CrearDesafioActivity : AppCompatActivity() {
     private fun agregarCheckpoint(punto: Punto) {
         desafio.puntosIntermedios.add(punto)
         checkpointsAdapter.notifyDataSetChanged()
+    }
+
+    private fun showToast(message: String) {
+        Toast.makeText(this, message, Toast.LENGTH_LONG).show()
     }
 
     companion object {

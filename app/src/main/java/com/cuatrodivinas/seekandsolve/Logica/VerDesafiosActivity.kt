@@ -7,28 +7,28 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.database.Cursor
 import android.database.MatrixCursor
-import android.graphics.drawable.Drawable
 import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
 import android.os.Bundle
 import android.util.Log
-import android.widget.ListView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.PATH_DESAFIOS
+import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.database
+import com.cuatrodivinas.seekandsolve.Datos.Desafio
 import com.cuatrodivinas.seekandsolve.R
 import com.cuatrodivinas.seekandsolve.databinding.ActivityVerDesafiosBinding
-import org.json.JSONArray
-import org.json.JSONObject
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.ValueEventListener
 import org.osmdroid.config.Configuration
 import org.osmdroid.library.BuildConfig
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.Marker
 import org.osmdroid.views.overlay.TilesOverlay
-import java.io.IOException
-import java.io.InputStream
 import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.sin
@@ -39,13 +39,14 @@ class VerDesafiosActivity : AppCompatActivity(), LocationListener {
     private lateinit var map: MapView
     private val REQUEST_PERMISSIONS_REQUEST_CODE = 1
     private lateinit var locationManager: LocationManager
-    private var desafios: JSONArray? = null
+    private var desafiosList: MutableList<Desafio> = mutableListOf()
     private lateinit var marcadores: MutableList<Marker>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityVerDesafiosBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
         marcadores = mutableListOf()
         inicializarDesafios()
         setupMap()
@@ -55,58 +56,45 @@ class VerDesafiosActivity : AppCompatActivity(), LocationListener {
 
     private fun verDesafio() {
         binding.listaDesafios.setOnItemClickListener { parent, view, position, id ->
+            val desafio = desafiosList[position]
             val intent = Intent(this, VerDesafioActivity::class.java)
-            val bundle = Bundle()
-            val jsonObject = desafios!!.getJSONObject(position)
-            bundle.putString("uidCreador", "")
-            bundle.putString("id", jsonObject.getString("id"))
-            bundle.putString("nombre", jsonObject.getString("nombre"))
-            bundle.putString("descripcion", jsonObject.getString("descripcion"))
-            bundle.putString("imagen", jsonObject.getString("fotoUrl"))
-            bundle.putString("puntoInicial", jsonObject.getString("puntoInicial"))
-            if(jsonObject.has("puntosIntermedios")){
-                bundle.putString("puntosIntermedios", jsonObject.getString("puntosIntermedios"))
-            }
-            bundle.putString("puntoFinal", jsonObject.getString("puntoFinal"))
-            intent.putExtra("bundle", bundle)
+            intent.putExtra("desafio", desafio)
             startActivity(intent)
         }
     }
 
     private fun inicializarDesafios() {
-        val columns = arrayOf("_id", "nombre")
-        val matrixCursor = MatrixCursor(columns)
+        val desafiosRef = database.getReference(PATH_DESAFIOS)
 
-        val json = cargarJson()?.let { JSONObject(it) }
-        desafios = json?.getJSONArray("desafios")
-        if (desafios != null) {
-            for (i in 0 until desafios!!.length()) {
-                val jsonObject = desafios!!.getJSONObject(i)
-                val id = jsonObject.getString("id")
-                val name = jsonObject.getString("nombre")
-                matrixCursor.addRow(arrayOf(id, name))
+        desafiosRef.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                val columns = arrayOf("_id", "desafio_id", "nombre")
+                val matrixCursor = MatrixCursor(columns)
+                var idCounter = 1L
+
+                for (desafioSnapshot in dataSnapshot.children) {
+                    val desafio = desafioSnapshot.getValue(Desafio::class.java)
+                    desafio?.let {
+                        // Asigna el ID manualmente si no viene en el modelo
+                        it.id = desafioSnapshot.key ?: ""
+                        if (it.id.isEmpty()) {
+                            Log.e("Realtime Database", "Desafío sin id: ${it.nombre}")
+                        }
+                        desafiosList.add(it)
+                        matrixCursor.addRow(arrayOf(idCounter, it.id, it.nombre))
+                        idCounter++
+                    }
+                }
+
+                val cursor: Cursor = matrixCursor
+                val desafiosAdapter = DesafiosAdapter(this@VerDesafiosActivity, cursor, 0)
+                binding.listaDesafios.adapter = desafiosAdapter
             }
-        }
 
-        val cursor: Cursor = matrixCursor
-        val desafiosAdapter = DesafiosAdapter(this, cursor, 0)
-        binding.listaDesafios.adapter = desafiosAdapter
-    }
-
-    private fun cargarJson(): String? {
-        val json: String?
-        try {
-            val isStream: InputStream = assets.open("desafios.json")
-            val size: Int = isStream.available()
-            val buffer = ByteArray(size)
-            isStream.read(buffer)
-            isStream.close()
-            json = String(buffer, Charsets.UTF_8)
-        } catch (ex: IOException) {
-            ex.printStackTrace()
-            return null
-        }
-        return json
+            override fun onCancelled(databaseError: DatabaseError) {
+                Log.e("Firebase", "Error al leer los desafíos", databaseError.toException())
+            }
+        })
     }
 
     private fun setupMap() {
@@ -156,27 +144,23 @@ class VerDesafiosActivity : AppCompatActivity(), LocationListener {
         Log.d("Marcadores", "Marcadores ${map.overlays.size}")
     }
 
-    private fun setDesafiosCercanos(lalitud: Double, longitud: Double){
-        if (desafios != null) {
-            for (i in 0 until desafios!!.length()){
-                val desafio = desafios!!.getJSONObject(i)
-                val puntoInicial = desafio.getJSONObject("puntoInicial")
-                val latitudPunto = puntoInicial.getDouble("latitud")
-                val longitudPunto = puntoInicial.getDouble("longitud")
-                val distancia = calcularDistancia(lalitud, longitud, latitudPunto, longitudPunto)
-                if(distancia <= 10000.0){
-                    val marcadorDesafio = Marker(map)
-                    marcadorDesafio.icon = map.context.getDrawable(R.drawable.desafio_marcador)
-                    marcadorDesafio.position = GeoPoint(latitudPunto, longitudPunto)
-                    marcadorDesafio.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
-                    marcadorDesafio.title = desafio.getString("nombre")
-                    marcadores.add(marcadorDesafio)
-                }
+    private fun setDesafiosCercanos(latitud: Double, longitud: Double){
+        for (desafio in desafiosList) {
+            val latitudPunto = desafio.puntoInicial.latitud
+            val longitudPunto = desafio.puntoInicial.longitud
+            val distancia = calcularDistancia(latitud, longitud, latitudPunto, longitudPunto)
+            if (distancia <= 10000.0) {
+                val marcadorDesafio = Marker(map)
+                marcadorDesafio.icon = map.context.getDrawable(R.drawable.desafio_marcador)
+                marcadorDesafio.position = GeoPoint(latitudPunto, longitudPunto)
+                marcadorDesafio.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
+                marcadorDesafio.title = desafio.nombre
+                marcadores.add(marcadorDesafio)
             }
         }
     }
 
-    fun calcularDistancia(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Double {
+    private fun calcularDistancia(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Double {
         val radioTierra = 6371000.0  // Radio de la Tierra en metros
         val dLat = Math.toRadians(lat2 - lat1)
         val dLon = Math.toRadians(lon2 - lon1)

@@ -1,18 +1,22 @@
 package com.cuatrodivinas.seekandsolve.Logica
 
-import android.content.Intent
 import android.database.Cursor
 import android.database.MatrixCursor
 import android.os.Bundle
+import android.util.Log
 import android.view.animation.AnimationUtils
 import android.widget.ImageView
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
+import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.PATH_RECOMPENSAS
+import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.PATH_USERS
+import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.auth
+import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.database
+import com.cuatrodivinas.seekandsolve.Datos.InfoRecompensa
 import com.cuatrodivinas.seekandsolve.R
 import com.cuatrodivinas.seekandsolve.databinding.ActivityRecompensasCarreraBinding
-import com.cuatrodivinas.seekandsolve.databinding.ActivityVerPerfilBinding
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.ValueEventListener
 
 class RecompensasCarrera : AppCompatActivity() {
     private lateinit var binding: ActivityRecompensasCarreraBinding
@@ -21,21 +25,39 @@ class RecompensasCarrera : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityRecompensasCarreraBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        quemarDatos()
+
+        // Si se envió un uid en el intent, usarlo, sino usar el uid del usuario autenticado
+        val uid = intent.getStringExtra("uid") ?: auth.currentUser?.uid ?: ""
+        cargarRecompensas(uid)
+
         eventoVolver()
         findViewById<ImageView>(R.id.medalImageView).startAnimation(AnimationUtils.loadAnimation(this, R.anim.blink))
     }
 
-    private fun quemarDatos() {
-        val columns = arrayOf("_id", "nombre", "lugar", "fecha")
-        val matrixCursor = MatrixCursor(columns)
-        matrixCursor.addRow(arrayOf("1", "Capitán Cuack Cuack", "Bogotá", "20/02/2021"))
-        matrixCursor.addRow(arrayOf("2", "Denario del Rey", "Mosquera", "27/02/2022"))
-        matrixCursor.addRow(arrayOf("3", "Roca Lunar(Especial 2024)", "B/bermeja", "16/04/2023"))
-        matrixCursor.addRow(arrayOf("4", "Mascara Sospechosa", "San vicente", "10/05/2024"))
-        val cursor: Cursor = matrixCursor
-        val recompensasAdapter = RecompensasAdapter(this, cursor, 0)
-        binding.recompensasLv.adapter = recompensasAdapter
+    private fun cargarRecompensas(uid: String) {
+        val recompensasRef = database.reference.child(PATH_USERS).child(uid).child(PATH_RECOMPENSAS)
+
+        recompensasRef.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                val columns = arrayOf("_id", "nombre", "lugar", "fecha")
+                val matrixCursor = MatrixCursor(columns)
+
+                for (recompensaSnapshot in dataSnapshot.children) {
+                    val recompensa = recompensaSnapshot.getValue(InfoRecompensa::class.java)
+                    recompensa?.let {
+                        matrixCursor.addRow(arrayOf(it.idRecompensa, it.nombreRecompensa, it.nombreDesafio, it.fecha))
+                    }
+                }
+
+                val cursor: Cursor = matrixCursor
+                val recompensasAdapter = RecompensasAdapter(this@RecompensasCarrera, cursor, 0)
+                binding.recompensasLv.adapter = recompensasAdapter
+            }
+
+            override fun onCancelled(databaseError: DatabaseError) {
+                Log.e("Firebase", "Error al leer las recompensas", databaseError.toException())
+            }
+        })
     }
 
     private fun eventoVolver(){
