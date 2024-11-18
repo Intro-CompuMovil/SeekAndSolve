@@ -15,7 +15,6 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import com.cuatrodivinas.seekandsolve.Datos.Desafio
 import com.cuatrodivinas.seekandsolve.Datos.Punto
 import com.cuatrodivinas.seekandsolve.Datos.RetrofitOsmClient
 import com.cuatrodivinas.seekandsolve.Datos.RetrofitUrls
@@ -38,11 +37,11 @@ class SeleccionarPuntoFinalActivity : AppCompatActivity(), LocationListener {
     private lateinit var binding: ActivitySeleccionarPuntoFinalBinding
     private lateinit var map: MapView
     private lateinit var locationManager: LocationManager
-    private lateinit var desafio: Desafio
     private lateinit var marcadorPuntoInicial: Marker
     private lateinit var marcadorPuntoFinal: Marker
     private lateinit var polyline: Polyline
     private val REQUEST_PERMISSIONS_REQUEST_CODE = 1
+    private lateinit var puntoInicial: Punto
     private lateinit var retrofitUrls: RetrofitUrls
     private var trayectoRetrofit: RetrofitUrls
     private var geocoderRetrofit: RetrofitUrls
@@ -65,11 +64,8 @@ class SeleccionarPuntoFinalActivity : AppCompatActivity(), LocationListener {
 
         // Obtener los datos del Intent (incluyendo el punto inicial)
         val bundle = intent.getBundleExtra("bundle")
-        desafio = bundle?.getSerializable("desafio") as Desafio
-
-        // Verificar si el punto inicial tiene coordenadas válidas
-        val latitudInicial = desafio.puntoInicial.latitud
-        val longitudInicial = desafio.puntoInicial.longitud
+        val latitudInicial = bundle?.getDouble("latitudPuntoInicial") ?: 0.0
+        val longitudInicial = bundle?.getDouble("longitudPuntoInicial") ?: 0.0
 
         // Log para depurar si el punto inicial fue pasado correctamente
         Log.d("SeleccionarPuntoFinal", "Latitud inicial: $latitudInicial, Longitud inicial: $longitudInicial")
@@ -79,7 +75,8 @@ class SeleccionarPuntoFinalActivity : AppCompatActivity(), LocationListener {
 
         // Mostrar el punto inicial en el mapa si existe
         if (latitudInicial != 0.0 && longitudInicial != 0.0) {
-            mostrarPuntoInicial(desafio.puntoInicial)
+            puntoInicial = Punto(latitudInicial, longitudInicial)
+            mostrarPuntoInicial(puntoInicial)
         } else {
             Log.e("SeleccionarPuntoFinal", "El punto inicial no está definido o es inválido.")
         }
@@ -87,11 +84,8 @@ class SeleccionarPuntoFinalActivity : AppCompatActivity(), LocationListener {
         binding.agregarCheckpointFinal.setOnClickListener {
             val puntoFinal = Punto(marcadorPuntoFinal.position.latitude, marcadorPuntoFinal.position.longitude)
 
-            // Guardar el punto final en el desafío
-            desafio.puntoFinal = puntoFinal
-
             // Obtener la ruta real entre el punto inicial y el punto final
-            val startPoint = GeoPoint(desafio.puntoInicial.latitud, desafio.puntoInicial.longitud)
+            val startPoint = GeoPoint(puntoInicial.latitud, puntoInicial.longitud)
             val endPoint = GeoPoint(puntoFinal.latitud, puntoFinal.longitud)
             getRoute(startPoint, endPoint)
 
@@ -183,8 +177,6 @@ class SeleccionarPuntoFinalActivity : AppCompatActivity(), LocationListener {
         return poly
     }
 
-
-
     private fun setupMap() {
         Configuration.getInstance().userAgentValue = BuildConfig.APPLICATION_ID
         map = binding.map
@@ -229,7 +221,7 @@ class SeleccionarPuntoFinalActivity : AppCompatActivity(), LocationListener {
         actualizarDireccionPunto(latitude, longitude)
 
         // Obtener la ruta entre el punto inicial y el punto final
-        val puntoInicial = GeoPoint(desafio.puntoInicial.latitud, desafio.puntoInicial.longitud)
+        val puntoInicial = GeoPoint(puntoInicial.latitud, puntoInicial.longitud)
         val puntoFinal = GeoPoint(latitude, longitude)
         getRoute(puntoInicial, puntoFinal)
     }
@@ -249,7 +241,6 @@ class SeleccionarPuntoFinalActivity : AppCompatActivity(), LocationListener {
         map.controller.animateTo(marcadorPuntoInicial.position)
         map.invalidate()
     }
-
 
     private fun dibujarRuta(puntoInicial: Punto, puntoFinal: Punto) {
         val geoPuntoInicial = GeoPoint(puntoInicial.latitud, puntoInicial.longitud)

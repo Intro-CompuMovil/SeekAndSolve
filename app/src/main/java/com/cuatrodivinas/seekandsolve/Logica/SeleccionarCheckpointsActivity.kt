@@ -1,24 +1,18 @@
 package com.cuatrodivinas.seekandsolve.Logica
 
-import android.Manifest
 import android.app.UiModeManager
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.graphics.Color
 import android.os.Bundle
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import com.cuatrodivinas.seekandsolve.Datos.Punto
 import com.cuatrodivinas.seekandsolve.Datos.RetrofitOsmClient
 import com.cuatrodivinas.seekandsolve.Datos.RetrofitUrls
 import com.cuatrodivinas.seekandsolve.R
 import com.cuatrodivinas.seekandsolve.databinding.ActivitySeleccionarCheckpointsBinding
-import com.cuatrodivinas.seekandsolve.databinding.ActivitySeleccionarPuntoFinalBinding
 import org.osmdroid.config.Configuration
 import org.osmdroid.library.BuildConfig
 import org.osmdroid.util.GeoPoint
@@ -247,6 +241,4 @@ class SeleccionarCheckpointsActivity : AppCompatActivity() {
         map.controller.animateTo(marcadorPuntoFinal.position)
         map.invalidate()
     }
-
-
 }

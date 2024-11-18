@@ -16,7 +16,6 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import com.cuatrodivinas.seekandsolve.Datos.Desafio
 import com.cuatrodivinas.seekandsolve.Datos.Punto
 import com.cuatrodivinas.seekandsolve.Datos.RetrofitOsmClient
 import com.cuatrodivinas.seekandsolve.Datos.RetrofitUrls
@@ -38,7 +37,6 @@ class SeleccionarPuntoActivity : AppCompatActivity(), LocationListener {
     private lateinit var map: MapView
     private val REQUEST_PERMISSIONS_REQUEST_CODE = 1
     private lateinit var locationManager: LocationManager
-    private lateinit var desafio: Desafio
     private lateinit var tipoPunto: String
     private lateinit var marcador: Marker
     private var retrofitUrls: RetrofitUrls
@@ -58,8 +56,7 @@ class SeleccionarPuntoActivity : AppCompatActivity(), LocationListener {
 
         // Obtener los datos del Intent
         val bundle = intent.getBundleExtra("bundle")
-        desafio = bundle?.getSerializable("desafio") as Desafio
-        tipoPunto = bundle.getString("tipoPunto") ?: "checkpoint"
+        tipoPunto = bundle!!.getString("tipoPunto") ?: "checkpoint"
 
         setupMap()
         setupLocationManager()
@@ -68,19 +65,6 @@ class SeleccionarPuntoActivity : AppCompatActivity(), LocationListener {
 
         binding.agregarCheckpoint.setOnClickListener {
             val punto = Punto(marcador.position.latitude, marcador.position.longitude)
-
-            // Dependiendo del tipo, actualizamos los puntos en el desafío
-            when (tipoPunto) {
-                "inicial" -> {
-                    desafio.puntoInicial = punto
-                }
-                "final" -> {
-                    desafio.puntoFinal = punto
-                }
-                "checkpoint" -> {
-                    desafio.puntosIntermedios.add(punto)
-                }
-            }
 
             // Crear un Intent para devolver el resultado
             val resultIntent = Intent().apply {
@@ -232,22 +216,25 @@ class SeleccionarPuntoActivity : AppCompatActivity(), LocationListener {
         })
     }
 
-
     private fun actualizarDireccionPunto(latitud: Double, longitud: Double) {
         val reverseGeocode = retrofitUrls.reverseGeocode(latitud, longitud)
         reverseGeocode.enqueue(object : Callback<ResponseBody> {
             override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
                 if (response.isSuccessful && response.body() != null) {
-                    val direction = response.body()!!.string()
-                    val jsonDirection = JSONObject(direction)
-                    binding.direccion.text = jsonDirection.getString("display_name")
+                    try {
+                        val direction = response.body()!!.string()
+                        val jsonDirection = JSONObject(direction)
+                        binding.direccion.text = jsonDirection.getString("display_name")
+                    } catch (e: Exception) {
+                        Log.e("Geocode", "Error parsing JSON response", e)
+                    }
                 } else {
-                    Log.e("Geocode", "Error en la respuesta: ${response.errorBody()}")
+                    Log.e("Geocode", "Error en la respuesta: ${response.errorBody()?.string()}")
                 }
             }
 
             override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
-                Log.e("Geocode", "Error en la llamada: ${t.message}")
+                Log.e("Geocode", "Error en la llamada: ${t.message}", t)
             }
         })
     }
