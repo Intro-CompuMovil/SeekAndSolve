@@ -7,9 +7,12 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.bumptech.glide.Glide
 import com.cuatrodivinas.seekandsolve.Datos.Carrera
+import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.PATH_DESAFIOS
+import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.storage
 import com.cuatrodivinas.seekandsolve.Datos.Desafio
 import com.cuatrodivinas.seekandsolve.R
 import com.cuatrodivinas.seekandsolve.databinding.ActivityConfigurarCarreraBinding
+import com.google.firebase.storage.StorageReference
 import org.json.JSONArray
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -20,6 +23,7 @@ class ConfigurarCarreraActivity : AppCompatActivity() {
     private lateinit var desafio: Desafio
     private var amigosInvitadosJsonArray: JSONArray = JSONArray()
     private var amigosNoInvitadosJsonArray: JSONArray = JSONArray()
+    private lateinit var refImg: StorageReference
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -39,16 +43,13 @@ class ConfigurarCarreraActivity : AppCompatActivity() {
         desafio = intent.getSerializableExtra("desafio") as Desafio
         binding.tituloDesafio.text = desafio.nombre
 
-        val urlImagen = desafio.imagenUrl
-        if (urlImagen != null) {
-            if (urlImagen.isNotEmpty()) {
-                Glide.with(binding.imagenDesafio.context)
-                    .load(urlImagen)
-                    .into(binding.imagenDesafio)
-                binding.imagenDesafio.background = null
-            } else {
-                binding.imagenDesafio.setImageResource(R.drawable.profile_user_svgrepo_com)
-            }
+        refImg = storage.getReference(PATH_DESAFIOS).child("${desafio.id}.jpg")
+        refImg.downloadUrl.addOnSuccessListener { uri ->
+            Glide.with(this)
+                .load(uri) // Carga la imagen desde la URL
+                .into(binding.imagenDesafio)
+        }.addOnFailureListener { exception ->
+            binding.imagenDesafio.setImageResource(R.drawable.foto_bandera)
         }
 
         setListAmigosInvitados()
@@ -83,14 +84,13 @@ class ConfigurarCarreraActivity : AppCompatActivity() {
     }
 
     private fun setListAmigosInvitados() {
-        val columns = arrayOf("_id", "imagen", "nombre")
+        val columns = arrayOf("_id", "nombre")
         val matrixCursor = MatrixCursor(columns)
         for (i in 0 until amigosInvitadosJsonArray.length()) {
             val jsonObject = amigosInvitadosJsonArray.getJSONObject(i)
             val id = jsonObject.getInt("id")
-            val imagen = jsonObject.getString("fotoUrl")
             val nombre = jsonObject.getString("username")
-            matrixCursor.addRow(arrayOf(id, imagen, nombre))
+            matrixCursor.addRow(arrayOf(id, nombre))
         }
         val cursor: Cursor = matrixCursor
         val amigosAdapter = AmigosAdapter(this, cursor, 0)

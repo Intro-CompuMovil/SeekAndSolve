@@ -42,7 +42,7 @@ class CrearDesafioActivity : AppCompatActivity() {
         binding = ActivityCrearDesafioBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        desafio = Desafio(auth.currentUser!!.uid, "", "", "", Punto(0.0, 0.0), mutableListOf(), Punto(0.0, 0.0))
+        desafio = Desafio( UUID.randomUUID().toString(), auth.currentUser!!.uid, "", "", "", Punto(0.0, 0.0), mutableListOf(), Punto(0.0, 0.0))
         checkpointsAdapter = CheckpointsAdapter(this, desafio.puntosIntermedios)
         binding.listaCheckpoints.adapter = checkpointsAdapter
 

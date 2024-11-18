@@ -60,7 +60,7 @@ class VerDesafioActivity : AppCompatActivity() {
             if(desafio.getString("puntosIntermedios") != null){
                 puntosIntermedios = gson.fromJson(desafio.getString("puntosIntermedios"), puntoListType)
             }
-            val desafioVar = Desafio(desafio.getString("uidCreador")!!, desafio.getString("nombre")!!, desafio.getString("imagen")!!,
+            val desafioVar = Desafio(desafio.getString("id")!!,desafio.getString("uidCreador")!!, desafio.getString("nombre")!!, desafio.getString("imagen")!!,
                 desafio.getString("descripcion")!!, puntoInicial,
                 puntosIntermedios, puntoFinal)
             intentIniciarDesafio.putExtra("desafio", desafioVar)
@@ -77,7 +77,7 @@ class VerDesafioActivity : AppCompatActivity() {
             if(desafio.getString("puntosIntermedios") != null){
                 puntosIntermedios = gson.fromJson(desafio.getString("puntosIntermedios"), puntoListType)
             }
-            val desafioVar = Desafio(desafio.getString("uidCreador")!!, desafio.getString("nombre")!!, desafio.getString("imagen")!!,
+            val desafioVar = Desafio(desafio.getString("id")!!,desafio.getString("uidCreador")!!, desafio.getString("nombre")!!, desafio.getString("imagen")!!,
                 desafio.getString("descripcion")!!, puntoInicial,
                 puntosIntermedios, puntoFinal)
             intentRevisarTrayecto.putExtra("desafio", desafioVar)

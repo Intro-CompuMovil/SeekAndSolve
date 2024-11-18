@@ -12,11 +12,16 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import com.bumptech.glide.Glide
 import com.cuatrodivinas.seekandsolve.Datos.Carrera
+import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.PATH_DESAFIOS
+import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.PATH_PREGUNTAS
+import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.storage
 import com.cuatrodivinas.seekandsolve.Datos.Desafio
 import com.cuatrodivinas.seekandsolve.Datos.Pregunta
 import com.cuatrodivinas.seekandsolve.Datos.Punto
 import com.cuatrodivinas.seekandsolve.R
+import com.google.firebase.storage.StorageReference
 import com.squareup.picasso.Picasso
 import java.time.LocalDateTime
 
@@ -35,6 +40,7 @@ class ResolverAcertijoActivity : AppCompatActivity() {
     lateinit var punto: Punto
     lateinit var fechaInicio: LocalDateTime
     var intentos: Int = 0
+    private lateinit var refImg: StorageReference
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -55,14 +61,17 @@ class ResolverAcertijoActivity : AppCompatActivity() {
 
     private fun inicializarElementos(){
         //Obtener la pregunta random
-        pregunta = Pregunta("Porque se extinguieron los mamuts", mutableListOf("a", "b", "c", "d") ,"b", "")
+        pregunta = Pregunta("1","Porque se extinguieron los mamuts", mutableListOf("a", "b", "c", "d") ,"b", "")
         acertijo.text = pregunta.enunciado
-        if(!pregunta.imagenUrl.isNullOrEmpty()){
-            Picasso.get()
-                .load(pregunta.imagenUrl) // URL de la imagen
-                .placeholder(R.drawable.cargando) // Imagen de marcador de posición mientras se carga
-                .error(R.drawable.error) // Imagen en caso de error
+
+        val idPregunta = pregunta.id
+        refImg = storage.getReference(PATH_PREGUNTAS).child("$idPregunta.jpg")
+        refImg.downloadUrl.addOnSuccessListener { uri ->
+            Glide.with(this)
+                .load(uri) // Carga la imagen desde la URL
                 .into(imagenAcertijo)
+        }.addOnFailureListener { exception ->
+            imagenAcertijo.setImageResource(R.drawable.foto_bandera)
         }
 
         val adapter = ArrayAdapter(
