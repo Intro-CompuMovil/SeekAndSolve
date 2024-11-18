@@ -102,15 +102,14 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="18dp"
-        android:layout_marginEnd="27dp"
-        android:layout_marginStart="27dp"
-        android:text="@string/fecha_de_nacimiento"
-        android:textColor="?android:textColor"
+        android:drawableStart="@drawable/caledar_icon"
         android:fontFamily="@font/lexend_font"
         android:paddingStart="20dp"
         android:paddingEnd="20dp"
-        android:drawableStart="@drawable/caledar_icon"
-        app:layout_constraintTop_toBottomOf="@+id/corrreoETxt" />
+        android:text="@string/fecha_de_nacimiento"
+        android:textColor="?android:textColor"
+        app:layout_constraintTop_toBottomOf="@+id/corrreoETxt"
+        tools:layout_editor_absoluteX="27dp" />
 
     <LinearLayout
         android:id="@+id/botonesAmarillosLayout"
@@ -173,5 +172,15 @@
             android:backgroundTint="@color/secondaryColor"
             app:layout_constraintTop_toBottomOf="@+id/FechaETxt" />
     </LinearLayout>
+
+    <Button
+        android:id="@+id/btnActivo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/establecerse_inactivo"
+        app:layout_constraintBottom_toTopOf="@+id/botonesAmarillosLayout"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/FechaETxt" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

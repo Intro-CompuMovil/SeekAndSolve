@@ -1,6 +1,10 @@
 package com.cuatrodivinas.seekandsolve.Logica
 
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -9,14 +13,17 @@ import androidx.appcompat.app.AppCompatActivity
 import com.cuatrodivinas.seekandsolve.R
 import com.cuatrodivinas.seekandsolve.databinding.ActivityVerPerfilBinding
 import android.widget.Toast
+import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import com.bumptech.glide.Glide
+import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.PATH_ACTIVOS
 import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.PATH_IMAGENES
 import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.PATH_USERS
 import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.auth
 import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.database
 import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.storage
 import com.cuatrodivinas.seekandsolve.Datos.Usuario
+import com.google.firebase.database.ChildEventListener
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
@@ -27,6 +34,7 @@ import java.io.File
 class VerPerfil : AppCompatActivity() {
     private lateinit var binding: ActivityVerPerfilBinding
     private lateinit var refImg: StorageReference
+    private lateinit var databaseRef: DatabaseReference
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -43,6 +51,7 @@ class VerPerfil : AppCompatActivity() {
         }
         deshabilitarEditTexts()
         configurarEventos()
+        servicioActivos()
     }
 
     // Con el UID del usuario, obtener su información
@@ -111,6 +120,10 @@ class VerPerfil : AppCompatActivity() {
             cerrarSesion()
         }
 
+        binding.btnActivo.setOnClickListener {
+            cambiarEstado()
+        }
+
         binding.editarPerfilBtn.setOnClickListener {
             val intent = Intent(this, EditarPerfil::class.java)
             intent.putExtra("nombre", binding.nombreETxt.text.toString())
@@ -122,6 +135,8 @@ class VerPerfil : AppCompatActivity() {
     }
 
     private fun cerrarSesion() {
+        databaseRef = database.getReference(PATH_ACTIVOS).child(auth.currentUser!!.uid)
+        databaseRef.removeValue()
         auth.signOut()
         val intent = Intent(this, LandingActivity::class.java)
         intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
@@ -136,5 +151,130 @@ class VerPerfil : AppCompatActivity() {
 
     private fun showToast(message: String) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+    }
+
+    private fun cambiarEstado(){
+        buscarDisponible(auth.currentUser!!.uid) { disponible ->
+            if (disponible) {
+                databaseRef = database.getReference(PATH_ACTIVOS).child(auth.currentUser!!.uid)
+                databaseRef.removeValue()
+                binding.btnActivo.text = "Establecerse activo"
+                binding.btnActivo.backgroundTintList = ContextCompat.getColorStateList(this, R.color.primaryColor)
+            } else {
+                databaseRef = database.getReference(PATH_ACTIVOS).child(auth.currentUser!!.uid)
+                databaseRef.setValue(auth.currentUser!!.uid)
+                binding.btnActivo.text = "Establecerse inactivo"
+                binding.btnActivo.backgroundTintList = ContextCompat.getColorStateList(this, R.color.secondaryColor)
+            }
+        }
+    }
+
+    private fun buscarDisponible(uid: String, onResult: (Boolean) -> Unit){
+        val myRef = database.getReference(PATH_ACTIVOS)
+        myRef.child(uid).addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                // Verifica si el UID existe
+                if (snapshot.exists()) {
+                    onResult(true) // UID encontrado
+                } else {
+                    onResult(false) // UID no encontrado
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                // Manejo de error si la operación fue cancelada
+                Log.e("Firebase", "Error al verificar el UID", error.toException())
+                onResult(false) // Retorna false en caso de error
+            }
+        })
+    }
+
+    private fun servicioActivos(){
+        databaseRef = database.getReference("$PATH_ACTIVOS/")
+        databaseRef.addChildEventListener(object : ChildEventListener {
+            override fun onChildAdded(dataSnapshot: DataSnapshot, previousChildName: String?) {
+                val userId = dataSnapshot.key
+                userId?.let {
+                    mostrarDisponibilidad(it)
+                }
+            }
+
+            override fun onChildRemoved(dataSnapshot: DataSnapshot) {
+                val userId = dataSnapshot.key
+                userId?.let {
+                    mostrarDisponibilidad(it, isUserLeaving = true)
+                }
+            }
+
+            override fun onChildChanged(dataSnapshot: DataSnapshot, previousChildName: String?) {}
+
+            override fun onChildMoved(dataSnapshot: DataSnapshot, previousChildName: String?) {}
+
+            override fun onCancelled(databaseError: DatabaseError) {}
+        })
+    }
+
+    private fun mostrarDisponibilidad(userId: String, isUserLeaving: Boolean = false) {
+        val userDatabase = database.getReference("$PATH_USERS/$userId")
+
+        userDatabase.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                val nombreUsuario = dataSnapshot.child("nombreUsuario").getValue(String::class.java)
+
+                if (nombreUsuario != null) {
+                    //verificar si el usuario es amigo o no del usuario actual
+                    var esAmigo = false
+                    val amigosUsuario = database.getReference("$PATH_USERS/${auth.currentUser!!.uid}/amigos")
+                    amigosUsuario.get().addOnSuccessListener { dataSnapshot ->
+                        for (amigo in dataSnapshot.children) {
+                            if (amigo.key == nombreUsuario) {
+                                esAmigo = true
+                                break
+                            }
+                        }
+                        if (esAmigo) {
+                            val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                val channel = NotificationChannel(
+                                    "wearable_channel", // ID del canal
+                                    "Wearable Notifications", // Nombre del canal
+                                    NotificationManager.IMPORTANCE_DEFAULT
+                                )
+                                notificationManager.createNotificationChannel(channel)
+                            }
+                            val notificationId = 1 // Un ID único para la notificación
+
+                            val titulo = if (isUserLeaving) {
+                                "$nombreUsuario ha deja de buscar Tesoros"
+                            } else {
+                                "$nombreUsuario ha comenzado a buscar Tesoros"
+                            }
+
+                            val contenido = if (isUserLeaving) {
+                                "Aprovecha la oportunidad de ganarle en recompensas!"
+                            }else{
+                                "Juega con el y busca recompensas en las carreras"
+                            }
+
+                            val notification = NotificationCompat.Builder(this@VerPerfil, "wearable_channel")
+                                .setSmallIcon(R.drawable.logo) // Icono de la notificación
+                                .setContentTitle(titulo)
+                                .setContentText(contenido)
+                                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                                .setAutoCancel(true) // La notificación se eliminará al hacer clic
+                                .build()
+                            notificationManager.notify(notificationId, notification)
+                        }
+                    }.addOnFailureListener { exception -> }
+
+
+                }
+            }
+
+            override fun onCancelled(databaseError: DatabaseError) {
+//                Toast.makeText(applicationContext, "Error: ${databaseError.message}", Toast.LENGTH_SHORT).show()
+            }
+        })
     }
 }

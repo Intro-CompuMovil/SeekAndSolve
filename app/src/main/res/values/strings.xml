@@ -89,4 +89,5 @@
     <string name="crear_pregunta">Crear Pregunta</string>.
     <string name="creacion_pregunta">Creación de Pregunta</string>
     <string name="enunciado">Enunciado</string>
+    <string name="establecerse_inactivo">Establecerse inactivo</string>
 </resources>

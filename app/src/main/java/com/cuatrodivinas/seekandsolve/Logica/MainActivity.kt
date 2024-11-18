@@ -123,63 +123,6 @@ class MainActivity : AppCompatActivity(), LocationListener {
         binding.amigosButton.setOnClickListener {
             startActivity(Intent(this, Amigos::class.java))
         }
-
-        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(
-                "wearable_channel", // ID del canal
-                "Wearable Notifications", // Nombre del canal
-                NotificationManager.IMPORTANCE_DEFAULT
-            )
-            notificationManager.createNotificationChannel(channel)
-        }
-
-        val notificationId = 1 // Un ID único para la notificación
-
-        val notification = NotificationCompat.Builder(this, "wearable_channel")
-            .setSmallIcon(R.drawable.logo) // Icono de la notificación
-            .setContentTitle("Notificación para el reloj")
-            .setContentText("Esta notificación debería mostrarse también en tu reloj.")
-            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-            .setAutoCancel(true) // La notificación se eliminará al hacer clic
-            .build()
-
-// Mostrar la notificación en el teléfono (y debería aparecer en el reloj si está conectado)
-        notificationManager.notify(notificationId, notification)
-
-
-        /*notification = NotificationCompat.Builder(this)
-            .setContentTitle("New mail from ")
-            .setContentText("subject")
-            .setSmallIcon(R.drawable.logo)
-            .extend(
-                NotificationCompat.WearableExtender()
-                    .setContentIcon(R.drawable.logo)
-            )
-            .build()
-
-        pedirPermiso(this, android.Manifest.permission.POST_NOTIFICATIONS,
-            "Necesitamos el permiso de cámara para cambiar tu foto de perfil", PERMISO_NOTIFICACIONES)*/
-        //NotificationManagerCompat.from(this).notify(0, notification)
-    }
-
-    private fun pedirPermiso(context: Context, permiso: String, justificacion: String,
-                             idCode: Int){
-        if(ContextCompat.checkSelfPermission(context, permiso) !=
-            PackageManager.PERMISSION_GRANTED){
-            if (shouldShowRequestPermissionRationale(permiso)) {
-                // Explicar al usuario por qué necesitamos el permiso
-                mostrarJustificacion(justificacion) {
-                    requestPermissions(arrayOf(permiso), idCode)
-                }
-            } else {
-                requestPermissions(arrayOf(permiso), idCode)
-            }
-        }
-        else{
-            NotificationManagerCompat.from(this).notify(0, notification)
-        }
     }
 
     private fun mostrarJustificacion(mensaje: String, onAccept: () -> Unit) {
