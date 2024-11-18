@@ -171,7 +171,8 @@ class RegisterActivity : AppCompatActivity() {
             "",
             binding.fechaNacimiento.text.toString(),
             mutableListOf(),
-            null
+            null,
+            mutableListOf()
         )
         val myRef = database.getReference("$PATH_USERS/${auth.currentUser!!.uid}")
         myRef.setValue(usuario).addOnCompleteListener { task ->

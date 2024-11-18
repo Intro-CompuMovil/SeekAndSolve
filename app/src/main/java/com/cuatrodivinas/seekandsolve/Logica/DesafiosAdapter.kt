@@ -34,7 +34,7 @@ class DesafiosAdapter(context: Context?, c: Cursor?, flags: Int) : CursorAdapter
         val nombre = cursor?.getString(NOMBRE)
 
         // Obtener la referencia de la imagen en Firebase Storage
-        val refImg: StorageReference = storage.getReference("${PATH_DESAFIOS}/$id.jpg")
+        val refImg: StorageReference = storage.reference.child("${PATH_DESAFIOS}/$id.jpg")
         refImg.downloadUrl.addOnSuccessListener { uri ->
             Glide.with(context!!)
                 .load(uri) // Carga la imagen desde la URL

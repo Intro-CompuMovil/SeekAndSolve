@@ -13,16 +13,6 @@ data class Carrera(
     // uids de los usuarios que están en progreso (cada uno almacena su progreso en usuarios/uid/carreraActual)
     var usuariosEnProgreso: MutableList<String> = mutableListOf(),
 ): Serializable {
-}
 
-/*
-"idDesafio": 1,
-"usuarios": {
-    "uid1": { "idRecompensa": 1 },
-    "uid2": { "idRecompensa": 3 }
+    constructor(): this("", "", "", mutableMapOf(), mutableListOf())
 }
-"tiempoTotal": 100,
-"acertijosPrimerIntento": 5,
-"velocidadMedia": 10,
-"distanciaTotal": 1000,
-"fecha": "16/11/2024"*/

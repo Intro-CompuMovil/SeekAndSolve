@@ -1,6 +1,9 @@
 package com.cuatrodivinas.seekandsolve.Logica
 
 import android.Manifest
+import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.app.UiModeManager
 import android.content.Context
 import android.content.Intent
@@ -8,17 +11,24 @@ import android.content.pm.PackageManager
 import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import com.bumptech.glide.Glide
 import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.PATH_DESAFIOS
 import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.PATH_IMAGENES
 import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.PATH_USERS
+import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.PERMISO_CAMARA
+import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.PERMISO_NOTIFICACIONES
 import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.auth
 import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.database
 import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.storage
@@ -27,11 +37,6 @@ import com.cuatrodivinas.seekandsolve.Datos.Punto
 import com.cuatrodivinas.seekandsolve.Datos.Usuario
 import com.cuatrodivinas.seekandsolve.R
 import com.cuatrodivinas.seekandsolve.databinding.ActivityMainBinding
-import org.osmdroid.config.Configuration
-import org.osmdroid.library.BuildConfig
-import org.osmdroid.util.GeoPoint
-import org.osmdroid.views.MapView
-import org.osmdroid.views.overlay.Marker
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import com.google.firebase.database.DataSnapshot
@@ -39,16 +44,20 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
-import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
 import org.osmdroid.api.IMapController
+import org.osmdroid.config.Configuration
+import org.osmdroid.library.BuildConfig
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
+import org.osmdroid.util.GeoPoint
+import org.osmdroid.views.MapView
+import org.osmdroid.views.overlay.Marker
 import org.osmdroid.views.overlay.TilesOverlay
-import java.io.File
 import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.sqrt
+
 
 class MainActivity : AppCompatActivity(), LocationListener {
     private lateinit var binding: ActivityMainBinding
@@ -63,6 +72,7 @@ class MainActivity : AppCompatActivity(), LocationListener {
     private lateinit var username: String
     private lateinit var fotoUrl: String
     private lateinit var refImg: StorageReference
+    private lateinit var notification: Notification
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -88,6 +98,7 @@ class MainActivity : AppCompatActivity(), LocationListener {
         getDesafios()
     }
 
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onResume() {
         super.onResume()
         if (::map.isInitialized) {
@@ -112,6 +123,78 @@ class MainActivity : AppCompatActivity(), LocationListener {
         binding.amigosButton.setOnClickListener {
             startActivity(Intent(this, Amigos::class.java))
         }
+
+        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(
+                "wearable_channel", // ID del canal
+                "Wearable Notifications", // Nombre del canal
+                NotificationManager.IMPORTANCE_DEFAULT
+            )
+            notificationManager.createNotificationChannel(channel)
+        }
+
+        val notificationId = 1 // Un ID único para la notificación
+
+        val notification = NotificationCompat.Builder(this, "wearable_channel")
+            .setSmallIcon(R.drawable.logo) // Icono de la notificación
+            .setContentTitle("Notificación para el reloj")
+            .setContentText("Esta notificación debería mostrarse también en tu reloj.")
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setAutoCancel(true) // La notificación se eliminará al hacer clic
+            .build()
+
+// Mostrar la notificación en el teléfono (y debería aparecer en el reloj si está conectado)
+        notificationManager.notify(notificationId, notification)
+
+
+        /*notification = NotificationCompat.Builder(this)
+            .setContentTitle("New mail from ")
+            .setContentText("subject")
+            .setSmallIcon(R.drawable.logo)
+            .extend(
+                NotificationCompat.WearableExtender()
+                    .setContentIcon(R.drawable.logo)
+            )
+            .build()
+
+        pedirPermiso(this, android.Manifest.permission.POST_NOTIFICATIONS,
+            "Necesitamos el permiso de cámara para cambiar tu foto de perfil", PERMISO_NOTIFICACIONES)*/
+        //NotificationManagerCompat.from(this).notify(0, notification)
+    }
+
+    private fun pedirPermiso(context: Context, permiso: String, justificacion: String,
+                             idCode: Int){
+        if(ContextCompat.checkSelfPermission(context, permiso) !=
+            PackageManager.PERMISSION_GRANTED){
+            if (shouldShowRequestPermissionRationale(permiso)) {
+                // Explicar al usuario por qué necesitamos el permiso
+                mostrarJustificacion(justificacion) {
+                    requestPermissions(arrayOf(permiso), idCode)
+                }
+            } else {
+                requestPermissions(arrayOf(permiso), idCode)
+            }
+        }
+        else{
+            NotificationManagerCompat.from(this).notify(0, notification)
+        }
+    }
+
+    private fun mostrarJustificacion(mensaje: String, onAccept: () -> Unit) {
+        androidx.appcompat.app.AlertDialog.Builder(this)
+            .setTitle("Justificación de permisos")
+            .setMessage(mensaje)
+            .setPositiveButton("Aceptar") { dialog, _ ->
+                onAccept()
+                dialog.dismiss()
+            }
+            .setNegativeButton("Cancelar") { dialog, _ ->
+                dialog.dismiss()
+            }
+            .create()
+            .show()
         binding.crearPreguntaButton.setOnClickListener {
             startActivity(Intent(this, CrearPregunta::class.java))
         }
@@ -160,9 +243,17 @@ class MainActivity : AppCompatActivity(), LocationListener {
         // Crear e inicializar el listener a los cambios en los desafíos
         desafiosListener = object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                // Convertir el snapshot a una lista de Desafio (sin elementos nulos)
-                desafiosList = snapshot.children.mapNotNull { it.getValue(Desafio::class.java) }.toMutableList()
-                Log.d("Desafios", "Lista actualizada de desafíos: ${desafiosList.size}")
+                for (desafioSnapshot in snapshot.children) {
+                    val desafio = desafioSnapshot.getValue(Desafio::class.java)
+                    desafio?.let {
+                        // Asigna el ID manualmente si no viene en el modelo
+                        it.id = desafioSnapshot.key ?: ""
+                        if (it.id.isEmpty()) {
+                            Log.e("Realtime Database", "Desafío sin id: ${it.nombre}")
+                        }
+                        desafiosList.add(it)
+                    }
+                }
             }
 
             override fun onCancelled(error: DatabaseError) {

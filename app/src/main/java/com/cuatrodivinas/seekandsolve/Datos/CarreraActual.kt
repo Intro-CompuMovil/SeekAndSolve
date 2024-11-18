@@ -8,4 +8,6 @@ class CarreraActual(
     var distanciaRecorrida: Int,
     var puntosCompletados: MutableList<Punto>
 ): Serializable {
+
+    constructor(): this("", 0, 0, mutableListOf())
 }

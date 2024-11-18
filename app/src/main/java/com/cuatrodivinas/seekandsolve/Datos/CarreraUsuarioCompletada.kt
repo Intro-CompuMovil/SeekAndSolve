@@ -9,4 +9,6 @@ class CarreraUsuarioCompletada(
     var distanciaTotal: Int,
     var  fechaCompletada: String,
     var idRecompensa: String): Serializable {
+
+        constructor(): this(0, 0, 0, "", "")
 }

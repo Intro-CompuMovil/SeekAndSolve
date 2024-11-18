@@ -14,6 +14,8 @@ class Desafio(
 
     constructor():this(null, null, null, null, null, null, null, null)
 
+    constructor(): this("", "", "", "", "", Punto(0.0, 0.0), mutableListOf(), Punto(0.0, 0.0))
+
     // Convertir a Map para subir a Realtime Database (sin id)
     fun toMap(): Map<String, Any?> {
         return mapOf(

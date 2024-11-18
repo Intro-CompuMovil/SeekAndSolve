@@ -12,7 +12,8 @@ class Data {
         const val PERMISO_CAMARA = 0
         const val PERMISO_GALERIA = 1
         const val MY_PERMISSION_REQUEST_CAMERA = 2
-        const val MY_PERMISSION_REQUEST_GALLERY = 3
+        const val PERMISO_NOTIFICACIONES = 3
+        const val MY_PERMISSION_REQUEST_GALLERY = 4
         const val PATH_USERS = "usuarios"
         const val PATH_DESAFIOS = "desafios"
         const val PATH_CARRERAS = "carreras"
