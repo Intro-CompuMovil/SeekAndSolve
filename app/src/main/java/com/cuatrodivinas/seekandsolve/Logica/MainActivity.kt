@@ -82,6 +82,8 @@ class MainActivity : AppCompatActivity(), LocationListener {
         // Inicializar Firebase Auth y la database
         auth = Firebase.auth
         database = FirebaseDatabase.getInstance()
+        val intent = Intent(this, ActivosService::class.java)
+        startService(intent)
     }
 
     override fun onStart() {

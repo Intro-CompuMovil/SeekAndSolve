@@ -51,7 +51,7 @@ class VerPerfil : AppCompatActivity() {
         }
         deshabilitarEditTexts()
         configurarEventos()
-        servicioActivos()
+        //servicioActivos()
     }
 
     // Con el UID del usuario, obtener su información
@@ -232,7 +232,7 @@ class VerPerfil : AppCompatActivity() {
                                 break
                             }
                         }
-                        if (esAmigo) {
+                        if (esAmigo || true) {
                             val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
