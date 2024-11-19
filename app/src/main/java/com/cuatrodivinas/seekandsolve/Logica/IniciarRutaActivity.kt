@@ -21,7 +21,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
-import com.cuatrodivinas.seekandsolve.Datos.Carrera
 import com.cuatrodivinas.seekandsolve.Datos.CarreraActual
 import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.MY_PERMISSION_REQUEST_CAMERA
 import com.cuatrodivinas.seekandsolve.Datos.Desafio
@@ -67,7 +66,8 @@ class IniciarRutaActivity : AppCompatActivity(), LocationListener {
     private lateinit var lastKnownLocation: Location
     private var puntoFinal = false
     private lateinit var punto: Punto
-    private lateinit var fechaInicio: LocalDateTime
+    private lateinit var puntoInicial: Punto
+    private var isFirstLocation = true
 
     init{
         val retrofit = RetrofitOsmClient.urlRuta()
@@ -81,10 +81,10 @@ class IniciarRutaActivity : AppCompatActivity(), LocationListener {
         super.onCreate(savedInstanceState)
         binding = ActivityIniciarRutaBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
         // Obtener el desafío y la carrera de la actividad anterior
         desafio = intent.getSerializableExtra("desafio") as Desafio
         carreraActual = intent.getSerializableExtra("carreraActual") as CarreraActual
-        fechaInicio = intent.getSerializableExtra("fechaInicio") as LocalDateTime
         rutas = mutableListOf()
         inicializarTextos()
         setupMap()
@@ -93,7 +93,7 @@ class IniciarRutaActivity : AppCompatActivity(), LocationListener {
 
     private fun inicializarTextos(){
         binding.tituloRuta.text = "Estas jugando " + desafio.nombre + "!"
-        binding.destinoActual.text = "Dirigete al punto inicial"
+        binding.destinoActual.text = "Dirígete al punto inicial"
     }
 
     private fun setupMap() {
@@ -293,6 +293,10 @@ class IniciarRutaActivity : AppCompatActivity(), LocationListener {
     }
 
     override fun onLocationChanged(location: Location) {
+        if(isFirstLocation){
+            puntoInicial = Punto(location.latitude, location.longitude)
+            isFirstLocation = false
+        }
         if(!shouldChangeLocation(location.latitude, location.longitude)){
             return
         }
@@ -300,17 +304,17 @@ class IniciarRutaActivity : AppCompatActivity(), LocationListener {
         val puntoActual = GeoPoint(location.latitude, location.longitude)
         var puntoDestino: GeoPoint? = null
         if(carreraActual.puntosCompletados.isEmpty()){
-            puntoDestino = GeoPoint(desafio.puntoInicial!!.latitud, desafio.puntoInicial!!.longitud)
+            puntoDestino = GeoPoint(desafio.puntoInicial.latitud, desafio.puntoInicial.longitud)
         }
         else{
-            for(checkpoint in desafio.puntosIntermedios!!){
+            for(checkpoint in desafio.puntosIntermedios){
                 if(!containsLatitudLongitud(carreraActual.puntosCompletados, checkpoint)){
                     puntoDestino = GeoPoint(checkpoint.latitud, checkpoint.longitud)
                     break
                 }
             }
             if(puntoDestino == null){
-                puntoDestino = GeoPoint(desafio.puntoFinal!!.latitud, desafio.puntoFinal!!.longitud)
+                puntoDestino = GeoPoint(desafio.puntoFinal.latitud, desafio.puntoFinal.longitud)
             }
         }
         getRoute(puntoActual, puntoDestino, true, true)
@@ -358,7 +362,7 @@ class IniciarRutaActivity : AppCompatActivity(), LocationListener {
         var checkpointEncontrado = false
         if(!carreraActual.puntosCompletados.isEmpty()){
             var numero = 1
-            for(checkpoint in desafio.puntosIntermedios!!){
+            for(checkpoint in desafio.puntosIntermedios){
                 if(!containsLatitudLongitud(carreraActual.puntosCompletados,checkpoint)){
                     binding.destinoActual.text = "Dirigete al checkpoint $numero!"
                     checkpointEncontrado = true
@@ -383,36 +387,37 @@ class IniciarRutaActivity : AppCompatActivity(), LocationListener {
                     Manifest.permission.ACCESS_COARSE_LOCATION
                 ) == PackageManager.PERMISSION_GRANTED
             ) {
-                val distanciaInicio = calcularDistancia(desafio.puntoInicial!!.latitud, desafio!!.puntoInicial!!.longitud, lastKnownLocation.latitude, lastKnownLocation.longitude)
-                if(distanciaInicio <= 100 && !containsLatitudLongitud(carreraActual.puntosCompletados,desafio.puntoInicial!!)){
-                    carreraActual.puntosCompletados.add(desafio.puntoInicial!!)
+                val distanciaInicio = calcularDistancia(desafio.puntoInicial.latitud, desafio.puntoInicial.longitud, lastKnownLocation.latitude, lastKnownLocation.longitude)
+                if(distanciaInicio <= 100 && !containsLatitudLongitud(carreraActual.puntosCompletados,desafio.puntoInicial)){
+                    carreraActual.puntosCompletados.add(desafio.puntoInicial)
                     Toast.makeText(this, "Comienza tu aventura en el desafio ${desafio.nombre}!", Toast.LENGTH_LONG).show()
-                    val puntoInicial = GeoPoint(desafio.puntoInicial!!.latitud, desafio.puntoInicial!!.longitud)
-                    val puntoDestino = GeoPoint(desafio.puntosIntermedios!![0].latitud, desafio.puntosIntermedios!![0].longitud)
+                    val puntoInicial = GeoPoint(desafio.puntoInicial.latitud, desafio.puntoInicial.longitud)
+                    val puntoDestino = GeoPoint(desafio.puntosIntermedios[0].latitud, desafio.puntosIntermedios[0].longitud)
                     getRoute(puntoInicial, puntoDestino, true, true)
                     var destino = "Dirigete al"
-                    if(!desafio.puntosIntermedios!!.isEmpty()){
+                    if(!desafio.puntosIntermedios.isEmpty()){
                         destino += " Checkpoint 1!"
                     }
                     else{
                         destino += " punto final!"
                     }
                     binding.destinoActual.text = destino
+                    carreraActual.distanciaRecorrida += calcularDistancia(this.puntoInicial.latitud, this.puntoInicial.longitud, lastKnownLocation.latitude, lastKnownLocation.longitude)
                     return@setOnClickListener
                 }
                 var checkpointAnterior: Punto? = null
                 var puntoActual = Punto(lastKnownLocation.latitude, lastKnownLocation.longitude)
-                for(checkpoint in desafio.puntosIntermedios!!){
+                for(checkpoint in desafio.puntosIntermedios){
 
                     if(containsLatitudLongitud(carreraActual.puntosCompletados,puntoActual)){
                         Toast.makeText(this, "Este checkpoint ya ha sido completado!", Toast.LENGTH_LONG).show()
                         return@setOnClickListener
                     }
-                    if(!containsLatitudLongitud(carreraActual.puntosCompletados,desafio.puntoInicial!!) && calcularDistancia(checkpoint.latitud, checkpoint.longitud, lastKnownLocation.latitude, lastKnownLocation.longitude) <= 100.0){
+                    if(!containsLatitudLongitud(carreraActual.puntosCompletados,desafio.puntoInicial) && calcularDistancia(checkpoint.latitud, checkpoint.longitud, lastKnownLocation.latitude, lastKnownLocation.longitude) <= 100.0){
                         Toast.makeText(this, "Llega al punto inicial antes de completar este checkpoint!", Toast.LENGTH_LONG).show()
                         return@setOnClickListener
                     }
-                    if(!containsLatitudLongitud(carreraActual.puntosCompletados,checkpoint) && calcularDistancia(desafio.puntoFinal!!.latitud, desafio.puntoFinal!!.longitud, lastKnownLocation.latitude, lastKnownLocation.longitude) <= 100.0){
+                    if(!containsLatitudLongitud(carreraActual.puntosCompletados,checkpoint) && calcularDistancia(desafio.puntoFinal.latitud, desafio.puntoFinal.longitud, lastKnownLocation.latitude, lastKnownLocation.longitude) <= 100.0){
                         Toast.makeText(this, "Completa todos los checkpoints antes de finalizar el juego!", Toast.LENGTH_LONG).show()
                         return@setOnClickListener
                     }
@@ -422,15 +427,17 @@ class IniciarRutaActivity : AppCompatActivity(), LocationListener {
                     }
                     if(calcularDistancia(checkpoint.latitud, checkpoint.longitud, lastKnownLocation.latitude, lastKnownLocation.longitude) <= 100.0){
                         punto = checkpoint
+                        carreraActual.distanciaRecorrida += calcularDistancia(puntoInicial.latitud, puntoInicial.longitud, lastKnownLocation.latitude, lastKnownLocation.longitude)
                         break
                     }
                     checkpointAnterior = checkpoint
                 }
-                if(!::punto.isInitialized && calcularDistancia(desafio.puntoFinal!!.latitud, desafio.puntoFinal!!.longitud, lastKnownLocation.latitude, lastKnownLocation.longitude) <= 100.0){
+                if(!::punto.isInitialized && calcularDistancia(desafio.puntoFinal.latitud, desafio.puntoFinal.longitud, lastKnownLocation.latitude, lastKnownLocation.longitude) <= 100.0){
                     puntoFinal = true
-                    punto = desafio.puntoFinal!!
+                    carreraActual.distanciaRecorrida += calcularDistancia(puntoInicial.latitud, puntoInicial.longitud, lastKnownLocation.latitude, lastKnownLocation.longitude)
+                    punto = desafio.puntoFinal
                 }
-                if(puntoFinal && !containsLatitudLongitud(carreraActual.puntosCompletados,desafio.puntosIntermedios!!.last())){
+                if(puntoFinal && !containsLatitudLongitud(carreraActual.puntosCompletados,desafio.puntosIntermedios.last())){
                     Toast.makeText(this, "Completa el checkpoint anterior antes de jugar el final!", Toast.LENGTH_LONG).show()
                     return@setOnClickListener
                 }
@@ -500,7 +507,6 @@ class IniciarRutaActivity : AppCompatActivity(), LocationListener {
             intent.putExtra("puntoFinal", puntoFinal)
             intent.putExtra("punto", punto)
             intent.putExtra("carrera", carreraActual)
-            intent.putExtra("fechaInicio", fechaInicio)
             startActivity(intent)
         } else {
             Toast.makeText(this, "No se pudo tomar la foto", Toast.LENGTH_SHORT).show()
@@ -523,7 +529,7 @@ class IniciarRutaActivity : AppCompatActivity(), LocationListener {
         }
     }
 
-    fun calcularDistancia(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Double {
+    private fun calcularDistancia(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Double {
         val radioTierra = 6371000.0  // Radio de la Tierra en metros
         val dLat = Math.toRadians(lat2 - lat1)
         val dLon = Math.toRadians(lon2 - lon1)

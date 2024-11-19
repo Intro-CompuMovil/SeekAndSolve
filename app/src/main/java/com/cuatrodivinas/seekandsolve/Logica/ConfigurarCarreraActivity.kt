@@ -114,7 +114,7 @@ class ConfigurarCarreraActivity : AppCompatActivity() {
             database.getReference("carreras").child(carreraId).setValue(carrera)
 
             // Inicializar CarreraActual para el usuario actual
-            val carreraActual = CarreraActual(carreraId, 0, 0, mutableListOf())
+            val carreraActual = CarreraActual(carreraId, 0, 0.0, mutableListOf())
             database.getReference("usuarios/${auth.currentUser!!.uid}/carreraActual").setValue(carreraActual)
 
             // Inicializar CarreraActual para los amigos invitados
@@ -123,7 +123,7 @@ class ConfigurarCarreraActivity : AppCompatActivity() {
             }
 
             intentJugar.putExtra("desafio", desafio)
-            intentJugar.putExtra("carrera", carrera)
+            intentJugar.putExtra("carreraActual", carreraActual)
             startActivity(intentJugar)
         }
 

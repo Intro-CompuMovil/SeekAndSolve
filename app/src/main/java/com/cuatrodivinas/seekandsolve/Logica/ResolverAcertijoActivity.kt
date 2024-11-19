@@ -14,6 +14,7 @@ import com.bumptech.glide.Glide
 import com.cuatrodivinas.seekandsolve.Datos.CarreraActual
 import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.PATH_PREGUNTAS
 import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.PATH_USERS
+import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.auth
 import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.database
 import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.storage
 import com.cuatrodivinas.seekandsolve.Datos.Desafio
@@ -37,7 +38,6 @@ class ResolverAcertijoActivity : AppCompatActivity() {
     lateinit var pregunta: Pregunta
     lateinit var preguntaSeleccionada: String
     lateinit var punto: Punto
-    lateinit var fechaInicio: LocalDateTime
     var intentos: Int = 0
     private lateinit var refImg: StorageReference
 
@@ -54,7 +54,6 @@ class ResolverAcertijoActivity : AppCompatActivity() {
         desafio = intent.getSerializableExtra("desafio") as Desafio
         punto = intent.getSerializableExtra("punto") as Punto
         carreraActual = intent.getSerializableExtra("carreraActual") as CarreraActual
-        fechaInicio = intent.getSerializableExtra("fechaInicio") as LocalDateTime
         obtenerPregunta()
     }
 
@@ -124,14 +123,21 @@ class ResolverAcertijoActivity : AppCompatActivity() {
                 val intentDesafio = Intent(this@ResolverAcertijoActivity, DesafioTerminadoActivity::class.java)
                 intentDesafio.putExtra("desafio", desafio)
                 intentDesafio.putExtra("carrera", carreraActual)
-                intentDesafio.putExtra("fechaInicio", fechaInicio)
                 startActivity(intentDesafio)
                 return@setOnClickListener
             }
-            intentMarcarCheckpoint.putExtra("desafio", desafio)
-            intentMarcarCheckpoint.putExtra("carrera", carreraActual)
-            intentMarcarCheckpoint.putExtra("fechaInicio", fechaInicio)
-            startActivity(intentMarcarCheckpoint)
+
+            // Update carreraActual in the database
+            val userRef = database.getReference("$PATH_USERS/${auth.currentUser!!.uid}/carreraActual")
+            userRef.setValue(carreraActual).addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    intentMarcarCheckpoint.putExtra("desafio", desafio)
+                    intentMarcarCheckpoint.putExtra("carreraActual", carreraActual)
+                    startActivity(intentMarcarCheckpoint)
+                } else {
+                    Toast.makeText(this, "Error updating carreraActual", Toast.LENGTH_SHORT).show()
+                }
+            }
         }
 
         btnPista.setOnClickListener {
