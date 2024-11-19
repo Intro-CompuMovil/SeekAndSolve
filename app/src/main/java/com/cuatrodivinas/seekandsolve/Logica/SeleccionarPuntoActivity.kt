@@ -69,11 +69,7 @@ class SeleccionarPuntoActivity : AppCompatActivity(), LocationListener {
 
             // Crear un Intent para devolver el resultado
             val resultIntent = Intent().apply {
-                when (tipoPunto) {
-                    "inicial" -> putExtra("puntoInicial", punto)
-                    "final" -> putExtra("puntoFinal", punto)
-                    "checkpoint" -> putExtra("checkpoint", punto)
-                }
+                putExtra("punto", punto)
             }
 
 // Devolver el resultado a CrearDesafioActivity

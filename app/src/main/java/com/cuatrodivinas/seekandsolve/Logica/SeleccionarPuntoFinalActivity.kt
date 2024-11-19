@@ -93,7 +93,7 @@ class SeleccionarPuntoFinalActivity : AppCompatActivity(), LocationListener {
 
             // Crear un Intent para devolver el resultado
             val resultIntent = Intent().apply {
-                putExtra("puntoFinal", puntoFinal)
+                putExtra("punto", puntoFinal)
             }
 
             // Devolver el resultado a CrearDesafioActivity
@@ -223,9 +223,11 @@ class SeleccionarPuntoFinalActivity : AppCompatActivity(), LocationListener {
         actualizarDireccionPunto(latitude, longitude)
 
         // Obtener la ruta entre el punto inicial y el punto final
-        val puntoInicial = GeoPoint(puntoInicial.latitud, puntoInicial.longitud)
-        val puntoFinal = GeoPoint(latitude, longitude)
-        getRoute(puntoInicial, puntoFinal)
+        if (::puntoInicial.isInitialized) {
+            val puntoInicial = GeoPoint(puntoInicial.latitud, puntoInicial.longitud)
+            val puntoFinal = GeoPoint(latitude, longitude)
+            getRoute(puntoInicial, puntoFinal)
+        }
     }
 
     private fun mostrarPuntoInicial(puntoInicial: Punto) {

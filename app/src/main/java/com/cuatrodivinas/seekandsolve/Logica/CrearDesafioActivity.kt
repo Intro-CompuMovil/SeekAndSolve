@@ -1,9 +1,7 @@
 package com.cuatrodivinas.seekandsolve.Logica
 
 import android.content.ActivityNotFoundException
-import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.drawable.BitmapDrawable
@@ -12,15 +10,12 @@ import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Log
-import android.view.View
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat
 import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.MY_PERMISSION_REQUEST_GALLERY
 import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.PATH_DESAFIOS
-import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.PERMISO_CAMARA
 import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.auth
 import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.database
 import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.storage
@@ -75,8 +70,11 @@ class CrearDesafioActivity : AppCompatActivity() {
         binding.editarPuntoFinal.setOnClickListener { editarPunto("final", REQUEST_CODE_PUNTO_FINAL) }
         binding.agregarCheckpoint.setOnClickListener { editarPunto("checkpoint", REQUEST_CODE_CHECKPOINT) }
         binding.crearDesafio.setOnClickListener {
-            crearDesafio()
-            startActivity(Intent(this, VerDesafiosActivity::class.java))
+            if (validarInformacionDesafio()) {
+                crearDesafio()
+                startActivity(Intent(this, VerDesafiosActivity::class.java))
+                finish()
+            }
         }
         binding.backButton.setOnClickListener {
             finish()
@@ -97,6 +95,27 @@ class CrearDesafioActivity : AppCompatActivity() {
             else -> Intent(this, SeleccionarCheckpointsActivity::class.java)
         }
         startActivityForResult(intent.putExtra("bundle", bundle), requestCode)
+    }
+
+    private fun validarInformacionDesafio(): Boolean {
+        val nombre = binding.nombreDesafio.text.toString().trim()
+        val descripcion = binding.descripcionDesafio.text.toString().trim()
+
+        if (nombre.isEmpty()) {
+            binding.nombreDesafio.error = "El nombre es obligatorio"
+            return false
+        }
+
+        if (descripcion.isEmpty()) {
+            binding.descripcionDesafio.error = "La descripción es obligatoria"
+            return false
+        }
+
+        // Update the Desafio object with the new information
+        desafio.nombre = nombre
+        desafio.descripcion = descripcion
+
+        return true
     }
 
     private fun crearDesafio() {
@@ -206,48 +225,68 @@ class CrearDesafioActivity : AppCompatActivity() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        when(requestCode) {
-            MY_PERMISSION_REQUEST_GALLERY -> {
-                if (resultCode == RESULT_OK) {
-                    try {
+        if (resultCode == RESULT_OK) {
+            try {
+                when (requestCode) {
+                    REQUEST_CODE_PUNTO_INICIAL, REQUEST_CODE_PUNTO_FINAL -> {
+                        // Obtener el punto actualizado
                         val punto = data?.getSerializableExtra("punto") as? Punto
                         punto?.let {
                             when (requestCode) {
                                 REQUEST_CODE_PUNTO_INICIAL -> actualizarPuntoInicial(it)
                                 REQUEST_CODE_PUNTO_FINAL -> actualizarPuntoFinal(it)
-                                REQUEST_CODE_CHECKPOINT -> agregarCheckpoint(it)
                             }
                         }
+                    }
+
+                    REQUEST_CODE_CHECKPOINT -> {
+                        // Obtener la lista de puntos actualizada
+                        val puntosArray: Array<Punto>? = data?.getSerializableExtra("puntos") as? Array<Punto>
+                        puntosArray?.let {
+                            agregarCheckpoints(it.toMutableList())
+                        }
+                    }
+
+                    MY_PERMISSION_REQUEST_GALLERY -> {
+                        // Manejo de selección de imagen desde la galería
                         val imageUri = data?.data
-                        val imageStream: InputStream? = contentResolver.openInputStream(imageUri!!)
-                        val selectedImage = BitmapFactory.decodeStream(imageStream)
-                        binding.imagenDesafio.setImageBitmap(selectedImage)
-                        Toast.makeText(this, "Foto de desafio actualizada", Toast.LENGTH_SHORT).show()
-                    } catch (e: Exception) {
-                        e.message?. let{ Log.e("PERMISSION_APP",it) }
-                        Toast.makeText(this, "No fue posible seleccionar la imagen (exc.)", Toast.LENGTH_SHORT).show()
+                        if (imageUri != null) {
+                            val imageStream: InputStream? = contentResolver.openInputStream(imageUri)
+                            val selectedImage = BitmapFactory.decodeStream(imageStream)
+                            binding.imagenDesafio.setImageBitmap(selectedImage)
+                            Toast.makeText(this, "Foto de desafío actualizada", Toast.LENGTH_SHORT).show()
+                        } else {
+                            Toast.makeText(this, "No se seleccionó ninguna imagen", Toast.LENGTH_SHORT).show()
+                        }
                     }
                 }
+            } catch (e: Exception) {
+                Log.e("PERMISSION_APP", e.message ?: "Error desconocido")
+                Toast.makeText(this, "Ocurrió un error al procesar la solicitud", Toast.LENGTH_SHORT).show()
             }
+        } else {
+            Toast.makeText(this, "Operación cancelada", Toast.LENGTH_SHORT).show()
         }
     }
 
     private fun actualizarPuntoInicial(punto: Punto) {
         desafio.puntoInicial = punto
+        binding.txtPuntoInicial.text = "Lat: ${punto.latitud}, Lng: ${punto.longitud}"
         Log.d("CrearDesafioActivity", "Nuevo punto inicial: ${punto.latitud}, ${punto.longitud}")
-        desafio.puntosIntermedios!!.add(0, desafio.puntoInicial!!)
-        checkpointsAdapter.notifyDataSetChanged()
+//        desafio.puntosIntermedios!!.add(0, desafio.puntoInicial!!)
+//        checkpointsAdapter.notifyDataSetChanged()
     }
 
     private fun actualizarPuntoFinal(punto: Punto) {
         desafio.puntoFinal = punto
+        binding.txtPuntoFinal.text = "Lat: ${punto.latitud}, Lng: ${punto.longitud}"
         Log.d("CrearDesafioActivity", "Nuevo punto final: ${punto.latitud}, ${punto.longitud}")
-        desafio.puntosIntermedios!!.add(0, desafio.puntoInicial!!)
-        checkpointsAdapter.notifyDataSetChanged()
+//        desafio.puntosIntermedios!!.add(0, desafio.puntoInicial!!)
+//        checkpointsAdapter.notifyDataSetChanged()
     }
 
-    private fun agregarCheckpoint(punto: Punto) {
-        desafio.puntosIntermedios!!.add(punto)
+    private fun agregarCheckpoints(puntos: MutableList<Punto>) {
+        desafio.puntosIntermedios.addAll(puntos)
         checkpointsAdapter.notifyDataSetChanged()
     }
 
