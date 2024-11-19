@@ -139,7 +139,7 @@ class RankingActivity : AppCompatActivity() {
 
                 verRecompensas.setOnClickListener {
                     val intent = Intent(holder.itemView.context, RecompensasCarrera::class.java)
-                    intent.putExtra("username", rankingItem.username) // Pasar datos al perfil
+                    intent.putExtra("uid", rankingItem.uid) // Pasar datos al perfil
                     holder.itemView.context.startActivity(intent)
                 }
             }
