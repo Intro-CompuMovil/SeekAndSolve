@@ -7,6 +7,7 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.bumptech.glide.Glide
 import com.cuatrodivinas.seekandsolve.Datos.Carrera
+import com.cuatrodivinas.seekandsolve.Datos.CarreraActual
 import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.PATH_DESAFIOS
 import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.PATH_USERS
 import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.auth
@@ -20,8 +21,6 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.storage.StorageReference
-import org.json.JSONArray
-import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -104,13 +103,27 @@ class ConfigurarCarreraActivity : AppCompatActivity() {
 
         binding.jugarDesafio.setOnClickListener {
             val intentJugar = Intent(this, IniciarRutaActivity::class.java).putExtra("desafio", desafio)
-            val fechaHoy = LocalDate.now()  // Obtiene la fecha actual
+            val horaActual = LocalDateTime.now()  // Obtiene la fecha actual
             // Poner un formato que incluya la hora con segundos
             val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")
-            val carrera = Carrera("FALTAID", desafio.id!!, fechaHoy.format(formatter), mutableMapOf(), mutableListOf(auth.currentUser!!.uid))
+            val carreraId = database.getReference("carreras").push().key ?: return@setOnClickListener
+            amigosInvitados[auth.currentUser!!.uid] = "Tú"
+            val carrera = Carrera(carreraId, desafio.id, horaActual.format(formatter), mutableMapOf(), amigosInvitados)
+
+            // Guardar la carrera en la base de datos
+            database.getReference("carreras").child(carreraId).setValue(carrera)
+
+            // Inicializar CarreraActual para el usuario actual
+            val carreraActual = CarreraActual(carreraId, 0, 0, mutableListOf())
+            database.getReference("usuarios/${auth.currentUser!!.uid}/carreraActual").setValue(carreraActual)
+
+            // Inicializar CarreraActual para los amigos invitados
+            amigosInvitados.forEach { (uid, _) ->
+                database.getReference("usuarios/$uid/carreraActual").setValue(carreraActual)
+            }
+
             intentJugar.putExtra("desafio", desafio)
             intentJugar.putExtra("carrera", carrera)
-            intentJugar.putExtra("fechaInicio", LocalDateTime.now())
             startActivity(intentJugar)
         }
 

@@ -10,6 +10,7 @@ class Usuario(
     var fechaNacimiento: String,
     var amigos: MutableMap<String, String>,
     var carreraActual: CarreraActual?,
+    // Que el id de cada recompensa sea el id de la carrera
     var recompensas: MutableMap<String, InfoRecompensa>
     ) {
 
