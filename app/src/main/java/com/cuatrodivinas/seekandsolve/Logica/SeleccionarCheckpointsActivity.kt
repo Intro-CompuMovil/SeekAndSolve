@@ -80,7 +80,12 @@ class SeleccionarCheckpointsActivity : AppCompatActivity() {
         binding.agregarCheckpointCheck.setOnClickListener {
             // Create an Intent for returning the result
             val resultIntent = Intent().apply {
-                putExtra("marcadores", marcadores.toTypedArray())
+                // Poner en el extra "puntos" una lista mutable de tipo Punto
+                var puntos = mutableListOf<Punto>()
+                for (marcador in marcadores) {
+                    puntos.add(Punto(marcador.latitude, marcador.longitude))
+                }
+                putExtra("puntos", puntos.toTypedArray())
             }
 
             // Set the result and finish the activity
