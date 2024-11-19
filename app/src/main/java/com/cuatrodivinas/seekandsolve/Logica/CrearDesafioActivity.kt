@@ -58,7 +58,7 @@ class CrearDesafioActivity : AppCompatActivity() {
 
     private fun initDesafio() {
         desafio = Desafio("", auth.currentUser!!.uid, "", "", "", Punto(0.0, 0.0), mutableListOf(), Punto(0.0, 0.0))
-        checkpointsAdapter = CheckpointsAdapter(this, desafio.puntosIntermedios!!)
+        checkpointsAdapter = CheckpointsAdapter(this, desafio.puntosIntermedios!!, this)
         binding.listaCheckpoints.adapter = checkpointsAdapter
     }
 
@@ -127,6 +127,7 @@ class CrearDesafioActivity : AppCompatActivity() {
                 val desafiosRef = database.reference.child(PATH_DESAFIOS)
                 val desafioId = desafiosRef.push().key // Genera el ID del desafío
                 desafio.id = desafioId!!
+                desafio.puntosIntermedios = checkpointsAdapter.checkpoints
                 guardarImagenYDesafio(fileUri, desafioId, desafiosRef)
             }
         } else {
@@ -247,6 +248,14 @@ class CrearDesafioActivity : AppCompatActivity() {
                         }
                     }
 
+                    REQUEST_CODE_EDITAR_CHEKCPOINT -> {
+                        // Obtener la lista de puntos actualizada
+                        val punto = data?.getSerializableExtra("punto") as Punto
+                        val posicion = data.getIntExtra("posicion", 0)
+                        desafio.puntosIntermedios[posicion] = punto
+                        checkpointsAdapter.notifyDataSetChanged()
+                    }
+
                     MY_PERMISSION_REQUEST_GALLERY -> {
                         // Manejo de selección de imagen desde la galería
                         val imageUri = data?.data
@@ -271,6 +280,7 @@ class CrearDesafioActivity : AppCompatActivity() {
 
     private fun actualizarPuntoInicial(punto: Punto) {
         desafio.puntoInicial = punto
+        checkpointsAdapter.notifyDataSetChanged()
         binding.txtPuntoInicial.text = "Lat: ${punto.latitud}, Lng: ${punto.longitud}"
         Log.d("CrearDesafioActivity", "Nuevo punto inicial: ${punto.latitud}, ${punto.longitud}")
 //        desafio.puntosIntermedios!!.add(0, desafio.puntoInicial!!)
@@ -279,6 +289,7 @@ class CrearDesafioActivity : AppCompatActivity() {
 
     private fun actualizarPuntoFinal(punto: Punto) {
         desafio.puntoFinal = punto
+        checkpointsAdapter.notifyDataSetChanged()
         binding.txtPuntoFinal.text = "Lat: ${punto.latitud}, Lng: ${punto.longitud}"
         Log.d("CrearDesafioActivity", "Nuevo punto final: ${punto.latitud}, ${punto.longitud}")
 //        desafio.puntosIntermedios!!.add(0, desafio.puntoInicial!!)
@@ -299,5 +310,6 @@ class CrearDesafioActivity : AppCompatActivity() {
         private const val REQUEST_CODE_PUNTO_FINAL = 1002
         private const val REQUEST_CODE_CHECKPOINT = 1003
         private const val REQUEST_CODE_MARCADORES_ADICIONALES = 1004
+        private const val REQUEST_CODE_EDITAR_CHEKCPOINT = 1005
     }
 }

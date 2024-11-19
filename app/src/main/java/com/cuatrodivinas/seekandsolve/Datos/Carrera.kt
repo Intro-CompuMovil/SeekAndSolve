@@ -11,8 +11,9 @@ data class Carrera(
     // uid -> CarreraUsuarioCompletada
     var usuariosCompletaron: MutableMap<String, CarreraUsuarioCompletada> = mutableMapOf(),
     // uids de los usuarios que están en progreso (cada uno almacena su progreso en usuarios/uid/carreraActual)
-    var usuariosEnProgreso: MutableList<String> = mutableListOf(),
+    // uid -> nombreUsuario
+    var usuariosEnProgreso: MutableMap<String, String> = mutableMapOf(),
 ): Serializable {
 
-    constructor(): this("", "", "", mutableMapOf(), mutableListOf())
+    constructor(): this("", "", "", mutableMapOf(), mutableMapOf())
 }

@@ -32,13 +32,15 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.SeekAndSolve"
         android:usesCleartextTraffic="true">
+        <activity
+            android:name=".Logica.EditarCheckpointActivity"
+            android:exported="false" />
 
         <service
             android:name=".Logica.ActivosService"
             android:exported="false"
             android:foregroundServiceType="dataSync"
             android:permission="android.permission.FOREGROUND_SERVICE" />
-
         <service
             android:name=".Logica.CloseService"
             android:exported="true" />
@@ -47,6 +49,15 @@
             android:name=".Logica.CrearPregunta"
             android:exported="false" />
 
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="com.cuatrodivinas.seekandsolve.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="com.cuatrodivinas.seekandsolve.fileprovider"
@@ -77,17 +88,6 @@
         <activity
             android:name=".Logica.SeleccionarPuntoFinalActivity"
             android:exported="false" />
-
-        <provider
-            android:name="androidx.core.content.FileProvider"
-            android:authorities="com.cuatrodivinas.seekandsolve.fileprovider"
-            android:exported="false"
-            android:grantUriPermissions="true">
-            <meta-data
-                android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/file_paths" />
-        </provider>
-
         <activity
             android:name=".Logica.AgregarAmigos"
             android:exported="false" />
