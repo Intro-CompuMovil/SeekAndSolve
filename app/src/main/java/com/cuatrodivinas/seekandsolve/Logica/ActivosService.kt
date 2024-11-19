@@ -21,6 +21,7 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
+import android.app.PendingIntent
 
 class ActivosService : Service() {
     private lateinit var databaseRef: DatabaseReference
@@ -103,7 +104,7 @@ class ActivosService : Service() {
                                 break
                             }
                         }
-                        if (esAmigo || true) {
+                        if (esAmigo) {
                             val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -128,12 +129,23 @@ class ActivosService : Service() {
                                 "Juega con el y busca recompensas en las carreras"
                             }
 
+                            val intent = Intent(this@ActivosService, MainActivity::class.java) // Reemplaza MainActivity con la actividad que deseas abrir
+                            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+
+                            val pendingIntent = PendingIntent.getActivity(
+                                this@ActivosService,
+                                0,
+                                intent,
+                                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                            )
+
                             val notification = NotificationCompat.Builder(this@ActivosService, "wearable_channel")
                                 .setSmallIcon(R.drawable.logo) // Icono de la notificación
                                 .setContentTitle(titulo)
                                 .setContentText(contenido)
                                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                                 .setAutoCancel(true) // La notificación se eliminará al hacer clic
+                                .setContentIntent(pendingIntent) // Adjunta el PendingIntent
                                 .build()
                             notificationManager.notify(notificationId, notification)
                         }
