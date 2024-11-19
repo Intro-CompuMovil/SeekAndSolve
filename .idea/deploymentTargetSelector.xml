@@ -2,19 +2,16 @@
 <project version="4">
   <component name="deploymentTargetSelector">
     <selectionStates>
-      <SelectionState runConfigName="app">
+      <SelectionState runConfigName="config">
         <option name="selectionMode" value="DROPDOWN" />
-<<<<<<< Updated upstream
-        <DropdownSelection timestamp="2024-11-17T02:42:01.272881200Z">
+        <DropdownSelection timestamp="2024-11-19T02:01:40.715439860Z">
           <Target type="DEFAULT_BOOT">
             <handle>
-              <DeviceId pluginId="PhysicalDevice" identifier="serial=dac577f4" />
+              <DeviceId pluginId="PhysicalDevice" identifier="serial=157404565800AYW" />
             </handle>
           </Target>
         </DropdownSelection>
         <DialogSelection />
-=======
->>>>>>> Stashed changes
       </SelectionState>
     </selectionStates>
   </component>
