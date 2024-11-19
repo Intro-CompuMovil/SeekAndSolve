@@ -36,9 +36,11 @@ import androidx.core.view.WindowInsetsCompat
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.PATH_IMAGENES
+import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.PATH_USERS
 import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.PERMISO_CAMARA
 import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.PERMISO_GALERIA
 import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.auth
+import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.database
 import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.storage
 //import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.SELECCIONAR_IMAGEN
 import com.cuatrodivinas.seekandsolve.R
@@ -67,6 +69,7 @@ class EditarPerfil : AppCompatActivity() {
     private lateinit var binding: ActivityEditarPerfilBinding
     private var contraseniaVisible = false
     private lateinit var photoUri: Uri
+    private var uriChanged = false
 
     private var id by Delegates.notNull<Int>()
     private lateinit var nombre: String
@@ -129,20 +132,6 @@ class EditarPerfil : AppCompatActivity() {
         } catch (e: IllegalArgumentException) {
             false
         }
-    }
-
-    private fun descifrarPassword(storedPasswordHash: String): String {
-        val keyStore = KeyStore.getInstance("AndroidKeyStore")
-        keyStore.load(null)
-        val secretKey = keyStore.getKey("MyKeyAlias", null) as SecretKey
-
-        val cipher = Cipher.getInstance("AES/GCM/NoPadding")
-        val ivAndCipherText = Base64.decode(storedPasswordHash, Base64.DEFAULT)
-        val iv = ivAndCipherText.copyOfRange(0, 12)
-        val cipherText = ivAndCipherText.copyOfRange(12, ivAndCipherText.size)
-        val spec = GCMParameterSpec(128, iv)
-        cipher.init(Cipher.DECRYPT_MODE, secretKey, spec)
-        return String(cipher.doFinal(cipherText), Charsets.UTF_8)
     }
 
     private fun eventoCambiarFoto(){
@@ -303,6 +292,7 @@ class EditarPerfil : AppCompatActivity() {
                 if (resultCode == RESULT_OK) {
                     binding.imagenPerfil.setImageURI(photoUri)
                     binding.imagenPerfil.imageTintList = null
+                    uriChanged = true
                 }
             }
             PERMISO_GALERIA -> {
@@ -311,6 +301,7 @@ class EditarPerfil : AppCompatActivity() {
                         binding.imagenPerfil.setImageURI(imageUri)
                         binding.imagenPerfil.imageTintList = null
                         photoUri = imageUri
+                        uriChanged = true
                     }
                 }
             }
@@ -318,8 +309,10 @@ class EditarPerfil : AppCompatActivity() {
     }
 
     private fun subirImagen() {
-        refImg = storage.getReference("$PATH_IMAGENES/${auth.currentUser!!.uid}.jpg")
-        refImg.putFile(photoUri)
+        if(uriChanged){
+            refImg = storage.getReference("$PATH_IMAGENES/${auth.currentUser!!.uid}.jpg")
+            refImg.putFile(photoUri)
+        }
     }
 
     private fun eventoVolver() {
@@ -389,82 +382,34 @@ class EditarPerfil : AppCompatActivity() {
         return bitmap
     }
 
-    private fun hashPassword(password: String): String {
-        val keyGenerator = KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES, "AndroidKeyStore")
-        val keyGenParameterSpec = KeyGenParameterSpec.Builder(
-            "MyKeyAlias",
-            KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT
-        ).setBlockModes(KeyProperties.BLOCK_MODE_GCM)
-            .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
-            .build()
-        keyGenerator.init(keyGenParameterSpec)
-        val secretKey = keyGenerator.generateKey()
-
-        val cipher = Cipher.getInstance("AES/GCM/NoPadding")
-        cipher.init(Cipher.ENCRYPT_MODE, secretKey)
-        val iv = cipher.iv
-        val encryption = cipher.doFinal(password.toByteArray(Charsets.UTF_8))
-        return Base64.encodeToString(iv + encryption, Base64.DEFAULT)
-    }
-
     private fun actualizarInfo(id: Int, nombre: String, username: String, correo: String, contrasena: String, imagenPerfil: String) {
 
         //Guardar imagen en storage
         subirImagen()
+        //Guardar datos en firebase
+        guardarDatos(id, nombre, username, correo, contrasena)
 
-        val userData = JSONObject()
-        userData.put("id", id)
-        userData.put("name", nombre)
-        userData.put("username", username)
-        userData.put("email", correo)
-        val hashPassword = hashPassword(contrasena)
-        userData.put("password", hashPassword)
-        //userData.put("photoUrl", imagenPerfil)
-        userData.put("fechaNacimiento", fechaNacimiento)
-        userData.put("signInType", "Normal")
-
-        val userDataJson = readJsonFromFile("user_data.json")
-        var usersArray = JSONArray(userDataJson)
-        for (i in 0 until usersArray.length()) {
-            val user = usersArray.getJSONObject(i)
-            val userId = user.getInt("id")
-            if (userId == id) {
-                usersArray.remove(i)
-                break
-            }
-        }
-
-        deleteFile("user_data.json")
-
-        usersArray.put(userData)
-        saveJsonToFile(usersArray)
-        println(userData)
-        // Generate and save session_id
-        val sessionId = generateSessionId()
-        saveSessionId(sessionId)
+        /*val sessionId = generateSessionId()
+        saveSessionId(sessionId)*/
         val intent = Intent(this, VerPerfil::class.java)
         val bundle = Bundle()
         bundle.putInt("id", id)
         bundle.putString("nombre", nombre)
         bundle.putString("username", username)
         bundle.putString("correo", correo)
-        bundle.putString("contrasena", hashPassword)
+        bundle.putString("contrasena", contrasena)
         //bundle.putString("fotoUrl", imagenPerfil)
         bundle.putString("fechaNacimiento", fechaNacimiento)
         intent.putExtras(bundle)
         startActivity(intent)
     }
 
-    private fun readJsonFromFile(fileName: String): String? {
-        return try {
-            val fileInputStream: FileInputStream = openFileInput(fileName)
-            val bytes = fileInputStream.readBytes()
-            fileInputStream.close()
-            String(bytes)
-        } catch (e: Exception) {
-            e.printStackTrace()
-            null
-        }
+    private fun guardarDatos(id: Int, nombre: String, username: String, correo: String, contrasena: String) {
+        val ref = database.getReference("$PATH_USERS/${auth.currentUser!!.uid}")
+        ref.child("nombre").setValue(nombre)
+        ref.child("nombreUsuario").setValue(username)
+        ref.child("correo").setValue(correo)
+        ref.child("password").setValue(contrasena)
     }
 
     private fun generateSessionId(): String {
@@ -476,16 +421,5 @@ class EditarPerfil : AppCompatActivity() {
         val editor = sharedPreferences.edit()
         editor.putString("session_id", sessionId)
         editor.apply()
-    }
-
-    private fun saveJsonToFile(usersArray: JSONArray) {
-        val fileName = "user_data.json"
-        try {
-            val fileOutputStream: FileOutputStream = openFileOutput(fileName, Context.MODE_PRIVATE)
-            fileOutputStream.write(usersArray.toString().toByteArray())
-            fileOutputStream.close()
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
     }
 }
