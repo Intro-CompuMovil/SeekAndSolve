@@ -10,7 +10,13 @@ import android.view.inputmethod.EditorInfo
 import android.widget.AdapterView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.PATH_USERS
+import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.auth
+import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.database
 import com.cuatrodivinas.seekandsolve.databinding.ActivityAgregarAmigosBinding
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.ValueEventListener
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
@@ -22,7 +28,7 @@ import java.io.InputStream
 class AgregarAmigos : AppCompatActivity(), AdapterView.OnItemSelectedListener {
     private lateinit var binding: ActivityAgregarAmigosBinding
     private var lastRegisteredUser: JSONObject? = null
-    private var amigosJsonArray: JSONArray? = null
+    private var amigosJsonArray: Array<String> = arrayOf()
     lateinit var global:Any
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -31,7 +37,13 @@ class AgregarAmigos : AppCompatActivity(), AdapterView.OnItemSelectedListener {
         setContentView(binding.root)
         lastRegisteredUser = getLastRegisteredUser()
         // Obtener la lista de amigos del usuario del intent anterior
-        amigosJsonArray = JSONArray(intent.getStringExtra("amigosJsonArray"))
+        if (intent.hasExtra("amigos")) {
+            val amigosArrayList = intent.getStringArrayListExtra("amigos")
+            amigosArrayList?.let {
+                amigosJsonArray = it.toTypedArray() // Si necesitas un Array
+                // Procesar la lista aquí
+            }
+        }
     }
 
     override fun onResume() {
@@ -47,14 +59,21 @@ class AgregarAmigos : AppCompatActivity(), AdapterView.OnItemSelectedListener {
         // Poner un listener para cada elemento de la lista de amigos y poder enviar ese amigo a AmigosActivity al presionar el botón invitar amigos
         binding.amigosLv.setOnItemClickListener { parent, view, position, id ->
             val cursor = parent.adapter.getItem(position) as Cursor
-            val newFriend = JSONObject()
-            newFriend.put("id", cursor.getInt(0))
-            newFriend.put("username", cursor.getString(1))
-            // Escribir de nuevo el archivo user_friends.json con el nuevo amigo
-            amigosJsonArray = agregarAmigoAMiMundo(newFriend)
-            // Hacer el intent hacia AmigosActivity, mandando la lista de amigos actualizada
+            val id = cursor.getString(1)
+
+            val refUser = database.getReference("$PATH_USERS/${auth.currentUser!!.uid}/amigos")
+
+            val nuevoAmigo = mapOf(id to id)
+
+            refUser.updateChildren(nuevoAmigo)
+                .addOnSuccessListener {
+                    Toast.makeText(this, "Amigo agregado correctamente", Toast.LENGTH_SHORT).show()
+                }
+                .addOnFailureListener { error ->
+                    Toast.makeText(this, "Error al agregar amigo: ${error.message}", Toast.LENGTH_SHORT).show()
+                }
+
             val intentAmigos = Intent(this, Amigos::class.java)
-            intentAmigos.putExtra("amigosJsonArray", amigosJsonArray.toString())
             startActivity(intentAmigos)
             finish()
         }
@@ -62,21 +81,6 @@ class AgregarAmigos : AppCompatActivity(), AdapterView.OnItemSelectedListener {
         binding.backButtonAddFriends.setOnClickListener {
             finish()
         }
-    }
-
-    private fun agregarAmigoAMiMundo(newFriend: JSONObject): JSONArray {
-        val userFriendsJson = readJsonFromMyWorldFile("user_friends.json")
-        var usersFriendsArray = JSONArray()
-        if (userFriendsJson != null) {
-            usersFriendsArray = JSONArray(userFriendsJson)
-        }
-        // Eliminar el archivo JSON existente
-        deleteFile("user_friends.json")
-        // Agregar el nuevo amigo al arreglo de amigos
-        usersFriendsArray.put(newFriend)
-        // Guardar el nuevo arreglo en el archivo JSON
-        saveJsonToMyWorldFile(usersFriendsArray, "user_friends.json")
-        return usersFriendsArray
     }
 
     private fun readJsonFromMyWorldFile(fileName: String): String? {
@@ -115,14 +119,56 @@ class AgregarAmigos : AppCompatActivity(), AdapterView.OnItemSelectedListener {
     private fun actualizarResultados(busqueda: String) {
         val columns = arrayOf("_id", "idUser", "nombre")
         val matrixCursor = MatrixCursor(columns)
-        buscarUsuarios(matrixCursor, busqueda)
-        val cursor: Cursor = matrixCursor
-        val amigosAdapter = AmigosAdapter(this, cursor, 0)
-        binding.amigosLv.adapter = amigosAdapter
+
+        // Llamar a buscarUsuarios y actualizar el adaptador después
+        buscarUsuarios(matrixCursor, busqueda) {
+            val cursor: Cursor = matrixCursor
+            val amigosAdapter = AmigosAdapter(this, cursor, 0)
+            binding.amigosLv.adapter = amigosAdapter
+        }
     }
 
-    private fun buscarUsuarios(matrixCursor: MatrixCursor, busqueda: String) {
-        val json = JSONObject(loadJSONFromAssetExternalWorld("usuarios.json"))
+    private fun buscarUsuarios(matrixCursor: MatrixCursor, busqueda: String, onComplete: () -> Unit) {
+        val refUsuarios = database.getReference(PATH_USERS)
+        var idCounter = 1L
+        refUsuarios.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                for (usuarioSnapshot in snapshot.children) {
+                    var agregado = false
+                    val nombreUsuario = usuarioSnapshot.child("nombreUsuario").getValue(String::class.java)
+                    val correo = usuarioSnapshot.child("correo").getValue(String::class.java)
+                    nombreUsuario?.let {
+                        if ((it.toLowerCase().contains(busqueda.toLowerCase())) && (auth.currentUser!!.uid != usuarioSnapshot.key)
+                            && (!amigosJsonArray.contains(usuarioSnapshot.key)) && (!agregado)) {
+                            val id = usuarioSnapshot.key
+                            matrixCursor.addRow(arrayOf(idCounter, id, it))
+                            idCounter++
+                            agregado = true
+                        }
+                    }
+                    correo?.let {
+                        if ((it.toLowerCase().contains(busqueda.toLowerCase())) && (auth.currentUser!!.uid != usuarioSnapshot.key)
+                            && (!amigosJsonArray.contains(usuarioSnapshot.key)) && (!agregado)) {
+                            val id = usuarioSnapshot.key
+                            matrixCursor.addRow(arrayOf(idCounter, id, it))
+                            idCounter++
+                            agregado = true
+                        }
+                    }
+                }
+
+                // Llamar al callback una vez que los datos han sido procesados
+                onComplete()
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                println("Error al leer usuarios: ${error.message}")
+            }
+        })
+
+
+
+        /*val json = JSONObject(loadJSONFromAssetExternalWorld("usuarios.json"))
         val usuariosJson = json.getJSONArray("usuarios")
         var idCounter = 1L
         // Buscar dentro del arreglo todos los usuarios que tengan en alguna parte del username o el correo la busqueda
@@ -149,7 +195,7 @@ class AgregarAmigos : AppCompatActivity(), AdapterView.OnItemSelectedListener {
                     }
                 }
             }
-        }
+        }*/
     }
 
     private fun loadJSONFromAssetExternalWorld(filename: String): String? {

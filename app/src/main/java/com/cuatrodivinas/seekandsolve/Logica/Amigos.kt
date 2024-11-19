@@ -21,6 +21,7 @@ class Amigos : AppCompatActivity() {
     private lateinit var binding: ActivityAmigosBinding
     private lateinit var amigosJsonArray: JSONArray
     private var amigos: MutableMap<String, String> = mutableMapOf()
+    private var amigosArray: MutableList<String> = mutableListOf()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -49,7 +50,6 @@ class Amigos : AppCompatActivity() {
         val refAmigos = database.getReference("usuarios/${auth.currentUser?.uid}/amigos/")
         refAmigos.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                Toast.makeText(this@Amigos, "Cargando amigos...", Toast.LENGTH_SHORT).show()
                 val amigosUids = snapshot.children.mapNotNull { it.value as? String }
                 fetchAmigosInfo(amigosUids)
             }
@@ -78,6 +78,8 @@ class Amigos : AppCompatActivity() {
                     val amigo = snapshot.getValue(Usuario::class.java)
                     amigo?.let {
                         amigos.put(uid, amigo.nombreUsuario)
+                        //insertar uid en amigosArray
+                        amigosArray.add(uid)
                         val columns = arrayOf("_id", "idUser", "nombre")
                         val matrixCursor = MatrixCursor(columns)
                         var idCounter = 1L
@@ -121,8 +123,8 @@ class Amigos : AppCompatActivity() {
 
     private fun eventoAgregarAmigos(){
         binding.agregarAmigosBtn.setOnClickListener {
-            var intentAgregarAmigos = Intent(this, AgregarAmigos::class.java)
-            intentAgregarAmigos.putExtra("amigosJsonArray", amigosJsonArray.toString())
+            val intentAgregarAmigos = Intent(this, AgregarAmigos::class.java)
+            intentAgregarAmigos.putStringArrayListExtra("amigos", ArrayList(amigosArray))
             startActivity(intentAgregarAmigos)
         }
     }
