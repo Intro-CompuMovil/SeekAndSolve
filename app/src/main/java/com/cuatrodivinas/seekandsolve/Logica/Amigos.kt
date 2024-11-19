@@ -5,6 +5,9 @@ import android.database.Cursor
 import android.database.MatrixCursor
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.PATH_USERS
+import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.auth
+import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.database
 import com.cuatrodivinas.seekandsolve.databinding.ActivityAmigosBinding
 import org.json.JSONArray
 import java.io.FileInputStream
@@ -39,7 +42,24 @@ class Amigos : AppCompatActivity() {
         val columns = arrayOf("_id", "idUser", "nombre")
         val matrixCursor = MatrixCursor(columns)
         var idCounter = 1L
-        for (i in 0 until amigosJsonArray.length()) {
+
+        //obtener amigos del usuario actual de firebase
+        val refAmigos = database.getReference("$PATH_USERS/${auth.currentUser?.uid}/amigos")
+        refAmigos.get().addOnSuccessListener { dataSnapshot ->
+            val amigos = dataSnapshot.value as? Map<String, String>
+            if (amigos != null) {
+                for ((amigoId, amigoNombre) in amigos) {
+                    matrixCursor.addRow(arrayOf(idCounter, amigoId, usernameByID(amigoId)))
+                    idCounter++
+                }
+                val cursor: Cursor = matrixCursor
+                val amigosAdapter = AmigosAdapter(this, cursor, 0)
+                binding.amigosLv.adapter = amigosAdapter
+            }
+        }
+
+
+        /*for (i in 0 until amigosJsonArray.length()) {
             val jsonObject = amigosJsonArray.getJSONObject(i)
             val id = jsonObject.getInt("id")
             val nombre = jsonObject.getString("username")
@@ -48,7 +68,16 @@ class Amigos : AppCompatActivity() {
         }
         val cursor: Cursor = matrixCursor
         val amigosAdapter = AmigosAdapter(this, cursor, 0)
-        binding.amigosLv.adapter = amigosAdapter
+        binding.amigosLv.adapter = amigosAdapter*/
+    }
+
+    private fun usernameByID(id: String): String {
+        val refUsername = database.getReference("$PATH_USERS/$id/username")
+        var username = ""
+        refUsername.get().addOnSuccessListener { dataSnapshot ->
+            username = dataSnapshot.value.toString()
+        }
+        return username
     }
 
     private fun readJsonFromMyWorldFile(fileName: String): String? {

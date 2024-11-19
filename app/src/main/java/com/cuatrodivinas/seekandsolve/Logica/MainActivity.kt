@@ -83,19 +83,24 @@ class MainActivity : AppCompatActivity(), LocationListener {
         setTheme(R.style.Base_Theme_SeekAndSolve)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        // Inicializar Firebase Auth y la database
         auth = Firebase.auth
         database = FirebaseDatabase.getInstance()
-        val intent = Intent(this, ActivosService::class.java)
-        startService(intent)
+        val currentUser = auth.currentUser
+        if (currentUser != null) {
+            val intent = Intent(this, ActivosService::class.java)
+            startService(intent)
 
-        if(!entrou){
-            databaseRef = database.getReference(PATH_ACTIVOS).child(auth.currentUser!!.uid)
-            databaseRef.setValue(auth.currentUser!!.uid)
-            entrou = true
+            if (!entrou) {
+                databaseRef = database.getReference(PATH_ACTIVOS).child(currentUser.uid)
+                databaseRef.setValue(currentUser.uid)
+                entrou = true
+            }
+            val serviceIntent = Intent(this, CloseService::class.java)
+            startService(serviceIntent)
+        } else {
+            startActivity(Intent(this, LandingActivity::class.java))
+            finish()
         }
-        val serviceIntent = Intent(this, CloseService::class.java)
-        startService(serviceIntent)
     }
 
     override fun onStart() {
