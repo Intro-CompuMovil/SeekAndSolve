@@ -59,15 +59,24 @@ class AgregarAmigos : AppCompatActivity(), AdapterView.OnItemSelectedListener {
         // Poner un listener para cada elemento de la lista de amigos y poder enviar ese amigo a AmigosActivity al presionar el botón invitar amigos
         binding.amigosLv.setOnItemClickListener { parent, view, position, id ->
             val cursor = parent.adapter.getItem(position) as Cursor
-            val id = cursor.getString(1)
+            val uid = cursor.getString(1)
 
             val refUser = database.getReference("$PATH_USERS/${auth.currentUser!!.uid}/amigos")
 
-            val nuevoAmigo = mapOf(id to id)
+            val nuevoAmigo = mapOf(uid to uid)
 
             refUser.updateChildren(nuevoAmigo)
                 .addOnSuccessListener {
-                    Toast.makeText(this, "Amigo agregado correctamente", Toast.LENGTH_SHORT).show()
+                    // Agregar al usuario actual a la lista de amigos del usuario seleccionado
+                    val refAmigo = database.getReference("$PATH_USERS/$uid/amigos")
+                    val nuevoAmigoUsuario = mapOf(auth.currentUser!!.uid to auth.currentUser!!.uid)
+                    refAmigo.updateChildren(nuevoAmigoUsuario)
+                        .addOnSuccessListener {
+                            Toast.makeText(this, "Amigo agregado correctamente", Toast.LENGTH_SHORT).show()
+                        }
+                        .addOnFailureListener { error ->
+                            Toast.makeText(this, "Error al agregar amigo: ${error.message}", Toast.LENGTH_SHORT).show()
+                        }
                 }
                 .addOnFailureListener { error ->
                     Toast.makeText(this, "Error al agregar amigo: ${error.message}", Toast.LENGTH_SHORT).show()

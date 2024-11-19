@@ -19,7 +19,6 @@ import java.io.FileInputStream
 
 class Amigos : AppCompatActivity() {
     private lateinit var binding: ActivityAmigosBinding
-    private lateinit var amigosJsonArray: JSONArray
     private var amigos: MutableMap<String, String> = mutableMapOf()
     private var amigosArray: MutableList<String> = mutableListOf()
 
@@ -27,19 +26,7 @@ class Amigos : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityAmigosBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        // Si hay algo en el intent, se actualiza la lista de amigos
-        // El archivo user_friends.json se actualiza en AgregarAmigos.kt
-        if (intent.hasExtra("amigosJsonArray")) {
-            amigosJsonArray = JSONArray(intent.getStringExtra("amigosJsonArray"))
-        } else {
-            // Si no hay nada en el intent, se lee el archivo user_friends.json
-            val friendsJson = readJsonFromMyWorldFile("user_friends.json")
-            if (friendsJson != null) {
-                amigosJsonArray = JSONArray(friendsJson)
-            } else {
-                amigosJsonArray = JSONArray()
-            }
-        }
+
         setListAmigos()
         eventoAgregarAmigos()
         eventoVolver()
@@ -57,17 +44,6 @@ class Amigos : AppCompatActivity() {
                 // Handle error
             }
         })
-
-        /*for (i in 0 until amigosJsonArray.length()) {
-            val jsonObject = amigosJsonArray.getJSONObject(i)
-            val id = jsonObject.getInt("id")
-            val nombre = jsonObject.getString("username")
-            matrixCursor.addRow(arrayOf(idCounter, id, nombre))
-            idCounter++
-        }
-        val cursor: Cursor = matrixCursor
-        val amigosAdapter = AmigosAdapter(this, cursor, 0)
-        binding.amigosLv.adapter = amigosAdapter*/
     }
 
     private fun fetchAmigosInfo(amigosUids: List<String>) {
@@ -97,27 +73,6 @@ class Amigos : AppCompatActivity() {
                     // Handle error
                 }
             })
-        }
-    }
-
-    private fun usernameByID(id: String): String {
-        val refUsername = database.getReference("$PATH_USERS/$id/username")
-        var username = ""
-        refUsername.get().addOnSuccessListener { dataSnapshot ->
-            username = dataSnapshot.value.toString()
-        }
-        return username
-    }
-
-    private fun readJsonFromMyWorldFile(fileName: String): String? {
-        return try {
-            val fileInputStream: FileInputStream = openFileInput(fileName)
-            val bytes = fileInputStream.readBytes()
-            fileInputStream.close()
-            String(bytes)
-        } catch (e: Exception) {
-            e.printStackTrace()
-            null
         }
     }
 
