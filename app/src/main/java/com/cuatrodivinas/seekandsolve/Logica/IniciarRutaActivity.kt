@@ -439,9 +439,12 @@ class IniciarRutaActivity : AppCompatActivity(), LocationListener {
                     carreraActual.distanciaRecorrida += calcularDistancia(puntoInicial.latitud, puntoInicial.longitud, lastKnownLocation.latitude, lastKnownLocation.longitude)
                     punto = desafio.puntoFinal
                 }
-                if(puntoFinal && !containsLatitudLongitud(carreraActual.puntosCompletados,desafio.puntosIntermedios.last())){
-                    Toast.makeText(this, "Completa el checkpoint anterior antes de jugar el final!", Toast.LENGTH_LONG).show()
-                    return@setOnClickListener
+                // Validar que puntosIntermedios no esté vacío
+                if(puntoFinal && !desafio.puntosIntermedios.isEmpty()){
+                    if(!containsLatitudLongitud(carreraActual.puntosCompletados,desafio.puntosIntermedios.last())){
+                        Toast.makeText(this, "Completa el checkpoint anterior antes de jugar el final!", Toast.LENGTH_LONG).show()
+                        return@setOnClickListener
+                    }
                 }
             }
             if(!::punto.isInitialized){

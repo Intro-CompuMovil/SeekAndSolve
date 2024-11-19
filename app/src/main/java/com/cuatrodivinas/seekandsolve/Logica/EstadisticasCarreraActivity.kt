@@ -13,68 +13,64 @@ import com.cuatrodivinas.seekandsolve.Datos.Carrera
 import com.cuatrodivinas.seekandsolve.Datos.CarreraUsuarioCompletada
 import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.PATH_RECOMPENSAS
 import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.storage
+import com.cuatrodivinas.seekandsolve.Datos.InfoRecompensa
 import com.cuatrodivinas.seekandsolve.Datos.Recompensa
 import com.cuatrodivinas.seekandsolve.R
+import com.cuatrodivinas.seekandsolve.databinding.ActivityEstadisticasCarreraBinding
 import com.google.firebase.storage.StorageReference
 import kotlin.properties.Delegates
 
 class EstadisticasCarreraActivity : AppCompatActivity() {
-    private lateinit var listaEstadisticas: ListView
-
-    private lateinit var imagenRecompensa: ImageView
-    private lateinit var descripcionRecompensa: TextView
-
-    private lateinit var botonVolverAInicio: Button
-    private lateinit var intentMain: Intent
+    private lateinit var binding: ActivityEstadisticasCarreraBinding
     private lateinit var carreraCompletada: CarreraUsuarioCompletada
     private var checkpointsMarcados by Delegates.notNull<Int>()
-    private lateinit var refImg: StorageReference
+    private lateinit var infoRecompensa: InfoRecompensa
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_estadisticas_carrera)
+        binding = ActivityEstadisticasCarreraBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
-        listaEstadisticas = findViewById(R.id.listaEstadisticas)
-
-        imagenRecompensa = findViewById(R.id.imagenRecompensa)
-        descripcionRecompensa = findViewById(R.id.descripcionRecompensa)
-        carreraCompletada = intent.getSerializableExtra("carreraCompletada") as CarreraUsuarioCompletada
+        carreraCompletada = intent.getSerializableExtra("carreraUsuarioCompletada") as CarreraUsuarioCompletada
         checkpointsMarcados = intent.getIntExtra("checkpointsMarcados", 0)
+        infoRecompensa = intent.getSerializableExtra("infoRecompensa") as InfoRecompensa
 
-        botonVolverAInicio = findViewById(R.id.volver)
-        intentMain = Intent(this, MainActivity::class.java)
         inicializarEstadisticas()
         inicializarRecompensa()
     }
 
-    private fun inicializarEstadisticas(){
-        var matrixCursor = MatrixCursor(arrayOf("_id", "imagen", "nombre", "dato"))
-        matrixCursor.addRow(arrayOf(0, R.drawable.outline_timer_24, "Tiempo total", carreraCompletada.tiempoTotal))
+    private fun inicializarEstadisticas() {
+        val matrixCursor = MatrixCursor(arrayOf("_id", "imagen", "nombre", "dato"))
+        matrixCursor.addRow(arrayOf(0, R.drawable.outline_timer_24, "Tiempo total", "${carreraCompletada.tiempoTotal / 60} min"))
         matrixCursor.addRow(arrayOf(1, R.drawable.start_point_marker, "Checkpoints marcados", checkpointsMarcados))
         matrixCursor.addRow(arrayOf(2, R.drawable.baseline_psychology_24, "Acertijos resueltos", carreraCompletada.acertijosPrimerIntento))
-        matrixCursor.addRow(arrayOf(3, R.drawable.baseline_speed_24, "Velocidad media", carreraCompletada.distanciaTotal/carreraCompletada.tiempoTotal))
-        matrixCursor.addRow(arrayOf(4, R.drawable.distancia, "Distancia recorrida", carreraCompletada.distanciaTotal))
-        var adapter = EstadisticasAdapter(this, matrixCursor, 0)
-        listaEstadisticas.adapter = adapter
+        // Usar solo 2 decimales para la velocidad y la distancia
+        matrixCursor.addRow(arrayOf(3, R.drawable.baseline_speed_24, "Velocidad media", "${String.format("%.2f", carreraCompletada.distanciaTotal / carreraCompletada.tiempoTotal)} m/s"))
+        matrixCursor.addRow(arrayOf(4, R.drawable.distancia, "Distancia recorrida", "${String.format("%.2f", carreraCompletada.distanciaTotal)} m"))
+        val adapter = EstadisticasAdapter(this, matrixCursor, 0)
+        binding.listaEstadisticas.adapter = adapter
     }
 
-    private fun inicializarRecompensa(){
-        val recompensa: Recompensa = Recompensa("1","Capitan Cuac Cuac")
-        val idRecompensa = recompensa.id
-        refImg = storage.getReference(PATH_RECOMPENSAS).child("$idRecompensa.jpg")
+    private fun inicializarRecompensa() {
+        binding.descripcionRecompensa.text = infoRecompensa.nombreRecompensa
+        val idRecompensa = infoRecompensa.idRecompensa
+        val refImg = storage.getReference(PATH_RECOMPENSAS).child("$idRecompensa.jpg")
         refImg.downloadUrl.addOnSuccessListener { uri ->
             Glide.with(this)
-                .load(uri) // Carga la imagen desde la URL
-                .into(imagenRecompensa)
-        }.addOnFailureListener { exception ->
-            imagenRecompensa.imageTintList = getColorStateList(R.color.primaryColor)
+                .load(uri)
+                .into(binding.imagenRecompensa)
+        }.addOnFailureListener {
+            binding.imagenRecompensa.setImageResource(R.drawable.foto_bandera)
         }
     }
 
     override fun onResume() {
         super.onResume()
-        botonVolverAInicio.setOnClickListener {
-            startActivity(intentMain)
+        binding.volver.setOnClickListener {
+            val intent = Intent(this, MainActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+            startActivity(intent)
+            finish()
         }
     }
 }

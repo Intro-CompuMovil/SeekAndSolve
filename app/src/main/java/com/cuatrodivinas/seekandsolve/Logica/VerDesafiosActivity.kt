@@ -71,6 +71,7 @@ class VerDesafiosActivity : AppCompatActivity(), LocationListener {
                 val columns = arrayOf("_id", "desafio_id", "nombre")
                 val matrixCursor = MatrixCursor(columns)
                 var idCounter = 1L
+                desafiosList.clear()
 
                 for (desafioSnapshot in dataSnapshot.children) {
                     val desafio = desafioSnapshot.getValue(Desafio::class.java)

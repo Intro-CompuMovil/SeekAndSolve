@@ -29,6 +29,7 @@ import com.google.firebase.database.ValueEventListener
 import com.google.firebase.storage.StorageReference
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import kotlin.math.atan2
 import kotlin.math.cos
@@ -53,7 +54,6 @@ class DesafioTerminadoActivity : AppCompatActivity() {
 
         agregarRecompensaAleatoria()
         eliminarCarreraActualYGuardarCompletada()
-        inicializarElementos()
     }
 
     private fun eliminarCarreraActualYGuardarCompletada() {
@@ -67,8 +67,21 @@ class DesafioTerminadoActivity : AppCompatActivity() {
         database.getReference("$PATH_CARRERAS/$carreraId/horaInicio").addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val horaInicioStr = snapshot.getValue(String::class.java) ?: return
-                val horaInicio = LocalDateTime.parse(horaInicioStr)
-                val tiempoTotal = ChronoUnit.MINUTES.between(horaInicio, LocalDateTime.now()).toInt()
+                val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")
+
+                // Parsear el string a LocalDateTime
+                val horaInicio = try {
+                    LocalDateTime.parse(horaInicioStr, formatter)
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    null
+                }
+                var tiempoTotal: Int
+                if (horaInicio == null) {
+                    tiempoTotal = 0
+                } else {
+                    tiempoTotal = ChronoUnit.SECONDS.between(horaInicio, LocalDateTime.now()).toInt()
+                }
 
                 // Crear CarreraUsuarioCompletada
                 carreraCompletada = CarreraUsuarioCompletada(
@@ -90,7 +103,7 @@ class DesafioTerminadoActivity : AppCompatActivity() {
 
     private fun inicializarElementos() {
         binding.tituloDesafio.text = "Completaste ${desafio.nombre}"
-        binding.descripcionRecompensa.text = "Recompensa"
+        binding.descripcionRecompensa.text = infoRecompensaAsignada.nombreRecompensa
 
         val idDesafio = desafio.id
         val refImgDesafio = storage.getReference(PATH_DESAFIOS).child("$idDesafio.jpg")
@@ -101,6 +114,16 @@ class DesafioTerminadoActivity : AppCompatActivity() {
         }.addOnFailureListener {
             binding.imagenDesafio.setImageResource(R.drawable.foto_bandera)
         }
+
+        val idRecompensa = infoRecompensaAsignada.idRecompensa
+        val refImgRecompensa = storage.getReference(PATH_RECOMPENSAS).child("$idRecompensa.jpg")
+        refImgRecompensa.downloadUrl.addOnSuccessListener { uri ->
+            Glide.with(this)
+                .load(uri)
+                .into(binding.imagenRecompensa)
+        }.addOnFailureListener {
+            binding.imagenRecompensa.setImageResource(R.drawable.foto_bandera)
+        }
     }
 
     override fun onResume() {
@@ -108,11 +131,13 @@ class DesafioTerminadoActivity : AppCompatActivity() {
         binding.estadisticas.setOnClickListener {
             val intentEstadisticas = Intent(this, EstadisticasCarreraActivity::class.java)
             intentEstadisticas.putExtra("carreraUsuarioCompletada", carreraCompletada)
+            // Mandar el int con checkpoints marcados = carreraActual.puntosCompletados.size
+            intentEstadisticas.putExtra("checkpointsMarcados", carreraActual.puntosCompletados.size)
+            intentEstadisticas.putExtra("infoRecompensa", infoRecompensaAsignada)
             startActivity(intentEstadisticas)
         }
     }
 
-    // TODO: Para cuando el usuario complete una carrera
     private fun agregarRecompensaAleatoria() {
         val recompensasRef = database.reference.child(PATH_RECOMPENSAS)
         val usuarioRecompensasRef = database.reference.child(PATH_USERS)
@@ -138,6 +163,8 @@ class DesafioTerminadoActivity : AppCompatActivity() {
                     )
                     val nuevaRecompensaRef = usuarioRecompensasRef.child(carreraActual.idCarrera)
                     nuevaRecompensaRef.setValue(infoRecompensaAsignada)
+
+                    inicializarElementos()
                 }
             }
 

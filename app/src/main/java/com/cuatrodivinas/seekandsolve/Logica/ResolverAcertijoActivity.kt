@@ -122,7 +122,7 @@ class ResolverAcertijoActivity : AppCompatActivity() {
             if(intent.getBooleanExtra("puntoFinal", false)){
                 val intentDesafio = Intent(this@ResolverAcertijoActivity, DesafioTerminadoActivity::class.java)
                 intentDesafio.putExtra("desafio", desafio)
-                intentDesafio.putExtra("carrera", carreraActual)
+                intentDesafio.putExtra("carreraActual", carreraActual)
                 startActivity(intentDesafio)
                 return@setOnClickListener
             }
