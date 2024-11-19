@@ -334,7 +334,7 @@ class IniciarRutaActivity : AppCompatActivity(), LocationListener {
         return cambiar
     }
 
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+    /*override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == REQUEST_PERMISSIONS_REQUEST_CODE) {
             if (grantResults.isNotEmpty() && grantResults.all { it == PackageManager.PERMISSION_GRANTED }) {
@@ -343,7 +343,7 @@ class IniciarRutaActivity : AppCompatActivity(), LocationListener {
                 // Permisos denegados, no mostrar el mapa
             }
         }
-    }
+    }*/
 
     private fun containsLatitudLongitud(puntos: List<Punto>, punto: Punto): Boolean{
         for(point in puntos){
@@ -392,17 +392,19 @@ class IniciarRutaActivity : AppCompatActivity(), LocationListener {
                     carreraActual.puntosCompletados.add(desafio.puntoInicial)
                     Toast.makeText(this, "Comienza tu aventura en el desafio ${desafio.nombre}!", Toast.LENGTH_LONG).show()
                     val puntoInicial = GeoPoint(desafio.puntoInicial.latitud, desafio.puntoInicial.longitud)
-                    val puntoDestino = GeoPoint(desafio.puntosIntermedios[0].latitud, desafio.puntosIntermedios[0].longitud)
-                    getRoute(puntoInicial, puntoDestino, true, true)
-                    var destino = "Dirigete al"
-                    if(!desafio.puntosIntermedios.isEmpty()){
-                        destino += " Checkpoint 1!"
-                    }
-                    else{
-                        destino += " punto final!"
-                    }
-                    binding.destinoActual.text = destino
+                    /*if (!desafio.puntosIntermedios.isEmpty()) {
+                        val puntoDestino = GeoPoint(desafio.puntosIntermedios[0].latitud, desafio.puntosIntermedios[0].longitud)
+                        getRoute(puntoInicial, puntoDestino, true, true)
+                        binding.destinoActual.text = "Dirigete al Checkpoint 1!"
+                        carreraActual.distanciaRecorrida += calcularDistancia(this.puntoInicial.latitud, this.puntoInicial.longitud, lastKnownLocation.latitude, lastKnownLocation.longitude)
+                        return@setOnClickListener
+                    }*/
+                    punto = desafio.puntoInicial
                     carreraActual.distanciaRecorrida += calcularDistancia(this.puntoInicial.latitud, this.puntoInicial.longitud, lastKnownLocation.latitude, lastKnownLocation.longitude)
+
+                    pedirPermiso(this, android.Manifest.permission.CAMERA,
+                        "Necesitamos acceder a la cámara para tomar la foto y continuar con la experiencia", MY_PERMISSION_REQUEST_CAMERA
+                    )
                     return@setOnClickListener
                 }
                 var checkpointAnterior: Punto? = null
@@ -471,6 +473,27 @@ class IniciarRutaActivity : AppCompatActivity(), LocationListener {
         }
     }
 
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        when(requestCode){
+            MY_PERMISSION_REQUEST_CAMERA -> {
+                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    takePicture()
+                } else {
+                    Toast.makeText(this, "No se puede tomar la foto sin el permiso", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            REQUEST_PERMISSIONS_REQUEST_CODE -> {
+                if (grantResults.isNotEmpty() && grantResults.all { it == PackageManager.PERMISSION_GRANTED }) {
+                    initializeMap()
+                } else {
+                    // Permisos denegados, no mostrar el mapa
+                }
+            }
+            else -> super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        }
+    }
+
     // Función para mostrar la justificación con un diálogo y volver a solicitar el permiso
     private fun mostrarJustificacion(mensaje: String, onAccept: () -> Unit) {
         AlertDialog.Builder(this)
@@ -506,7 +529,7 @@ class IniciarRutaActivity : AppCompatActivity(), LocationListener {
             intent.putExtra("desafio", desafio)
             intent.putExtra("puntoFinal", puntoFinal)
             intent.putExtra("punto", punto)
-            intent.putExtra("carrera", carreraActual)
+            intent.putExtra("carreraActual", carreraActual)
             startActivity(intent)
         } else {
             Toast.makeText(this, "No se pudo tomar la foto", Toast.LENGTH_SHORT).show()
