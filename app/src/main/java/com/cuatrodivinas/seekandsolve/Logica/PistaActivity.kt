@@ -6,16 +6,17 @@ import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.os.Bundle
 import android.widget.Button
+import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.cuatrodivinas.seekandsolve.R
-import kotlin.random.Random
 
 class PistaActivity : AppCompatActivity(), SensorEventListener {
 
     private lateinit var subTituloPista: TextView
     private lateinit var textoPista: TextView
+    private lateinit var sensorIcon: ImageView
     private lateinit var btnVolver: Button
 
     private lateinit var sensorManager: SensorManager
@@ -30,6 +31,7 @@ class PistaActivity : AppCompatActivity(), SensorEventListener {
 
         subTituloPista = findViewById(R.id.acertijo)
         textoPista = findViewById(R.id.pista)
+        sensorIcon = findViewById(R.id.sensorIcon)
         btnVolver = findViewById(R.id.volver)
 
         sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
@@ -52,12 +54,24 @@ class PistaActivity : AppCompatActivity(), SensorEventListener {
             return
         }
 
-        // Mostrar el mensaje según el sensor seleccionado
+        // Mostrar ícono y frase según el sensor seleccionado
         when (randomSensorType) {
-            Sensor.TYPE_ACCELEROMETER -> subTituloPista.text = "Agita el teléfono para revelar la pista."
-            Sensor.TYPE_GYROSCOPE -> subTituloPista.text = "Gira el teléfono como si desenrollaras un pergamino."
-            Sensor.TYPE_PROXIMITY -> subTituloPista.text = "Acerca tu mano al sensor de proximidad."
-            Sensor.TYPE_LIGHT -> subTituloPista.text = "Lleva el teléfono a un lugar con más luz."
+            Sensor.TYPE_ACCELEROMETER -> {
+                sensorIcon.setImageResource(R.drawable.ic_shake)
+                subTituloPista.text = "¡Agita el teléfono! Mezcla las pistas para encontrar la verdad."
+            }
+            Sensor.TYPE_GYROSCOPE -> {
+                sensorIcon.setImageResource(R.drawable.ic_scroll)
+                subTituloPista.text = "¡Gira el teléfono! Desenrolla este pergamino de secretos."
+            }
+            Sensor.TYPE_PROXIMITY -> {
+                sensorIcon.setImageResource(R.drawable.ic_proximity)
+                subTituloPista.text = "¡Acerca tu mano! Abre la puerta oculta al conocimiento."
+            }
+            Sensor.TYPE_LIGHT -> {
+                sensorIcon.setImageResource(R.drawable.ic_light)
+                subTituloPista.text = "¡Busca la luz! Deja que ilumine este oscuro camino."
+            }
         }
     }
 
@@ -111,9 +125,10 @@ class PistaActivity : AppCompatActivity(), SensorEventListener {
 
     private fun revealPista() {
         sensorActivated = true
+        sensorIcon.visibility = ImageView.GONE
+        textoPista.visibility = TextView.VISIBLE
         textoPista.text = "¡Pista revelada! Papas con mayonesa."
         Toast.makeText(this, "¡Has completado el acertijo!", Toast.LENGTH_SHORT).show()
         sensorManager.unregisterListener(this) // Detener el sensor
     }
 }
-
