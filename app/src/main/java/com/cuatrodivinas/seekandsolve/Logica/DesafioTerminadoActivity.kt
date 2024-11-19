@@ -26,6 +26,10 @@ import com.google.firebase.database.ValueEventListener
 import com.google.firebase.storage.StorageReference
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
+import kotlin.math.atan2
+import kotlin.math.cos
+import kotlin.math.sin
+import kotlin.math.sqrt
 import kotlin.random.Random
 
 class DesafioTerminadoActivity : AppCompatActivity() {
@@ -61,6 +65,20 @@ class DesafioTerminadoActivity : AppCompatActivity() {
             carreraCompletada.tiempoTotal = ChronoUnit.MINUTES.between(fechaInicio, LocalDateTime.now()).toInt()
         }
         inicializarElementos()
+    }
+
+    fun calcularDistancia(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Double {
+        val radioTierra = 6371000.0  // Radio de la Tierra en metros
+        val dLat = Math.toRadians(lat2 - lat1)
+        val dLon = Math.toRadians(lon2 - lon1)
+
+        val a = sin(dLat / 2) * sin(dLat / 2) +
+                cos(Math.toRadians(lat1)) * cos(Math.toRadians(lat2)) *
+                sin(dLon / 2) * sin(dLon / 2)
+
+        val c = 2 * atan2(sqrt(a), sqrt(1 - a))
+
+        return radioTierra * c  // Distancia en metros
     }
 
     private fun inicializarElementos(){

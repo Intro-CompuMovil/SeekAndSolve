@@ -68,6 +68,8 @@ class IniciarRutaActivity : AppCompatActivity(), LocationListener {
     private var puntoFinal = false
     private lateinit var punto: Punto
     private lateinit var fechaInicio: LocalDateTime
+    private lateinit var puntoInicial: Punto
+    private var isFirstLocation = true
 
     init{
         val retrofit = RetrofitOsmClient.urlRuta()
@@ -293,6 +295,10 @@ class IniciarRutaActivity : AppCompatActivity(), LocationListener {
     }
 
     override fun onLocationChanged(location: Location) {
+        if(isFirstLocation){
+            puntoInicial = Punto(location.latitude, location.longitude)
+            isFirstLocation = false
+        }
         if(!shouldChangeLocation(location.latitude, location.longitude)){
             return
         }
@@ -398,6 +404,7 @@ class IniciarRutaActivity : AppCompatActivity(), LocationListener {
                         destino += " punto final!"
                     }
                     binding.destinoActual.text = destino
+                    carreraActual.distanciaRecorrida += calcularDistancia(this.puntoInicial.latitud, this.puntoInicial.longitud, lastKnownLocation.latitude, lastKnownLocation.longitude)
                     return@setOnClickListener
                 }
                 var checkpointAnterior: Punto? = null
@@ -422,6 +429,7 @@ class IniciarRutaActivity : AppCompatActivity(), LocationListener {
                     }
                     if(calcularDistancia(checkpoint.latitud, checkpoint.longitud, lastKnownLocation.latitude, lastKnownLocation.longitude) <= 100.0){
                         punto = checkpoint
+                        carreraActual.distanciaRecorrida += calcularDistancia(puntoInicial.latitud, puntoInicial.longitud, lastKnownLocation.latitude, lastKnownLocation.longitude)
                         break
                     }
                     checkpointAnterior = checkpoint
@@ -429,6 +437,7 @@ class IniciarRutaActivity : AppCompatActivity(), LocationListener {
                 if(!::punto.isInitialized && calcularDistancia(desafio.puntoFinal!!.latitud, desafio.puntoFinal!!.longitud, lastKnownLocation.latitude, lastKnownLocation.longitude) <= 100.0){
                     puntoFinal = true
                     punto = desafio.puntoFinal!!
+                    carreraActual.distanciaRecorrida += calcularDistancia(puntoInicial.latitud, puntoInicial.longitud, lastKnownLocation.latitude, lastKnownLocation.longitude)
                 }
                 if(puntoFinal && !containsLatitudLongitud(carreraActual.puntosCompletados,desafio.puntosIntermedios!!.last())){
                     Toast.makeText(this, "Completa el checkpoint anterior antes de jugar el final!", Toast.LENGTH_LONG).show()
