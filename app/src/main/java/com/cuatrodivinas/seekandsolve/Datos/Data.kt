@@ -24,6 +24,7 @@ class Data {
         var auth: FirebaseAuth
         var database: FirebaseDatabase
         var storage: FirebaseStorage
+        var entrou: Boolean = false
 
         init {
             auth = Firebase.auth

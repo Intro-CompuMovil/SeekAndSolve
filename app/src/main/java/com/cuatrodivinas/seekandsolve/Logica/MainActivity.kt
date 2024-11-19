@@ -25,6 +25,7 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import com.bumptech.glide.Glide
 import com.cuatrodivinas.seekandsolve.Datos.CarreraActual
+import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.PATH_ACTIVOS
 import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.PATH_DESAFIOS
 import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.PATH_IMAGENES
 import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.PATH_USERS
@@ -32,6 +33,7 @@ import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.PERMISO_CAMARA
 import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.PERMISO_NOTIFICACIONES
 import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.auth
 import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.database
+import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.entrou
 import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.storage
 import com.cuatrodivinas.seekandsolve.Datos.Desafio
 import com.cuatrodivinas.seekandsolve.Datos.InfoRecompensa
@@ -74,7 +76,7 @@ class MainActivity : AppCompatActivity(), LocationListener {
     private lateinit var username: String
     private lateinit var fotoUrl: String
     private lateinit var refImg: StorageReference
-    private lateinit var notification: Notification
+    private lateinit var databaseRef: DatabaseReference
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -86,6 +88,14 @@ class MainActivity : AppCompatActivity(), LocationListener {
         database = FirebaseDatabase.getInstance()
         val intent = Intent(this, ActivosService::class.java)
         startService(intent)
+
+        if(!entrou){
+            databaseRef = database.getReference(PATH_ACTIVOS).child(auth.currentUser!!.uid)
+            databaseRef.setValue(auth.currentUser!!.uid)
+            entrou = true
+        }
+        val serviceIntent = Intent(this, CloseService::class.java)
+        startService(serviceIntent)
     }
 
     override fun onStart() {

@@ -48,9 +48,11 @@ class ActivosService : Service() {
             .setContentTitle("Servicio de búsqueda de Tesoros")
             .setContentText("Buscando jugadores activos...")
             .setSmallIcon(R.drawable.logo)
+            .setOngoing(false)
+            .setAutoCancel(true)
             .build()
 
-        startForeground(1, notification)
+        notificationManager.notify(1, notification)
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {

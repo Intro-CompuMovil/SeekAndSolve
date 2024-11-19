@@ -181,6 +181,7 @@
         app:layout_constraintBottom_toTopOf="@+id/botonesAmarillosLayout"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/FechaETxt" />
+        app:layout_constraintTop_toBottomOf="@+id/FechaETxt"
+        android:backgroundTint="@color/secondaryColor"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
