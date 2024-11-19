@@ -66,7 +66,6 @@ class IniciarRutaActivity : AppCompatActivity(), LocationListener {
     private lateinit var lastKnownLocation: Location
     private var puntoFinal = false
     private lateinit var punto: Punto
-    private lateinit var fechaInicio: LocalDateTime
     private lateinit var puntoInicial: Punto
     private var isFirstLocation = true
 
@@ -508,7 +507,6 @@ class IniciarRutaActivity : AppCompatActivity(), LocationListener {
             intent.putExtra("puntoFinal", puntoFinal)
             intent.putExtra("punto", punto)
             intent.putExtra("carrera", carreraActual)
-            intent.putExtra("fechaInicio", fechaInicio)
             startActivity(intent)
         } else {
             Toast.makeText(this, "No se pudo tomar la foto", Toast.LENGTH_SHORT).show()
