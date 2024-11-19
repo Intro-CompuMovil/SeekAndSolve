@@ -9,7 +9,9 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.bumptech.glide.Glide
 import com.cuatrodivinas.seekandsolve.Datos.Carrera
+import com.cuatrodivinas.seekandsolve.Datos.CarreraActual
 import com.cuatrodivinas.seekandsolve.Datos.CarreraUsuarioCompletada
+import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.PATH_CARRERAS
 import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.PATH_DESAFIOS
 import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.PATH_RECOMPENSAS
 import com.cuatrodivinas.seekandsolve.Datos.Data.Companion.PATH_USERS
@@ -20,10 +22,12 @@ import com.cuatrodivinas.seekandsolve.Datos.Desafio
 import com.cuatrodivinas.seekandsolve.Datos.InfoRecompensa
 import com.cuatrodivinas.seekandsolve.Datos.Recompensa
 import com.cuatrodivinas.seekandsolve.R
+import com.cuatrodivinas.seekandsolve.databinding.ActivityDesafioTerminadoBinding
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.storage.StorageReference
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 import kotlin.math.atan2
@@ -33,71 +37,77 @@ import kotlin.math.sqrt
 import kotlin.random.Random
 
 class DesafioTerminadoActivity : AppCompatActivity() {
-    private lateinit var tituloDesafio: TextView
-    private lateinit var imagenDesafio: ImageView
-
-    private lateinit var imagenRecompensa: ImageView
-    private lateinit var descripcionRecompensa: TextView
-
-    private lateinit var botonEstadisticas: Button
-    private lateinit var intentEstadisticas: Intent
-    lateinit var desafio: Desafio
+    private lateinit var binding: ActivityDesafioTerminadoBinding
+    private lateinit var desafio: Desafio
+    private lateinit var carreraActual: CarreraActual
     private lateinit var carreraCompletada: CarreraUsuarioCompletada
-    private lateinit var fechaInicio: LocalDateTime
-    private lateinit var refImg: StorageReference
+    private lateinit var infoRecompensaAsignada: InfoRecompensa
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_desafio_terminado)
+        binding = ActivityDesafioTerminadoBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
-        tituloDesafio = findViewById(R.id.tituloDesafio)
-        imagenDesafio = findViewById(R.id.imagenDesafio)
-
-        imagenRecompensa = findViewById(R.id.imagenRecompensa)
-        descripcionRecompensa = findViewById(R.id.descripcionRecompensa)
-
-        botonEstadisticas = findViewById(R.id.estadisticas)
         desafio = intent.getSerializableExtra("desafio") as Desafio
-        carreraCompletada = intent.getSerializableExtra("carreraCompletada") as CarreraUsuarioCompletada
-        if(carreraCompletada.tiempoTotal == 0){
-            fechaInicio = intent.getSerializableExtra("fechaInicio") as LocalDateTime
-            intentEstadisticas = Intent(this, EstadisticasCarreraActivity::class.java)
-            carreraCompletada.tiempoTotal = ChronoUnit.MINUTES.between(fechaInicio, LocalDateTime.now()).toInt()
-        }
+        carreraActual = intent.getSerializableExtra("carreraActual") as CarreraActual
+
+        agregarRecompensaAleatoria()
+        eliminarCarreraActualYGuardarCompletada()
         inicializarElementos()
     }
 
-    private fun inicializarElementos(){
-        //Obtener la pregunta random
-        val recompensa: Recompensa = Recompensa("1","Capitan Cuac Cuac")
-        tituloDesafio.text = "Completaste ${desafio.nombre}"
-        descripcionRecompensa.text = recompensa.nombre
+    private fun eliminarCarreraActualYGuardarCompletada() {
+        val userUid = auth.currentUser!!.uid
+        val carreraId = carreraActual.idCarrera
 
-        val idRecompensa = recompensa.id
-        refImg = storage.getReference(PATH_RECOMPENSAS).child("$idRecompensa.jpg")
-        refImg.downloadUrl.addOnSuccessListener { uri ->
-            Glide.with(this)
-                .load(uri) // Carga la imagen desde la URL
-                .into(imagenRecompensa)
-        }.addOnFailureListener { exception ->
-            imagenRecompensa.imageTintList = getColorStateList(R.color.primaryColor)
-        }
+        // Eliminar carreraActual del usuario
+        database.getReference("$PATH_USERS/$userUid/carreraActual").removeValue()
+
+        // Obtener la hora de inicio de la carrera
+        database.getReference("$PATH_CARRERAS/$carreraId/horaInicio").addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val horaInicioStr = snapshot.getValue(String::class.java) ?: return
+                val horaInicio = LocalDateTime.parse(horaInicioStr)
+                val tiempoTotal = ChronoUnit.MINUTES.between(horaInicio, LocalDateTime.now()).toInt()
+
+                // Crear CarreraUsuarioCompletada
+                carreraCompletada = CarreraUsuarioCompletada(
+                    tiempoTotal,
+                    carreraActual.acertijosPrimerIntento,
+                    carreraActual.distanciaRecorrida,
+                    LocalDateTime.now().toString()
+                )
+
+                // Guardar CarreraUsuarioCompletada en carreras/idCarrera/usuariosCompletaron/userUid
+                database.getReference("$PATH_CARRERAS/$carreraId/usuariosCompletaron/$userUid").setValue(carreraCompletada)
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Log.e("Firebase", "Error al obtener la hora de inicio", error.toException())
+            }
+        })
+    }
+
+    private fun inicializarElementos() {
+        binding.tituloDesafio.text = "Completaste ${desafio.nombre}"
+        binding.descripcionRecompensa.text = "Recompensa"
 
         val idDesafio = desafio.id
-        refImg = storage.getReference(PATH_DESAFIOS).child("$idDesafio.jpg")
-        refImg.downloadUrl.addOnSuccessListener { uri ->
+        val refImgDesafio = storage.getReference(PATH_DESAFIOS).child("$idDesafio.jpg")
+        refImgDesafio.downloadUrl.addOnSuccessListener { uri ->
             Glide.with(this)
-                .load(uri) // Carga la imagen desde la URL
-                .into(imagenDesafio)
-        }.addOnFailureListener { exception ->
-            imagenDesafio.setImageResource(R.drawable.foto_bandera)
+                .load(uri)
+                .into(binding.imagenDesafio)
+        }.addOnFailureListener {
+            binding.imagenDesafio.setImageResource(R.drawable.foto_bandera)
         }
     }
 
     override fun onResume() {
         super.onResume()
-        botonEstadisticas.setOnClickListener {
-            intentEstadisticas.putExtra("carrera", carreraCompletada)
+        binding.estadisticas.setOnClickListener {
+            val intentEstadisticas = Intent(this, EstadisticasCarreraActivity::class.java)
+            intentEstadisticas.putExtra("carreraUsuarioCompletada", carreraCompletada)
             startActivity(intentEstadisticas)
         }
     }
@@ -120,13 +130,13 @@ class DesafioTerminadoActivity : AppCompatActivity() {
 
                 if (recompensasList.isNotEmpty()) {
                     val recompensaAleatoria = recompensasList[Random.nextInt(recompensasList.size)]
-                    val infoRecompensaAsignada = InfoRecompensa(
+                    infoRecompensaAsignada = InfoRecompensa(
                         recompensaAleatoria.id,
                         recompensaAleatoria.nombre,
-                        "desafio.nombre",
-                        "fechaActual dd/MM/yyyy"
+                        desafio.nombre,
+                        LocalDate.now().toString()
                     )
-                    val nuevaRecompensaRef = usuarioRecompensasRef.push()
+                    val nuevaRecompensaRef = usuarioRecompensasRef.child(carreraActual.idCarrera)
                     nuevaRecompensaRef.setValue(infoRecompensaAsignada)
                 }
             }

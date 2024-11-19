@@ -123,7 +123,7 @@ class ConfigurarCarreraActivity : AppCompatActivity() {
             }
 
             intentJugar.putExtra("desafio", desafio)
-            intentJugar.putExtra("carrera", carrera)
+            intentJugar.putExtra("carreraActual", carreraActual)
             startActivity(intentJugar)
         }
 
