@@ -137,6 +137,9 @@ class MainActivity : AppCompatActivity(), LocationListener {
         binding.amigosButton.setOnClickListener {
             startActivity(Intent(this, Amigos::class.java))
         }
+        binding.crearPreguntaButton.setOnClickListener {
+            startActivity(Intent(this, CrearPregunta::class.java))
+        }
     }
 
     override fun onPause() {
